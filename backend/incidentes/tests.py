@@ -160,4 +160,4 @@ class IncidenteAPITests(APITestCase):
         self.assertEqual(self.incidente_propio.estado, Incidente.Estado.EN_PROCESO)
         self.assertEqual(self.incidente_propio.atendido_por, self.vigilante)
         self.assertEqual(HistorialEstado.objects.filter(incidente=self.incidente_propio).count(), 1)
-        self.assertEqual(Notificacion.objects.filter(usuario=self.residente_1).count(), 1)
+        self.assertEqual(Notificacion.objects.filter(destinatario=self.residente_1).count(), 1)

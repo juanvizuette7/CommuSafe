@@ -3,8 +3,6 @@
 from django.db import transaction
 from django.utils import timezone
 
-from notificaciones.services import crear_notificacion_incidente
-
 from .models import HistorialEstado, Incidente
 
 
@@ -31,16 +29,6 @@ def cambiar_estado_incidente(*, incidente, estado_nuevo, comentario, usuario):
         estado_nuevo=estado_nuevo,
         cambiado_por=usuario,
         comentario=comentario,
-    )
-
-    crear_notificacion_incidente(
-        usuario=incidente.reportado_por,
-        incidente=incidente,
-        titulo=f"Actualización de incidente: {incidente.titulo}",
-        mensaje=(
-            f"Tu incidente ahora está en estado {incidente.get_estado_display().lower()}. "
-            f"Comentario: {comentario}"
-        ),
     )
 
     return incidente, historial

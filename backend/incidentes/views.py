@@ -81,6 +81,9 @@ class IncidenteViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         incidente = serializer.save()
+        from notificaciones.services import notificar_incidente_nuevo
+
+        notificar_incidente_nuevo(incidente)
         detalle = IncidenteDetailSerializer(incidente, context={"request": request})
         return Response(detalle.data, status=status.HTTP_201_CREATED)
 
@@ -99,6 +102,9 @@ class IncidenteViewSet(viewsets.ModelViewSet):
             comentario=serializer.validated_data["comentario"],
             usuario=request.user,
         )
+        from notificaciones.services import notificar_cambio_estado
+
+        notificar_cambio_estado(incidente, serializer.validated_data["estado_nuevo"])
 
         incidente.refresh_from_db()
         detalle = IncidenteDetailSerializer(incidente, context={"request": request})

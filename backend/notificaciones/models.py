@@ -10,36 +10,35 @@ class Notificacion(models.Model):
     """Mensaje interno generado por el sistema para un usuario."""
 
     class Tipo(models.TextChoices):
-        INCIDENTE = "INCIDENTE", "Incidente"
-        SISTEMA = "SISTEMA", "Sistema"
-        RECORDATORIO = "RECORDATORIO", "Recordatorio"
-        ALERTA = "ALERTA", "Alerta"
+        INCIDENTE_NUEVO = "INCIDENTE_NUEVO", "Incidente nuevo"
+        CAMBIO_ESTADO = "CAMBIO_ESTADO", "Cambio de estado"
+        AVISO_ADMIN = "AVISO_ADMIN", "Aviso administrativo"
+        EMERGENCIA = "EMERGENCIA", "Emergencia"
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    usuario = models.ForeignKey(
+    destinatario = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="notificaciones",
     )
-    incidente = models.ForeignKey(
+    titulo = models.CharField(max_length=150)
+    cuerpo = models.TextField()
+    tipo = models.CharField(max_length=20, choices=Tipo.choices)
+    leida = models.BooleanField(default=False)
+    fecha_envio = models.DateTimeField(auto_now_add=True)
+    incidente_relacionado = models.ForeignKey(
         "incidentes.Incidente",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="notificaciones",
     )
-    titulo = models.CharField(max_length=150)
-    mensaje = models.TextField()
-    tipo = models.CharField(max_length=20, choices=Tipo.choices, default=Tipo.INCIDENTE)
-    leida = models.BooleanField(default=False)
     enviada_push = models.BooleanField(default=False)
-    creada_en = models.DateTimeField(auto_now_add=True)
-    leida_en = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Notificación"
         verbose_name_plural = "Notificaciones"
-        ordering = ("-creada_en",)
+        ordering = ("-fecha_envio",)
 
     def __str__(self):
-        return f"{self.titulo} - {self.usuario.email}"
+        return f"{self.titulo} - {self.destinatario.email}"

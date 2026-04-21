@@ -1,12 +1,16 @@
-"""Rutas base del módulo de notificaciones."""
+"""Rutas del módulo de notificaciones."""
 
-from django.urls import path
+from django.urls import include, path
+from rest_framework.routers import DefaultRouter
 
-from .views import NotificacionesRootAPIView
+from .views import NotificacionViewSet
 
 
 app_name = "notificaciones"
 
+router = DefaultRouter()
+router.register("", NotificacionViewSet, basename="notificacion")
+
 urlpatterns = [
-    path("", NotificacionesRootAPIView.as_view(), name="root"),
+    path("", include(router.urls)),
 ]
