@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 
 
 class NotificacionesRootAPIView(APIView):
-    """Punto de entrada temporal del módulo de notificaciones."""
+    """Punto de entrada del servicio interno de notificaciones."""
 
     permission_classes = [IsAuthenticated]
 
@@ -14,6 +14,6 @@ class NotificacionesRootAPIView(APIView):
         return Response(
             {
                 "modulo": "notificaciones",
-                "mensaje": "El módulo de notificaciones está preparado para el Sprint 3.",
+                "mensaje": "El servicio interno de notificaciones está disponible para eventos del sistema.",
             }
         )
