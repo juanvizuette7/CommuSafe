@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load panel_tags %}
+
+{% block title %}{{ page_title }} | CommuSafe{% endblock title %}
+
+{% block body %}
+<div x-data="{ mobileSidebar: false }" class="min-h-screen bg-surface">
+    <div class="fixed inset-y-0 left-0 z-40 hidden w-[260px] lg:block">
+        <aside class="flex h-full flex-col bg-[linear-gradient(180deg,_#1A1A2E_0%,_#16213E_52%,_#0F3460_100%)] px-5 py-6 text-white shadow-glass">
+            <div class="rounded-[24px] border border-white/10 bg-white/10 px-4 py-4 backdrop-blur-md">
+                <div class="flex items-center gap-3">
+                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-2xl shadow-soft">🛡️</div>
+                    <div>
+                        <p class="text-lg font-extrabold tracking-tight">CommuSafe</p>
+                        <p class="text-sm text-slate-300">Remansos del Norte</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="mt-8 space-y-2">
+                <a href="{% url 'panel_web:dashboard' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition {% if active_nav == 'dashboard' %}bg-white/15 text-white shadow-soft{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
+                    <span class="text-lg">📊</span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{% url 'panel_web:incidentes_lista' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition {% if active_nav == 'incidentes' %}bg-white/15 text-white shadow-soft{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
+                    <span class="text-lg">🚨</span>
+                    <span>Incidentes</span>
+                </a>
+                <a href="{% url 'panel_web:usuarios_lista' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition {% if active_nav == 'usuarios' %}bg-white/15 text-white shadow-soft{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
+                    <span class="text-lg">👥</span>
+                    <span>Usuarios</span>
+                </a>
+            </nav>
+
+            <div class="mt-auto rounded-[24px] border border-white/10 bg-white/10 p-4 backdrop-blur-md">
+                <div class="flex items-center gap-3">
+                    {% if usuario_panel.foto_perfil %}
+                    <img src="{{ usuario_panel.foto_perfil.url }}" alt="Foto de perfil" class="h-12 w-12 rounded-2xl object-cover">
+                    {% else %}
+                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-sm font-extrabold">
+                        {{ usuario_panel.nombre|first }}{{ usuario_panel.apellido|first }}
+                    </div>
+                    {% endif %}
+                    <div class="min-w-0">
+                        <p class="truncate text-sm font-bold">{{ usuario_panel.nombre_completo }}</p>
+                        <p class="mt-1 inline-flex rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-slate-200">
+                            {{ usuario_panel.get_rol_display }}
+                        </p>
+                    </div>
+                </div>
+                <form method="post" action="{% url 'panel_web:logout' %}" class="mt-4">
+                    {% csrf_token %}
+                    <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15">
+                        <span>↩️</span>
+                        <span>Cerrar sesión</span>
+                    </button>
+                </form>
+            </div>
+        </aside>
+    </div>
+
+    <div class="fixed inset-x-0 top-0 z-30 border-b border-slate-200/80 bg-white/80 backdrop-blur-lg lg:left-[260px]">
+        <header class="flex h-[88px] items-center justify-between px-4 sm:px-6 lg:px-10">
+            <div class="flex items-center gap-3">
+                <button @click="mobileSidebar = true" class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-soft lg:hidden">
+                    ☰
+                </button>
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Panel web</p>
+                    <h1 class="text-2xl font-black tracking-tight text-primary">{{ page_title }}</h1>
+                    {% if page_subtitle %}
+                    <p class="text-sm text-slate-500">{{ page_subtitle }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="hidden items-center gap-3 md:flex">
+                <div class="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600">
+                    Notificaciones pendientes: {{ notificaciones_no_leidas }}
+                </div>
+                <div class="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white shadow-soft">
+                    {{ usuario_panel.get_rol_display }}
+                </div>
+            </div>
+        </header>
+    </div>
+
+    <div x-show="mobileSidebar" x-transition.opacity class="fixed inset-0 z-50 bg-slate-950/50 lg:hidden" style="display: none;">
+        <div @click.away="mobileSidebar = false" class="h-full w-[280px] bg-[linear-gradient(180deg,_#1A1A2E_0%,_#16213E_52%,_#0F3460_100%)] px-5 py-6 text-white shadow-glass">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-lg font-extrabold">CommuSafe</p>
+                    <p class="text-sm text-slate-300">Remansos del Norte</p>
+                </div>
+                <button @click="mobileSidebar = false" class="rounded-2xl bg-white/10 px-3 py-2 text-sm">✕</button>
+            </div>
+            <nav class="mt-8 space-y-2">
+                <a href="{% url 'panel_web:dashboard' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold {% if active_nav == 'dashboard' %}bg-white/15{% else %}text-slate-300{% endif %}">📊 <span>Dashboard</span></a>
+                <a href="{% url 'panel_web:incidentes_lista' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold {% if active_nav == 'incidentes' %}bg-white/15{% else %}text-slate-300{% endif %}">🚨 <span>Incidentes</span></a>
+                <a href="{% url 'panel_web:usuarios_lista' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold {% if active_nav == 'usuarios' %}bg-white/15{% else %}text-slate-300{% endif %}">👥 <span>Usuarios</span></a>
+            </nav>
+        </div>
+    </div>
+
+    <main class="px-4 pb-10 pt-[112px] sm:px-6 lg:ml-[260px] lg:px-10">
+        <div class="pointer-events-none fixed right-4 top-24 z-50 flex w-full max-w-sm flex-col gap-3 sm:right-6 lg:right-10">
+            {% for message in messages %}
+            <div x-data="{ visible: true }" x-show="visible" x-init="setTimeout(() => visible = false, 4500)" class="pointer-events-auto rounded-[20px] border px-4 py-4 shadow-glass backdrop-blur-md {% if 'error' in message.tags %}border-danger/20 bg-danger/10 text-danger{% elif 'success' in message.tags %}border-success/20 bg-success/10 text-success{% else %}border-primary/15 bg-white/80 text-primary{% endif %}">
+                <div class="flex items-start justify-between gap-4">
+                    <p class="text-sm font-semibold leading-6">{{ message }}</p>
+                    <button @click="visible = false" class="text-xs font-bold opacity-70 transition hover:opacity-100">✕</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% block panel_content %}{% endblock panel_content %}
+    </main>
+</div>
+{% endblock body %}

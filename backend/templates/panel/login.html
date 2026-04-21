@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Iniciar sesión | CommuSafe{% endblock title %}
+
+{% block body %}
+<main class="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(15,52,96,0.35),_transparent_38%),linear-gradient(145deg,_#1A1A2E_0%,_#16213E_55%,_#0F3460_100%)] px-4 py-10">
+    <div class="grid w-full max-w-5xl overflow-hidden rounded-[32px] bg-white/10 shadow-glass backdrop-blur-xl lg:grid-cols-[1.1fr_0.9fr]">
+        <section class="hidden flex-col justify-between bg-white/5 p-10 text-white lg:flex">
+            <div>
+                <div class="inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold">
+                    <span class="text-xl">🛡️</span>
+                    <span>CommuSafe</span>
+                </div>
+                <h1 class="mt-8 max-w-md text-5xl font-black leading-tight tracking-tight">
+                    Seguridad y organización comunitaria con visión operativa.
+                </h1>
+                <p class="mt-6 max-w-lg text-base leading-7 text-slate-200">
+                    Panel administrativo para incidentes, seguimiento de casos y control del conjunto residencial Remansos del Norte.
+                </p>
+            </div>
+            <div class="grid gap-4">
+                <div class="rounded-[24px] border border-white/10 bg-white/10 p-5">
+                    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-300">Cobertura</p>
+                    <p class="mt-3 text-2xl font-bold">Administración y vigilancia</p>
+                    <p class="mt-2 text-sm text-slate-200">Control centralizado de incidentes, trazabilidad y respuesta rápida.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="bg-white px-6 py-10 sm:px-10 lg:px-12" x-data="{ mostrarPassword: false }">
+            <div class="mx-auto max-w-md">
+                <div class="text-center">
+                    <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-[22px] bg-primary text-3xl text-white shadow-soft">🛡️</div>
+                    <h2 class="mt-6 text-4xl font-black tracking-tight text-primary">CommuSafe</h2>
+                    <p class="mt-2 text-sm font-medium text-slate-500">Remansos del Norte</p>
+                </div>
+
+                {% if messages %}
+                <div class="mt-8 space-y-3">
+                    {% for message in messages %}
+                    <div class="rounded-2xl border px-4 py-3 text-sm font-semibold {% if 'error' in message.tags %}border-danger/20 bg-danger/10 text-danger{% elif 'success' in message.tags %}border-success/20 bg-success/10 text-success{% else %}border-primary/20 bg-primary/5 text-primary{% endif %}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <form method="post" class="mt-8 space-y-5">
+                    {% csrf_token %}
+                    <div class="space-y-2">
+                        <label for="email" class="text-sm font-semibold text-slate-700">Correo electrónico</label>
+                        <input id="email" name="email" type="email" required autocomplete="email" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10" placeholder="admin@remansos.com">
+                    </div>
+                    <div class="space-y-2">
+                        <label for="password" class="text-sm font-semibold text-slate-700">Contraseña</label>
+                        <div class="relative">
+                            <input id="password" name="password" x-bind:type="mostrarPassword ? 'text' : 'password'" required autocomplete="current-password" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pr-14 text-sm text-slate-900 outline-none transition focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10" placeholder="Ingresa tu contraseña">
+                            <button type="button" @click="mostrarPassword = !mostrarPassword" class="absolute inset-y-0 right-3 inline-flex items-center text-sm font-semibold text-slate-500 transition hover:text-primary">
+                                <span x-text="mostrarPassword ? 'Ocultar' : 'Mostrar'"></span>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full rounded-2xl bg-primary px-5 py-3.5 text-sm font-bold text-white shadow-soft transition duration-200 hover:-translate-y-0.5 hover:bg-accent">
+                        Ingresar al panel
+                    </button>
+                </form>
+            </div>
+        </section>
+    </div>
+</main>
+{% endblock body %}

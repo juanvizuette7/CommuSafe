@@ -1,32 +1,45 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}CommuSafe{% endblock title %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
                     colors: {
-                        primary: "#1A1A2E",
-                        secondary: "#16213E",
-                        accent: "#0F3460",
-                        danger: "#E94560",
-                        success: "#10B981",
-                        surface: "#F8FAFC",
+                        primary: '#1A1A2E',
+                        secondary: '#16213E',
+                        accent: '#0F3460',
+                        danger: '#E94560',
+                        success: '#10B981',
+                        surface: '#F8FAFC',
+                        slatepanel: '#0F172A',
                     },
                     boxShadow: {
-                        soft: "0 20px 45px rgba(15, 52, 96, 0.12)",
+                        soft: '0 18px 45px rgba(15, 23, 42, 0.08)',
+                        glass: '0 20px 60px rgba(15, 52, 96, 0.15)',
+                    },
+                    borderRadius: {
+                        '4xl': '2rem',
                     },
                 },
             },
         };
     </script>
+    {% block extra_head %}{% endblock extra_head %}
 </head>
-<body class="min-h-screen bg-surface text-slate-900">
-    {% block content %}{% endblock content %}
+<body class="bg-surface font-sans text-slate-900">
+    {% block body %}{% endblock body %}
 </body>
 </html>

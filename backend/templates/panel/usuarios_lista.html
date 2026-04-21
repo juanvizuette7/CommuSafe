@@ -1,0 +1,86 @@
+{% extends "panel/base.html" %}
+{% load panel_tags %}
+
+{% block panel_content %}
+<section class="rounded-[30px] border border-slate-200 bg-white p-6 shadow-soft">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+            <h2 class="text-2xl font-black text-primary">Usuarios del sistema</h2>
+            <p class="mt-1 text-sm text-slate-500">Consulta y gestiona cuentas activas e inactivas.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <a href="{% querystring rol='' %}" class="rounded-full px-4 py-2 text-sm font-semibold transition {% if not rol_activo %}bg-primary text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">
+                Todos
+            </a>
+            {% for value, label in roles %}
+            <a href="{% querystring rol=value %}" class="rounded-full px-4 py-2 text-sm font-semibold transition {% if rol_activo == value %}bg-primary text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">
+                {{ label }}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="mt-6 overflow-hidden rounded-[24px] border border-slate-200">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+                <thead class="bg-slate-50">
+                    <tr class="text-left text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+                        <th class="px-5 py-4">Usuario</th>
+                        <th class="px-5 py-4">Correo</th>
+                        <th class="px-5 py-4">Rol</th>
+                        <th class="px-5 py-4">Unidad</th>
+                        <th class="px-5 py-4">Estado</th>
+                        <th class="px-5 py-4 text-right">Acción</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                    {% for usuario in usuarios %}
+                    <tr class="transition hover:bg-slate-50/80">
+                        <td class="px-5 py-4">
+                            <div class="flex items-center gap-3">
+                                {% if usuario.foto_perfil %}
+                                <img src="{{ usuario.foto_perfil.url }}" alt="Foto de perfil" class="h-12 w-12 rounded-2xl object-cover">
+                                {% else %}
+                                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-sm font-black text-white">
+                                    {{ usuario.nombre|first }}{{ usuario.apellido|first }}
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <p class="font-bold text-slate-900">{{ usuario.nombre_completo }}</p>
+                                    <p class="text-xs text-slate-500">{{ usuario.fecha_registro|date:"d/m/Y" }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-5 py-4 text-slate-600">{{ usuario.email }}</td>
+                        <td class="px-5 py-4">
+                            <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold {% if usuario.rol == 'ADMINISTRADOR' %}bg-primary text-white{% elif usuario.rol == 'VIGILANTE' %}bg-blue-100 text-blue-700{% else %}bg-success/10 text-success{% endif %}">
+                                {{ usuario.get_rol_display }}
+                            </span>
+                        </td>
+                        <td class="px-5 py-4 text-slate-600">{{ usuario.unidad_residencial|default:"No aplica" }}</td>
+                        <td class="px-5 py-4">
+                            <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-bold {% if usuario.activo %}bg-success/10 text-success{% else %}bg-slate-100 text-slate-600{% endif %}">
+                                <span class="h-2.5 w-2.5 rounded-full {% if usuario.activo %}bg-success{% else %}bg-slate-400{% endif %}"></span>
+                                {% if usuario.activo %}Activo{% else %}Inactivo{% endif %}
+                            </span>
+                        </td>
+                        <td class="px-5 py-4 text-right">
+                            <form method="post" action="{% url 'panel_web:usuario_toggle_activo' usuario.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="inline-flex rounded-xl px-3 py-2 text-xs font-semibold transition {% if usuario.activo %}border border-danger/20 bg-danger/10 text-danger hover:bg-danger hover:text-white{% else %}border border-success/20 bg-success/10 text-success hover:bg-success hover:text-white{% endif %}">
+                                    {% if usuario.activo %}Desactivar{% else %}Activar{% endif %}
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-5 py-10 text-center text-sm font-medium text-slate-500">No hay usuarios para mostrar con el filtro seleccionado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock panel_content %}

@@ -1,0 +1,112 @@
+{% extends "panel/base.html" %}
+
+{% block panel_content %}
+<section class="grid gap-6 xl:grid-cols-4">
+    <article class="rounded-[28px] bg-[linear-gradient(135deg,_#1A1A2E_0%,_#0F3460_100%)] p-6 text-white shadow-glass">
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-300">Activos</p>
+                <p class="mt-4 text-4xl font-black">{{ metricas.incidentes_activos }}</p>
+                <p class="mt-2 text-sm text-slate-200">Incidentes abiertos o en gestión.</p>
+            </div>
+            <span class="text-4xl">📂</span>
+        </div>
+    </article>
+    <article class="rounded-[28px] p-6 text-white shadow-glass {% if metricas.incidentes_alta > 0 %}bg-[linear-gradient(135deg,_#E94560_0%,_#B91C1C_100%)]{% else %}bg-[linear-gradient(135deg,_#64748B_0%,_#334155_100%)]{% endif %}">
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-white/70">Prioridad alta</p>
+                <p class="mt-4 text-4xl font-black">{{ metricas.incidentes_alta }}</p>
+                <p class="mt-2 text-sm text-white/80">Casos que exigen atención inmediata.</p>
+            </div>
+            <span class="text-4xl">🚨</span>
+        </div>
+    </article>
+    <article class="rounded-[28px] bg-[linear-gradient(135deg,_#10B981_0%,_#047857_100%)] p-6 text-white shadow-glass">
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-100">Resueltos hoy</p>
+                <p class="mt-4 text-4xl font-black">{{ metricas.resueltos_hoy }}</p>
+                <p class="mt-2 text-sm text-emerald-100">Incidentes cerrados operativamente hoy.</p>
+            </div>
+            <span class="text-4xl">✅</span>
+        </div>
+    </article>
+    <article class="rounded-[28px] bg-[linear-gradient(135deg,_#0F3460_0%,_#3B82F6_100%)] p-6 text-white shadow-glass">
+        <div class="flex items-start justify-between">
+            <div>
+                <p class="text-sm font-semibold uppercase tracking-[0.2em] text-blue-100">Usuarios activos</p>
+                <p class="mt-4 text-4xl font-black">{{ metricas.usuarios_activos }}</p>
+                <p class="mt-2 text-sm text-blue-100">Cuentas habilitadas en el sistema.</p>
+            </div>
+            <span class="text-4xl">👥</span>
+        </div>
+    </article>
+</section>
+
+<section class="mt-8 rounded-[30px] border border-slate-200 bg-white p-6 shadow-soft">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <h2 class="text-2xl font-black tracking-tight text-primary">Incidentes más recientes</h2>
+            <p class="mt-1 text-sm text-slate-500">Últimos 10 reportes registrados en CommuSafe.</p>
+        </div>
+        <a href="{% url 'panel_web:incidentes_lista' %}" class="inline-flex items-center justify-center rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-accent">
+            Ver todos los incidentes
+        </a>
+    </div>
+
+    <div class="mt-6 overflow-hidden rounded-[24px] border border-slate-200">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+                <thead class="bg-slate-50">
+                    <tr class="text-left text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+                        <th class="px-5 py-4">Título</th>
+                        <th class="px-5 py-4">Categoría</th>
+                        <th class="px-5 py-4">Prioridad</th>
+                        <th class="px-5 py-4">Estado</th>
+                        <th class="px-5 py-4">Reportado por</th>
+                        <th class="px-5 py-4">Fecha</th>
+                        <th class="px-5 py-4 text-right">Acción</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                    {% for incidente in incidentes_recientes %}
+                    <tr class="transition hover:bg-slate-50/80">
+                        <td class="px-5 py-4">
+                            <div>
+                                <p class="font-bold text-slate-900">{{ incidente.titulo }}</p>
+                                <p class="mt-1 max-w-xs truncate text-xs text-slate-500">{{ incidente.descripcion }}</p>
+                            </div>
+                        </td>
+                        <td class="px-5 py-4">
+                            <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">{{ incidente.get_categoria_display }}</span>
+                        </td>
+                        <td class="px-5 py-4">
+                            <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold {% if incidente.prioridad == 'ALTA' %}bg-danger/10 text-danger{% elif incidente.prioridad == 'MEDIA' %}bg-amber-100 text-amber-700{% else %}bg-success/10 text-success{% endif %}">
+                                {{ incidente.get_prioridad_display }}
+                            </span>
+                        </td>
+                        <td class="px-5 py-4">
+                            <span class="inline-flex rounded-full px-3 py-1 text-xs font-bold {% if incidente.estado == 'REGISTRADO' %}bg-slate-100 text-slate-700{% elif incidente.estado == 'EN_PROCESO' %}bg-blue-100 text-blue-700{% elif incidente.estado == 'RESUELTO' %}bg-success/10 text-success{% else %}bg-slate-900 text-white{% endif %}">
+                                {{ incidente.get_estado_display }}
+                            </span>
+                        </td>
+                        <td class="px-5 py-4 font-medium text-slate-700">{{ incidente.reportado_por.nombre_completo }}</td>
+                        <td class="px-5 py-4 text-slate-500">{{ incidente.fecha_reporte|timesince }} atrás</td>
+                        <td class="px-5 py-4 text-right">
+                            <a href="{% url 'panel_web:incidente_detalle' incidente.id %}" class="inline-flex rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-primary transition hover:border-primary hover:bg-primary hover:text-white">
+                                Ver
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-5 py-10 text-center text-sm font-medium text-slate-500">No hay incidentes registrados todavía.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+{% endblock panel_content %}
