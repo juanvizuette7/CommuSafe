@@ -20,7 +20,7 @@ class PuedeCrearIncidente(BasePermission):
 class PuedeGestionarEstadoIncidente(BasePermission):
     """Permite cambiar estados a administradores y vigilantes."""
 
-    message = "Solo administradores y vigilantes pueden cambiar el estado de un incidente."
+    message = "Solo administradores y vigilantes pueden cambiar el estado de un incidente"
 
     def has_permission(self, request, view):
         usuario = request.user
