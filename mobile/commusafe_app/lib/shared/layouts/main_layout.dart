@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_theme.dart';
 import '../../features/auth/providers/auth_provider.dart';
+import '../../features/incidentes/providers/incidente_provider.dart';
 import '../../features/notificaciones/providers/notificaciones_provider.dart';
 
 class MainLayout extends StatelessWidget {
@@ -31,12 +32,6 @@ class MainLayout extends StatelessWidget {
   }
 
   String _titleForLocation(String location) {
-    if (location.startsWith('/incidentes/crear')) {
-      return 'Nuevo incidente';
-    }
-    if (location.startsWith('/incidentes/') && location != '/incidentes') {
-      return 'Detalle del incidente';
-    }
     if (location.startsWith('/notificaciones')) {
       return 'Notificaciones';
     }
@@ -50,6 +45,10 @@ class MainLayout extends StatelessWidget {
       return 'Contactos de emergencia';
     }
     return 'Incidentes';
+  }
+
+  bool _showTopAppBar(String location) {
+    return !location.startsWith('/incidentes');
   }
 
   void _onNavigationTap(BuildContext context, int index) {
@@ -74,6 +73,7 @@ class MainLayout extends StatelessWidget {
     if (!context.mounted) {
       return;
     }
+    context.read<IncidenteProvider>().reset();
     context.read<NotificacionesProvider>().reset();
     context.go('/login');
   }
@@ -88,9 +88,11 @@ class MainLayout extends StatelessWidget {
     final currentIndex = _currentIndexForLocation(currentLocation);
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_titleForLocation(currentLocation)),
-      ),
+      appBar: _showTopAppBar(currentLocation)
+          ? AppBar(
+              title: Text(_titleForLocation(currentLocation)),
+            )
+          : null,
       drawer: Drawer(
         child: SafeArea(
           child: Padding(

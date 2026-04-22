@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../incidentes/providers/incidente_provider.dart';
+import '../../notificaciones/providers/notificaciones_provider.dart';
 import '../models/usuario_model.dart';
 import '../providers/auth_provider.dart';
 
@@ -11,7 +13,13 @@ class PerfilScreen extends StatelessWidget {
   const PerfilScreen({super.key});
 
   Future<void> _logout(BuildContext context) async {
-    await context.read<AuthProvider>().logout();
+    final authProvider = context.read<AuthProvider>();
+    final incidenteProvider = context.read<IncidenteProvider>();
+    final notificacionesProvider = context.read<NotificacionesProvider>();
+
+    await authProvider.logout();
+    incidenteProvider.reset();
+    notificacionesProvider.reset();
     if (!context.mounted) {
       return;
     }

@@ -7,7 +7,7 @@ import 'app.dart';
 import 'core/services/api_service.dart';
 import 'core/services/notification_service.dart';
 import 'features/auth/providers/auth_provider.dart';
-import 'features/incidentes/providers/incidentes_provider.dart';
+import 'features/incidentes/providers/incidente_provider.dart';
 import 'features/notificaciones/providers/notificaciones_provider.dart';
 
 Future<void> main() async {
@@ -23,8 +23,8 @@ Future<void> main() async {
         ChangeNotifierProvider<AuthProvider>(
           create: (_) => AuthProvider(),
         ),
-        ChangeNotifierProvider<IncidentesProvider>(
-          create: (_) => IncidentesProvider(),
+        ChangeNotifierProvider<IncidenteProvider>(
+          create: (_) => IncidenteProvider(),
         ),
         ChangeNotifierProvider<NotificacionesProvider>(
           create: (_) => NotificacionesProvider(),

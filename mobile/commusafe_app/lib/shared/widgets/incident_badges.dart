@@ -6,14 +6,19 @@ class PriorityBadge extends StatelessWidget {
   const PriorityBadge({
     super.key,
     required this.priority,
+    this.label,
   });
 
   final String priority;
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
     final color = AppColors.priorityColor(priority);
-    return _BadgeBase(label: priority, color: color);
+    return _BadgeBase(
+      label: (label ?? priority).toUpperCase(),
+      color: color,
+    );
   }
 }
 
@@ -21,14 +26,35 @@ class IncidentStatusBadge extends StatelessWidget {
   const IncidentStatusBadge({
     super.key,
     required this.status,
+    this.label,
   });
 
   final String status;
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
     final color = AppColors.incidentStateColor(status);
-    return _BadgeBase(label: status.replaceAll('_', ' '), color: color);
+    return _BadgeBase(
+      label: label ?? _formatStatus(status),
+      color: color,
+    );
+  }
+
+  static String _formatStatus(String status) {
+    final normalized = status.toUpperCase();
+    switch (normalized) {
+      case 'REGISTRADO':
+        return 'Registrado';
+      case 'EN_PROCESO':
+        return 'En proceso';
+      case 'RESUELTO':
+        return 'Resuelto';
+      case 'CERRADO':
+        return 'Cerrado';
+      default:
+        return status.replaceAll('_', ' ');
+    }
   }
 }
 

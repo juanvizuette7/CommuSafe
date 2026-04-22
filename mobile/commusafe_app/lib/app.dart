@@ -9,8 +9,8 @@ import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/perfil_screen.dart';
 import 'features/emergencias/screens/emergencias_screen.dart';
 import 'features/incidentes/screens/crear_incidente_screen.dart';
-import 'features/incidentes/screens/incidente_detalle_screen.dart';
-import 'features/incidentes/screens/incidentes_list_screen.dart';
+import 'features/incidentes/screens/detalle_incidente_screen.dart';
+import 'features/incidentes/screens/lista_incidentes_screen.dart';
 import 'features/notificaciones/screens/notificaciones_screen.dart';
 import 'shared/layouts/main_layout.dart';
 
@@ -73,7 +73,7 @@ class AppRouter {
             GoRoute(
               path: '/incidentes',
               builder: (BuildContext context, GoRouterState state) {
-                return const IncidentesListScreen();
+                return const ListaIncidentesScreen();
               },
               routes: <RouteBase>[
                 GoRoute(
@@ -86,7 +86,7 @@ class AppRouter {
                   path: ':id',
                   builder: (BuildContext context, GoRouterState state) {
                     final incidenteId = state.pathParameters['id'] ?? '';
-                    return IncidenteDetalleScreen(incidenteId: incidenteId);
+                    return DetalleIncidenteScreen(incidenteId: incidenteId);
                   },
                 ),
               ],
