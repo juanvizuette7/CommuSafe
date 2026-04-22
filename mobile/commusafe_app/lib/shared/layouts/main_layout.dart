@@ -1,4 +1,5 @@
 import 'package:badges/badges.dart' as badges;
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -69,7 +70,7 @@ class MainLayout extends StatelessWidget {
   }
 
   Future<void> _logout(BuildContext context) async {
-    await context.read<AuthProvider>().clearSession();
+    await context.read<AuthProvider>().logout();
     if (!context.mounted) {
       return;
     }
@@ -83,7 +84,7 @@ class MainLayout extends StatelessWidget {
     final currentLocation = state.uri.toString();
     final notificationsProvider = context.watch<NotificacionesProvider>();
     final authProvider = context.watch<AuthProvider>();
-    final usuario = authProvider.usuario;
+    final usuario = authProvider.usuarioActual;
     final currentIndex = _currentIndexForLocation(currentLocation);
 
     return Scaffold(
@@ -115,16 +116,19 @@ class MainLayout extends StatelessWidget {
                       CircleAvatar(
                         radius: 28,
                         backgroundColor: Colors.white.withValues(alpha: 0.18),
-                        child: Text(
-                          usuario == null
-                              ? 'CS'
-                              : '${usuario.nombre.characters.first}${usuario.apellido.characters.first}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 18,
-                          ),
-                        ),
+                        backgroundImage: usuario?.fotoPerfilUrl != null
+                            ? CachedNetworkImageProvider(usuario!.fotoPerfilUrl!)
+                            : null,
+                        child: usuario?.fotoPerfilUrl == null
+                            ? Text(
+                                usuario?.iniciales ?? 'CS',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 18,
+                                ),
+                              )
+                            : null,
                       ),
                       const SizedBox(height: 14),
                       Text(
@@ -136,12 +140,30 @@ class MainLayout extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        usuario?.rolLegible ??
-                            'Sesión pendiente de autenticación real',
+                        usuario?.rolLegible ?? 'Sesión no disponible',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: Colors.white.withValues(alpha: 0.78),
                             ),
                       ),
+                      if (usuario?.email != null) ...<Widget>[
+                        const SizedBox(height: 8),
+                        Text(
+                          usuario!.email,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Colors.white.withValues(alpha: 0.86),
+                              ),
+                        ),
+                      ],
+                      if (usuario?.unidadResidencial != null &&
+                          usuario!.unidadResidencial!.trim().isNotEmpty) ...<Widget>[
+                        const SizedBox(height: 4),
+                        Text(
+                          usuario.unidadResidencial!,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Colors.white.withValues(alpha: 0.74),
+                              ),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -159,7 +181,10 @@ class MainLayout extends StatelessWidget {
                 const Divider(height: 32),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.logout_rounded, color: AppColors.danger),
+                  leading: const Icon(
+                    Icons.logout_rounded,
+                    color: AppColors.danger,
+                  ),
                   title: const Text('Cerrar sesión'),
                   subtitle: const Text('Borra credenciales guardadas'),
                   onTap: () async {
