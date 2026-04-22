@@ -9,7 +9,7 @@
         <aside class="flex h-full flex-col bg-[linear-gradient(180deg,_#1A1A2E_0%,_#16213E_52%,_#0F3460_100%)] px-5 py-6 text-white shadow-glass">
             <div class="rounded-[24px] border border-white/10 bg-white/10 px-4 py-4 backdrop-blur-md">
                 <div class="flex items-center gap-3">
-                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-2xl shadow-soft">🛡️</div>
+                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-2xl shadow-soft">&#128737;&#65039;</div>
                     <div>
                         <p class="text-lg font-extrabold tracking-tight">CommuSafe</p>
                         <p class="text-sm text-slate-300">Remansos del Norte</p>
@@ -19,15 +19,15 @@
 
             <nav class="mt-8 space-y-2">
                 <a href="{% url 'panel_web:dashboard' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition {% if active_nav == 'dashboard' %}bg-white/15 text-white shadow-soft{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
-                    <span class="text-lg">📊</span>
+                    <span class="text-lg">&#128202;</span>
                     <span>Dashboard</span>
                 </a>
                 <a href="{% url 'panel_web:incidentes_lista' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition {% if active_nav == 'incidentes' %}bg-white/15 text-white shadow-soft{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
-                    <span class="text-lg">🚨</span>
+                    <span class="text-lg">&#128680;</span>
                     <span>Incidentes</span>
                 </a>
                 <a href="{% url 'panel_web:usuarios_lista' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition {% if active_nav == 'usuarios' %}bg-white/15 text-white shadow-soft{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
-                    <span class="text-lg">👥</span>
+                    <span class="text-lg">&#128101;</span>
                     <span>Usuarios</span>
                 </a>
             </nav>
@@ -51,7 +51,7 @@
                 <form method="post" action="{% url 'panel_web:logout' %}" class="mt-4">
                     {% csrf_token %}
                     <button type="submit" class="flex w-full items-center justify-center gap-2 rounded-2xl bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15">
-                        <span>↩️</span>
+                        <span>&#8617;&#65039;</span>
                         <span>Cerrar sesión</span>
                     </button>
                 </form>
@@ -63,7 +63,7 @@
         <header class="flex h-[88px] items-center justify-between px-4 sm:px-6 lg:px-10">
             <div class="flex items-center gap-3">
                 <button @click="mobileSidebar = true" class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-soft lg:hidden">
-                    ☰
+                    &#9776;
                 </button>
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Panel web</p>
@@ -91,12 +91,12 @@
                     <p class="text-lg font-extrabold">CommuSafe</p>
                     <p class="text-sm text-slate-300">Remansos del Norte</p>
                 </div>
-                <button @click="mobileSidebar = false" class="rounded-2xl bg-white/10 px-3 py-2 text-sm">✕</button>
+                <button @click="mobileSidebar = false" class="rounded-2xl bg-white/10 px-3 py-2 text-sm">&#10005;</button>
             </div>
             <nav class="mt-8 space-y-2">
-                <a href="{% url 'panel_web:dashboard' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold {% if active_nav == 'dashboard' %}bg-white/15{% else %}text-slate-300{% endif %}">📊 <span>Dashboard</span></a>
-                <a href="{% url 'panel_web:incidentes_lista' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold {% if active_nav == 'incidentes' %}bg-white/15{% else %}text-slate-300{% endif %}">🚨 <span>Incidentes</span></a>
-                <a href="{% url 'panel_web:usuarios_lista' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold {% if active_nav == 'usuarios' %}bg-white/15{% else %}text-slate-300{% endif %}">👥 <span>Usuarios</span></a>
+                <a href="{% url 'panel_web:dashboard' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold {% if active_nav == 'dashboard' %}bg-white/15{% else %}text-slate-300{% endif %}">&#128202; <span>Dashboard</span></a>
+                <a href="{% url 'panel_web:incidentes_lista' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold {% if active_nav == 'incidentes' %}bg-white/15{% else %}text-slate-300{% endif %}">&#128680; <span>Incidentes</span></a>
+                <a href="{% url 'panel_web:usuarios_lista' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold {% if active_nav == 'usuarios' %}bg-white/15{% else %}text-slate-300{% endif %}">&#128101; <span>Usuarios</span></a>
             </nav>
         </div>
     </div>
@@ -107,7 +107,7 @@
             <div x-data="{ visible: true }" x-show="visible" x-init="setTimeout(() => visible = false, 4500)" class="pointer-events-auto rounded-[20px] border px-4 py-4 shadow-glass backdrop-blur-md {% if 'error' in message.tags %}border-danger/20 bg-danger/10 text-danger{% elif 'success' in message.tags %}border-success/20 bg-success/10 text-success{% else %}border-primary/15 bg-white/80 text-primary{% endif %}">
                 <div class="flex items-start justify-between gap-4">
                     <p class="text-sm font-semibold leading-6">{{ message }}</p>
-                    <button @click="visible = false" class="text-xs font-bold opacity-70 transition hover:opacity-100">✕</button>
+                    <button @click="visible = false" class="text-xs font-bold opacity-70 transition hover:opacity-100">&#10005;</button>
                 </div>
             </div>
             {% endfor %}

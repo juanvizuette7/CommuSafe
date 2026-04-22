@@ -76,7 +76,7 @@
                     <span class="absolute left-[17px] top-8 h-full w-px bg-slate-200"></span>
                     {% endif %}
                     <span class="absolute left-0 top-0 flex h-9 w-9 items-center justify-center rounded-full {% if item.estado_nuevo == 'REGISTRADO' %}bg-slate-100 text-slate-700{% elif item.estado_nuevo == 'EN_PROCESO' %}bg-blue-100 text-blue-700{% elif item.estado_nuevo == 'RESUELTO' %}bg-success/10 text-success{% else %}bg-slate-900 text-white{% endif %}">
-                        {% if item.estado_nuevo == 'REGISTRADO' %}📝{% elif item.estado_nuevo == 'EN_PROCESO' %}🛠️{% elif item.estado_nuevo == 'RESUELTO' %}✅{% else %}🔒{% endif %}
+                        {% if item.estado_nuevo == 'REGISTRADO' %}&#128221;{% elif item.estado_nuevo == 'EN_PROCESO' %}&#128736;&#65039;{% elif item.estado_nuevo == 'RESUELTO' %}&#9989;{% else %}&#128274;{% endif %}
                     </span>
                     <div class="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
                         <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
