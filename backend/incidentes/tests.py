@@ -1,6 +1,7 @@
 ﻿"""Pruebas del modulo de incidentes."""
 
 from io import BytesIO
+from types import SimpleNamespace
 
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -12,6 +13,13 @@ from rest_framework.test import APITestCase
 from notificaciones.models import Notificacion
 
 from .models import EvidenciaIncidente, HistorialEstado, Incidente
+from .serializers import (
+    AgregarEvidenciaSerializer,
+    CambiarEstadoSerializer,
+    HistorialEstadoSerializer,
+    IncidenteCreateSerializer,
+    IncidenteListSerializer,
+)
 
 
 Usuario = get_user_model()
@@ -58,6 +66,120 @@ class IncidenteModelTests(APITestCase):
         )
 
         self.assertEqual(incidente.prioridad, Incidente.Prioridad.BAJA)
+
+
+class IncidenteSerializerTests(APITestCase):
+    """Pruebas enfocadas de serializers de incidentes."""
+
+    def setUp(self):
+        self.residente = Usuario.objects.create_user(
+            email="residente-serializer@test.com",
+            password="Segura2026*",
+            nombre="Laura",
+            apellido="Mora",
+            unidad_residencial="Apto 101 Torre A",
+            rol=Usuario.Rol.RESIDENTE,
+        )
+        self.vigilante = Usuario.objects.create_user(
+            email="vigilante-serializer@test.com",
+            password="Commu2026*",
+            nombre="Pedro",
+            apellido="Guardia",
+            rol=Usuario.Rol.VIGILANTE,
+            unidad_residencial="Porteria",
+        )
+        self.incidente = Incidente.objects.create(
+            titulo="Ruido en zonas comunes",
+            descripcion="Reporte para validar serializers.",
+            categoria=Incidente.Categoria.CONVIVENCIA,
+            reportado_por=self.residente,
+        )
+
+    def test_historial_sin_estado_anterior_muestra_label(self):
+        historial = HistorialEstado.objects.create(
+            incidente=self.incidente,
+            estado_anterior="",
+            estado_nuevo=Incidente.Estado.REGISTRADO,
+            cambiado_por=self.vigilante,
+            comentario="Registro inicial.",
+        )
+
+        data = HistorialEstadoSerializer(historial).data
+
+        self.assertEqual(data["estado_anterior_label"], "Sin estado previo")
+
+    def test_list_serializer_muestra_nombre_de_usuario_atendedor(self):
+        self.incidente.atendido_por = self.vigilante
+        self.incidente.total_evidencias = 0
+
+        data = IncidenteListSerializer(self.incidente).data
+
+        self.assertEqual(data["atendido_por_nombre"], self.vigilante.nombre_completo)
+
+    def test_create_serializer_soporta_files_sin_setlist(self):
+        class FakeFiles:
+            def __bool__(self):
+                return True
+
+            def getlist(self, name):
+                self.name = name
+                return [crear_imagen_prueba("evidencia.png")]
+
+        serializer = IncidenteCreateSerializer(
+            context={"request": SimpleNamespace(FILES=FakeFiles())}
+        )
+
+        data = serializer.to_internal_value(
+            {
+                "titulo": "Incidente con evidencia",
+                "descripcion": "Valida la rama dict sin setlist.",
+                "categoria": Incidente.Categoria.SEGURIDAD,
+                "ubicacion_referencia": "Porteria",
+            }
+        )
+
+        self.assertEqual(len(data["imagenes"]), 1)
+
+    def test_cambiar_estado_rechaza_comentario_corto_y_estado_igual(self):
+        request = SimpleNamespace(user=self.vigilante)
+
+        comentario_corto = CambiarEstadoSerializer(
+            data={"estado_nuevo": Incidente.Estado.EN_PROCESO, "comentario": "abc"},
+            context={"request": request, "incidente": self.incidente},
+        )
+        self.assertFalse(comentario_corto.is_valid())
+        self.assertIn("comentario", comentario_corto.errors)
+
+        mismo_estado = CambiarEstadoSerializer(
+            data={"estado_nuevo": Incidente.Estado.REGISTRADO, "comentario": "Mismo estado"},
+            context={"request": request, "incidente": self.incidente},
+        )
+        self.assertFalse(mismo_estado.is_valid())
+        self.assertIn("estado_nuevo", mismo_estado.errors)
+
+    def test_agregar_evidencia_rechaza_incidente_cerrado_y_crea_evidencia(self):
+        self.incidente.estado = Incidente.Estado.CERRADO
+        self.incidente.save(update_fields=["estado"])
+
+        cerrado = AgregarEvidenciaSerializer(
+            data={"imagen": crear_imagen_prueba("cerrado.png")},
+            context={"incidente": self.incidente},
+        )
+
+        self.assertFalse(cerrado.is_valid())
+        self.assertIn("imagen", cerrado.errors)
+
+        self.incidente.estado = Incidente.Estado.REGISTRADO
+        self.incidente.save(update_fields=["estado"])
+        valido = AgregarEvidenciaSerializer(
+            data={"imagen": crear_imagen_prueba("valida.png"), "descripcion": "Nueva evidencia"},
+            context={"incidente": self.incidente},
+        )
+
+        self.assertTrue(valido.is_valid(), valido.errors)
+        evidencia = valido.save()
+        self.assertEqual(evidencia.incidente, self.incidente)
+        self.assertEqual(evidencia.descripcion, "Nueva evidencia")
 
 
 class IncidenteAPITests(APITestCase):

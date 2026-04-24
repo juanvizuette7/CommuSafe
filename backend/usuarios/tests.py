@@ -17,6 +17,25 @@ Usuario = get_user_model()
 class UsuarioModelTests(APITestCase):
     """Pruebas basicas del modelo de usuario."""
 
+    def test_create_user_exige_email_y_password(self):
+        with self.assertRaisesMessage(ValueError, "El correo"):
+            Usuario.objects.create_user(
+                email="",
+                password="Segura2026*",
+                nombre="Sin",
+                apellido="Email",
+                rol=Usuario.Rol.VIGILANTE,
+            )
+
+        with self.assertRaisesMessage(ValueError, "La contrase"):
+            Usuario.objects.create_user(
+                email="sin-password@remansos.com",
+                password="",
+                nombre="Sin",
+                apellido="Password",
+                rol=Usuario.Rol.VIGILANTE,
+            )
+
     def test_crea_usuario_con_email_normalizado(self):
         usuario = Usuario.objects.create_user(
             email="USUARIO@REMANSOS.COM",
@@ -51,6 +70,43 @@ class UsuarioModelTests(APITestCase):
         self.assertTrue(usuario.is_superuser)
         self.assertTrue(usuario.is_staff)
         self.assertEqual(usuario.rol, Usuario.Rol.ADMINISTRADOR)
+
+    def test_create_superuser_valida_flags_obligatorios(self):
+        with self.assertRaisesMessage(ValueError, "is_staff=True"):
+            Usuario.objects.create_superuser(
+                email="staff-falso@remansos.com",
+                password="Admin2026*",
+                nombre="Root",
+                apellido="Admin",
+                unidad_residencial="Oficina",
+                is_staff=False,
+            )
+
+        with self.assertRaisesMessage(ValueError, "is_superuser=True"):
+            Usuario.objects.create_superuser(
+                email="superuser-falso@remansos.com",
+                password="Admin2026*",
+                nombre="Root",
+                apellido="Admin",
+                unidad_residencial="Oficina",
+                is_superuser=False,
+            )
+
+    def test_representacion_nombres_y_alias_is_active(self):
+        usuario = Usuario.objects.create_user(
+            email="alias@remansos.com",
+            password="Segura2026*",
+            nombre="Laura",
+            apellido="Rios",
+            rol=Usuario.Rol.VIGILANTE,
+        )
+
+        self.assertEqual(str(usuario), "Laura Rios <alias@remansos.com>")
+        self.assertEqual(usuario.get_full_name(), "Laura Rios")
+        self.assertEqual(usuario.get_short_name(), "Laura")
+
+        usuario.is_active = False
+        self.assertFalse(usuario.activo)
 
 
 class LoginJWTTests(APITestCase):
