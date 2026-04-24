@@ -4,7 +4,10 @@ import logging
 import os
 
 from django.conf import settings
-from pyfcm import FCMNotification
+try:
+    from pyfcm import FCMNotification
+except ImportError:  # pragma: no cover - dependencia opcional en tiempo de ejecución
+    FCMNotification = None
 
 from usuarios.models import Usuario
 
@@ -15,6 +18,8 @@ logger = logging.getLogger(__name__)
 
 
 def _configuracion_push_disponible():
+    if FCMNotification is None:
+        return False
     valor = (settings.FCM_SERVER_KEY or "").strip()
     return bool(valor and "REEMPLAZAR" not in valor.upper() and os.path.exists(valor))
 
