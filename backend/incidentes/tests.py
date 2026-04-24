@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from PIL import Image
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.test import APITestCase
 
 from notificaciones.models import Notificacion
@@ -156,6 +156,9 @@ class IncidenteSerializerTests(APITestCase):
         )
         self.assertFalse(mismo_estado.is_valid())
         self.assertIn("estado_nuevo", mismo_estado.errors)
+
+        with self.assertRaisesMessage(serializers.ValidationError, "al menos 5 caracteres"):
+            CambiarEstadoSerializer().validate_comentario("abc")
 
     def test_agregar_evidencia_rechaza_incidente_cerrado_y_crea_evidencia(self):
         self.incidente.estado = Incidente.Estado.CERRADO

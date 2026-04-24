@@ -1,0 +1,6 @@
+.pytest_cache/
+backend/pytest-cache-files-*/
+backend/.coverage
+backend/media/
+**/__pycache__/
+*.pyc
