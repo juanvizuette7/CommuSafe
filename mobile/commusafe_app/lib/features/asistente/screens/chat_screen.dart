@@ -98,7 +98,7 @@ class _ChatScreenState extends State<ChatScreen> {
       final response = await ApiService.post<Map<String, dynamic>>(
         AppConstants.chatEndpoint,
         data: <String, dynamic>{'mensaje': text, 'historial': historial},
-      );
+      ).timeout(const Duration(seconds: 8));
       final respuesta = response.data?['respuesta']?.toString().trim();
       setState(() {
         _mensajes.add(
@@ -111,14 +111,28 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
         );
       });
+    } on TimeoutException {
+      setState(() {
+        _mensajes.add(
+          MensajeModel(
+            contenido:
+                'El asistente tardó demasiado en responder. ${_respuestaLocal(text)}',
+            esDelUsuario: false,
+            timestamp: DateTime.now(),
+          ),
+        );
+      });
     } on DioException catch (error) {
+      final networkError = _isNetworkError(error);
       final detail = error.response?.data is Map<String, dynamic>
           ? (error.response!.data as Map<String, dynamic>)['detail']?.toString()
           : null;
       setState(() {
         _mensajes.add(
           MensajeModel(
-            contenido: detail?.trim().isNotEmpty == true
+            contenido: networkError
+                ? 'No pude conectarme con el backend. ${_respuestaLocal(text)}'
+                : detail?.trim().isNotEmpty == true
                 ? detail!
                 : 'No pude conectarme con el asistente. Intenta nuevamente en unos segundos.',
             esDelUsuario: false,
@@ -143,6 +157,48 @@ class _ChatScreenState extends State<ChatScreen> {
         _scrollToBottom();
       }
     }
+  }
+
+  bool _isNetworkError(DioException error) {
+    return error.response == null ||
+        error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.sendTimeout ||
+        error.type == DioExceptionType.receiveTimeout ||
+        error.type == DioExceptionType.connectionError;
+  }
+
+  String _respuestaLocal(String mensaje) {
+    final texto = mensaje.toLowerCase();
+
+    if (texto.contains('horario') ||
+        texto.contains('área') ||
+        texto.contains('area') ||
+        texto.contains('zonas comunes')) {
+      return 'Recuerda que las áreas comunes funcionan de 6:00 a. m. a 10:00 p. m.';
+    }
+    if (texto.contains('emergencia') ||
+        texto.contains('urgencia') ||
+        texto.contains('incendio') ||
+        texto.contains('ambulancia')) {
+      return 'Si hay una emergencia inminente, llama directamente a los servicios de emergencia y avisa a portería.';
+    }
+    if (texto.contains('incidente') || texto.contains('reporte')) {
+      return 'Para reportar un incidente entra a Incidentes, pulsa Nuevo, completa el formulario y adjunta evidencia si la tienes.';
+    }
+    if (texto.contains('convivencia') ||
+        texto.contains('norma') ||
+        texto.contains('ruido') ||
+        texto.contains('mascota')) {
+      return 'Las normas básicas incluyen respetar horarios de descanso, cuidar zonas comunes y reportar situaciones de convivencia desde CommuSafe.';
+    }
+    if (texto.contains('administración') ||
+        texto.contains('administracion') ||
+        texto.contains('cuota') ||
+        texto.contains('pago')) {
+      return 'Para valores de cuotas, cartera o trámites específicos debes contactar a la administración del conjunto.';
+    }
+
+    return 'Verifica que el backend esté encendido y vuelve a intentarlo.';
   }
 
   @override

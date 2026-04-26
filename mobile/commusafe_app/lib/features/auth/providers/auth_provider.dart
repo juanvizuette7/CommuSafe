@@ -169,6 +169,10 @@ class AuthProvider extends ChangeNotifier {
   }
 
   String _extractErrorMessage(DioException error) {
+    if (_isNetworkError(error)) {
+      return 'No se pudo conectar con el backend. Verifica que Django esté ejecutándose antes de iniciar sesión.';
+    }
+
     final data = error.response?.data;
     if (data is Map<String, dynamic>) {
       final detail = data['detail'];
@@ -197,5 +201,13 @@ class AuthProvider extends ChangeNotifier {
     }
 
     return 'No fue posible completar la autenticación. Verifica tus credenciales.';
+  }
+
+  bool _isNetworkError(DioException error) {
+    return error.response == null ||
+        error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.sendTimeout ||
+        error.type == DioExceptionType.receiveTimeout ||
+        error.type == DioExceptionType.connectionError;
   }
 }

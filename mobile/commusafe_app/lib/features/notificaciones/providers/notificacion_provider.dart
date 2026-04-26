@@ -182,6 +182,10 @@ class NotificacionProvider extends ChangeNotifier {
   }
 
   String _extractErrorMessage(DioException error) {
+    if (_isNetworkError(error)) {
+      return 'No se pudo conectar con el backend. Verifica que Django esté ejecutándose en http://10.0.2.2:8000.';
+    }
+
     final data = error.response?.data;
     if (data is Map<String, dynamic>) {
       final detail = data['detail'];
@@ -194,5 +198,13 @@ class NotificacionProvider extends ChangeNotifier {
       }
     }
     return 'No fue posible completar la operación con notificaciones.';
+  }
+
+  bool _isNetworkError(DioException error) {
+    return error.response == null ||
+        error.type == DioExceptionType.connectionTimeout ||
+        error.type == DioExceptionType.sendTimeout ||
+        error.type == DioExceptionType.receiveTimeout ||
+        error.type == DioExceptionType.connectionError;
   }
 }

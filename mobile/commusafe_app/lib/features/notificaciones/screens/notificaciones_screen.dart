@@ -70,6 +70,11 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
         onRefresh: provider.cargarNotificaciones,
         child: provider.isLoading && items.isEmpty
             ? const _NotificationsLoading()
+            : provider.errorMessage != null && items.isEmpty
+            ? _NotificationsError(
+                message: provider.errorMessage!,
+                onRetry: provider.cargarNotificaciones,
+              )
             : items.isEmpty
             ? const _EmptyNotifications()
             : ListView.separated(
@@ -265,6 +270,32 @@ class _EmptyNotifications extends StatelessWidget {
           title: 'Sin notificaciones por ahora',
           message:
               'Cuando cambie el estado de un incidente o llegue un aviso, aparecerá aquí.',
+        ),
+      ],
+    );
+  }
+}
+
+class _NotificationsError extends StatelessWidget {
+  const _NotificationsError({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(20),
+      children: <Widget>[
+        const SizedBox(height: 120),
+        EmptyStateCard(
+          icon: Icons.cloud_off_rounded,
+          title: 'No se pudieron cargar las alertas',
+          message: message,
+          actionLabel: 'Reintentar',
+          onAction: onRetry,
+          toneColor: AppColors.danger,
         ),
       ],
     );

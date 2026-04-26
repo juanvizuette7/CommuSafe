@@ -5,7 +5,7 @@ class AppConstants {
   static const String residentialComplexName = 'Remansos del Norte';
   static const String baseUrl = 'http://10.0.2.2:8000';
 
-  static const Duration requestTimeout = Duration(seconds: 30);
+  static const Duration requestTimeout = Duration(seconds: 10);
 
   static const String loginEndpoint = '/api/auth/login/';
   static const String refreshEndpoint = '/api/auth/refresh/';

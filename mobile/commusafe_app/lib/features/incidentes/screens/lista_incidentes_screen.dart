@@ -274,15 +274,32 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
                             EmptyStateCard(
-                              icon: provider.tieneFiltrosActivos
+                              icon: provider.errorMessage != null
+                                  ? Icons.cloud_off_rounded
+                                  : provider.tieneFiltrosActivos
                                   ? Icons.filter_alt_off_rounded
                                   : Icons.inbox_rounded,
-                              title: provider.tieneFiltrosActivos
+                              title: provider.errorMessage != null
+                                  ? 'No se pudieron cargar los incidentes'
+                                  : provider.tieneFiltrosActivos
                                   ? 'No hay resultados con esos filtros'
                                   : 'Aún no hay incidentes reportados',
-                              message: provider.tieneFiltrosActivos
-                                  ? 'Prueba ajustando la categoría o la búsqueda para encontrar incidentes.'
-                                  : 'Cuando se registre un nuevo incidente aparecerá aquí con su estado y prioridad.',
+                              message:
+                                  provider.errorMessage ??
+                                  (provider.tieneFiltrosActivos
+                                      ? 'Prueba ajustando la categoría o la búsqueda para encontrar incidentes.'
+                                      : 'Cuando se registre un nuevo incidente aparecerá aquí con su estado y prioridad.'),
+                              actionLabel: provider.errorMessage != null
+                                  ? 'Reintentar'
+                                  : null,
+                              onAction: provider.errorMessage != null
+                                  ? () => context
+                                        .read<IncidenteProvider>()
+                                        .cargarIncidentes(refresh: true)
+                                  : null,
+                              toneColor: provider.errorMessage != null
+                                  ? AppColors.danger
+                                  : null,
                             ),
                             if (provider.tieneFiltrosActivos) ...<Widget>[
                               const SizedBox(height: 18),
