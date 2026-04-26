@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Count, Max, Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -15,6 +15,9 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 from incidentes.models import Incidente
 from incidentes.serializers import CambiarEstadoSerializer
 from incidentes.services import cambiar_estado_incidente
+from notificaciones.models import Notificacion
+from notificaciones.serializers import AvisoComunitarioSerializer
+from notificaciones.services import AudienciaAviso, notificar_aviso_comunitario
 from usuarios.models import Usuario
 
 
@@ -270,6 +273,67 @@ def usuarios_lista(request):
         roles=Usuario.Rol.choices,
     )
     return render(request, "panel/usuarios_lista.html", contexto)
+
+
+@panel_login_required
+@require_http_methods(["GET", "POST"])
+def avisos_comunitarios(request):
+    """Permite enviar avisos o alertas manuales a usuarios segmentados."""
+
+    if request.method == "POST":
+        datos = request.POST.copy()
+        if request.user.es_vigilante:
+            datos["audiencia"] = AudienciaAviso.RESIDENTES
+
+        serializer = AvisoComunitarioSerializer(data=datos, context={"request": request})
+        if serializer.is_valid():
+            resultado = notificar_aviso_comunitario(**serializer.validated_data)
+            messages.success(
+                request,
+                f"El aviso fue enviado a {resultado['total_destinatarios']} usuario(s).",
+            )
+            return redirect("panel_web:avisos")
+
+        for errores in serializer.errors.values():
+            if isinstance(errores, (list, tuple)):
+                for error in errores:
+                    messages.error(request, str(error))
+            else:
+                messages.error(request, str(errores))
+        return redirect("panel_web:avisos")
+
+    audiencias = AudienciaAviso.CHOICES
+    if request.user.es_vigilante:
+        audiencias = ((AudienciaAviso.RESIDENTES, "Residentes activos"),)
+
+    avisos_recientes = (
+        Notificacion.objects.filter(
+            incidente_relacionado__isnull=True,
+            tipo__in=[Notificacion.Tipo.AVISO_ADMIN, Notificacion.Tipo.EMERGENCIA],
+        )
+        .values("titulo", "cuerpo", "tipo")
+        .annotate(
+            total_destinatarios=Count("id"),
+            total_leidas=Count("id", filter=Q(leida=True)),
+            fecha=Max("fecha_envio"),
+        )
+        .order_by("-fecha")[:10]
+    )
+
+    contexto = _contexto_base_panel(
+        request,
+        page_title="Avisos",
+        page_subtitle="Comunicación directa con residentes y equipo operativo",
+        active_nav="avisos",
+        audiencias=audiencias,
+        tipos=[
+            (Notificacion.Tipo.AVISO_ADMIN, "Aviso informativo"),
+            (Notificacion.Tipo.EMERGENCIA, "Alerta de emergencia"),
+        ],
+        avisos_recientes=avisos_recientes,
+        audiencia_forzada_residentes=request.user.es_vigilante,
+    )
+    return render(request, "panel/avisos.html", contexto)
 
 
 @panel_login_required

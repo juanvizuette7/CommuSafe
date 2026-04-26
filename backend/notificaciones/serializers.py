@@ -3,6 +3,7 @@
 from rest_framework import serializers
 
 from .models import Notificacion
+from .services import AudienciaAviso
 
 
 class NotificacionSerializer(serializers.ModelSerializer):
@@ -34,3 +35,28 @@ class NotificacionSerializer(serializers.ModelSerializer):
         if not obj.incidente_relacionado:
             return ""
         return obj.incidente_relacionado.titulo
+
+
+class AvisoComunitarioSerializer(serializers.Serializer):
+    """Valida la creación manual de avisos comunitarios."""
+
+    titulo = serializers.CharField(max_length=150, min_length=5)
+    cuerpo = serializers.CharField(min_length=10, max_length=1200)
+    audiencia = serializers.ChoiceField(choices=AudienciaAviso.CHOICES)
+    tipo = serializers.ChoiceField(
+        choices=[
+            (Notificacion.Tipo.AVISO_ADMIN, "Aviso administrativo"),
+            (Notificacion.Tipo.EMERGENCIA, "Alerta de emergencia"),
+        ],
+        default=Notificacion.Tipo.AVISO_ADMIN,
+    )
+
+    def validate(self, attrs):
+        usuario = self.context["request"].user
+        if usuario.es_vigilante and attrs["audiencia"] != AudienciaAviso.RESIDENTES:
+            raise serializers.ValidationError(
+                "El personal de vigilancia solo puede enviar avisos a residentes."
+            )
+        attrs["titulo"] = attrs["titulo"].strip()
+        attrs["cuerpo"] = attrs["cuerpo"].strip()
+        return attrs

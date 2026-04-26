@@ -13,10 +13,12 @@ from incidentes.models import Incidente
 
 from .models import Notificacion
 from .services import (
+    AudienciaAviso,
     _configuracion_push_disponible,
     _crear_registro_y_enviar_push,
     _intentar_enviar_push,
     notificar_aviso_admin,
+    notificar_aviso_comunitario,
     notificar_cambio_estado,
     notificar_incidente_nuevo,
 )
@@ -132,6 +134,21 @@ class NotificacionServicesTests(APITestCase):
 
         self.assertEqual(Notificacion.objects.filter(tipo=Notificacion.Tipo.AVISO_ADMIN).count(), 4)
 
+    def test_notificar_aviso_comunitario_segmenta_residentes(self):
+        resultado = notificar_aviso_comunitario(
+            titulo="Reunion de residentes",
+            cuerpo="La administracion convoca a reunion informativa.",
+            audiencia=AudienciaAviso.RESIDENTES,
+            tipo=Notificacion.Tipo.AVISO_ADMIN,
+        )
+
+        destinatarios = set(Notificacion.objects.values_list("destinatario__email", flat=True))
+        self.assertEqual(resultado["total_destinatarios"], 2)
+        self.assertIn(self.residente_1.email, destinatarios)
+        self.assertIn(self.residente_2.email, destinatarios)
+        self.assertNotIn(self.admin.email, destinatarios)
+        self.assertNotIn(self.vigilante.email, destinatarios)
+
     def test_configuracion_push_disponible_valida_dependencia_clave_y_archivo(self):
         with patch("notificaciones.services.FCMNotification", None):
             self.assertFalse(_configuracion_push_disponible())
@@ -214,6 +231,23 @@ class NotificacionViewSetTests(APITestCase):
     """Pruebas de endpoints de notificaciones."""
 
     def setUp(self):
+        self.admin = Usuario.objects.create_user(
+            email="admin-avisos@test.com",
+            password="Admin2026*",
+            nombre="Carlos",
+            apellido="Admin",
+            rol=Usuario.Rol.ADMINISTRADOR,
+            is_staff=True,
+            unidad_residencial="Oficina",
+        )
+        self.vigilante = Usuario.objects.create_user(
+            email="vigilante-avisos@test.com",
+            password="Commu2026*",
+            nombre="Pedro",
+            apellido="Guardia",
+            rol=Usuario.Rol.VIGILANTE,
+            unidad_residencial="Porteria",
+        )
         self.residente = Usuario.objects.create_user(
             email="residente-view@test.com",
             password="Commu2026*",
@@ -288,3 +322,52 @@ class NotificacionViewSetTests(APITestCase):
     def test_endpoint_requiere_autenticacion(self):
         response = self.client.get(reverse("notificaciones:notificacion-list"))
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_admin_puede_crear_aviso_para_todos(self):
+        self.client.force_authenticate(self.admin)
+
+        response = self.client.post(
+            reverse("notificaciones:notificacion-avisos"),
+            {
+                "titulo": "Mantenimiento general",
+                "cuerpo": "Manana se realizara mantenimiento preventivo en areas comunes.",
+                "audiencia": AudienciaAviso.TODOS,
+                "tipo": Notificacion.Tipo.AVISO_ADMIN,
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["total_destinatarios"], 4)
+
+    def test_vigilante_solo_puede_enviar_aviso_a_residentes(self):
+        self.client.force_authenticate(self.vigilante)
+
+        response = self.client.post(
+            reverse("notificaciones:notificacion-avisos"),
+            {
+                "titulo": "Alerta de porteria",
+                "cuerpo": "Se solicita a los residentes revisar la informacion enviada.",
+                "audiencia": AudienciaAviso.ADMINISTRADORES,
+                "tipo": Notificacion.Tipo.EMERGENCIA,
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_residente_no_puede_crear_avisos(self):
+        self.client.force_authenticate(self.residente)
+
+        response = self.client.post(
+            reverse("notificaciones:notificacion-avisos"),
+            {
+                "titulo": "Mensaje no autorizado",
+                "cuerpo": "Un residente no debe crear avisos generales.",
+                "audiencia": AudienciaAviso.RESIDENTES,
+                "tipo": Notificacion.Tipo.AVISO_ADMIN,
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

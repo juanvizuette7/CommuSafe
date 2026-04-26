@@ -4,8 +4,11 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from usuarios.permissions import EsAdministradorOVigilante
+
 from .models import Notificacion
-from .serializers import NotificacionSerializer
+from .serializers import AvisoComunitarioSerializer, NotificacionSerializer
+from .services import notificar_aviso_comunitario
 
 
 class NotificacionViewSet(viewsets.ReadOnlyModelViewSet):
@@ -41,4 +44,23 @@ class NotificacionViewSet(viewsets.ReadOnlyModelViewSet):
                 "total_actualizadas": actualizadas,
             },
             status=status.HTTP_200_OK,
+        )
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="avisos",
+        permission_classes=[permissions.IsAuthenticated, EsAdministradorOVigilante],
+    )
+    def avisos(self, request):
+        serializer = AvisoComunitarioSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+
+        resultado = notificar_aviso_comunitario(**serializer.validated_data)
+        return Response(
+            {
+                "mensaje": "El aviso fue enviado correctamente.",
+                **resultado,
+            },
+            status=status.HTTP_201_CREATED,
         )

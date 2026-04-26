@@ -3,6 +3,7 @@
 from django.urls import path
 
 from .views import (
+    avisos_comunitarios,
     dashboard,
     incidente_detalle,
     incidentes_lista,
@@ -23,6 +24,7 @@ urlpatterns = [
     path("dashboard/", dashboard, name="dashboard"),
     path("incidentes/", incidentes_lista, name="incidentes_lista"),
     path("incidentes/<uuid:incidente_id>/", incidente_detalle, name="incidente_detalle"),
+    path("avisos/", avisos_comunitarios, name="avisos"),
     path("usuarios/", usuarios_lista, name="usuarios_lista"),
     path("usuarios/<uuid:usuario_id>/toggle-activo/", usuario_toggle_activo, name="usuario_toggle_activo"),
 ]

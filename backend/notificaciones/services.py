@@ -17,6 +17,20 @@ from .models import Notificacion
 logger = logging.getLogger(__name__)
 
 
+class AudienciaAviso:
+    TODOS = "TODOS"
+    RESIDENTES = "RESIDENTES"
+    VIGILANTES = "VIGILANTES"
+    ADMINISTRADORES = "ADMINISTRADORES"
+
+    CHOICES = (
+        (TODOS, "Todos los usuarios activos"),
+        (RESIDENTES, "Residentes activos"),
+        (VIGILANTES, "Vigilantes activos"),
+        (ADMINISTRADORES, "Administradores activos"),
+    )
+
+
 def _configuracion_push_disponible():
     if FCMNotification is None:
         return False
@@ -135,10 +149,52 @@ def notificar_cambio_estado(incidente, estado_nuevo):
 def notificar_aviso_admin(titulo, cuerpo):
     """Notifica un aviso administrativo a todos los usuarios activos del sistema."""
 
-    for destinatario in Usuario.objects.filter(activo=True).iterator():
-        _crear_registro_y_enviar_push(
+    return notificar_aviso_comunitario(
+        titulo=titulo,
+        cuerpo=cuerpo,
+        audiencia=AudienciaAviso.TODOS,
+        tipo=Notificacion.Tipo.AVISO_ADMIN,
+    )
+
+
+def _usuarios_por_audiencia(audiencia):
+    queryset = Usuario.objects.filter(activo=True)
+    if audiencia == AudienciaAviso.RESIDENTES:
+        return queryset.filter(rol=Usuario.Rol.RESIDENTE)
+    if audiencia == AudienciaAviso.VIGILANTES:
+        return queryset.filter(rol=Usuario.Rol.VIGILANTE)
+    if audiencia == AudienciaAviso.ADMINISTRADORES:
+        return queryset.filter(rol=Usuario.Rol.ADMINISTRADOR)
+    return queryset
+
+
+def notificar_aviso_comunitario(
+    *,
+    titulo,
+    cuerpo,
+    audiencia=AudienciaAviso.TODOS,
+    tipo=Notificacion.Tipo.AVISO_ADMIN,
+):
+    """Crea un aviso manual segmentado por audiencia y devuelve su resultado."""
+
+    destinatarios = _usuarios_por_audiencia(audiencia)
+    total = 0
+    enviados_push = 0
+
+    for destinatario in destinatarios.iterator():
+        notificacion = _crear_registro_y_enviar_push(
             destinatario=destinatario,
             titulo=titulo,
             cuerpo=cuerpo,
-            tipo=Notificacion.Tipo.AVISO_ADMIN,
+            tipo=tipo,
         )
+        total += 1
+        if notificacion.enviada_push:
+            enviados_push += 1
+
+    return {
+        "total_destinatarios": total,
+        "push_enviadas": enviados_push,
+        "audiencia": audiencia,
+        "tipo": tipo,
+    }
