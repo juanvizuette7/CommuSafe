@@ -2,6 +2,10 @@
 
 ## 1. Enfoque general
 
+CommuSafe se desarrolla bajo el modelo incremental. Cada sprint representa un incremento funcional que se construye sobre los incrementos anteriores, se integra con el sistema existente y deja una version mas completa del producto.
+
+El proyecto no sigue una entrega unica al final. La estrategia consiste en avanzar por capas: primero documentacion y arquitectura, luego backend, despues panel web, posteriormente app movil y finalmente pruebas, datos de demostracion y despliegue. Esta organizacion permite validar el sistema progresivamente y reducir riesgos tecnicos.
+
 La ruta de desarrollo se ejecutará en 11 sprints numerados del 0 al 10. Aunque el enunciado los llama "10 sprints", el alcance definido incluye explícitamente desde Sprint 0 hasta Sprint 10, por lo que la planificación real contempla once iteraciones.
 
 La secuencia está organizada para minimizar retrabajo:
@@ -10,6 +14,27 @@ La secuencia está organizada para minimizar retrabajo:
 - Luego se consolida el backend y sus reglas de negocio.
 - Después se construye la interfaz web administrativa.
 - Finalmente se desarrolla la app Flutter y se cierra con pruebas, demo y despliegue.
+
+Documento metodologico relacionado:
+
+- `docs/MODELO_INCREMENTAL.md`
+
+## 1.1 Aplicacion del modelo incremental
+
+El modelo incremental se evidencia en que ningun sprint queda aislado:
+
+- Sprint 1 usa la arquitectura definida en Sprint 0.
+- Sprint 2 usa usuarios y autenticacion del Sprint 1.
+- Sprint 3 usa eventos de incidentes del Sprint 2.
+- Sprint 4 administra visualmente los datos del backend ya construido.
+- Sprint 5 prepara la base movil para consumir la API.
+- Sprint 6 conecta la app movil con autenticacion real.
+- Sprint 7 agrega incidentes moviles sobre la autenticacion y API existentes.
+- Sprint 8 incorpora comunicacion y asistencia sobre los modulos previos.
+- Sprint 9 valida el producto completo.
+- Sprint 10 formaliza entrega y despliegue.
+
+Asi, cada incremento aporta funcionalidad nueva sin reemplazar lo anterior.
 
 ## 2. Sprints del proyecto
 

@@ -17,7 +17,7 @@ void main() {
       ),
     );
 
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 1200));
 
     expect(find.text('CommuSafe'), findsOneWidget);
     expect(find.text('Ingresar'), findsOneWidget);

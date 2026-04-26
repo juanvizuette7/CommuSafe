@@ -19,6 +19,7 @@ El sistema se compone de tres superficies principales:
 - Persistencia simple en desarrollo con SQLite y preparada para PostgreSQL en producción.
 - Separación clara entre lógica de dominio, presentación web, API y servicios externos.
 - Diseño evolutivo: el sistema inicia con una base monolítica bien organizada, lista para crecer sin una migración traumática a microservicios.
+- Desarrollo incremental: cada sprint agrega un incremento funcional integrado con los modulos anteriores, de modo que el sistema crece por versiones acumulativas y verificables.
 
 ## 3. Componentes del sistema
 
