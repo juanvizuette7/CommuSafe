@@ -1,0 +1,198 @@
+import 'dart:async';
+
+import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+
+import '../../../core/constants/app_constants.dart';
+import '../../../core/services/api_service.dart';
+import '../models/notificacion_model.dart';
+
+class NotificacionProvider extends ChangeNotifier {
+  final List<NotificacionModel> _notificaciones = <NotificacionModel>[];
+
+  Timer? _pollingTimer;
+  bool _isLoading = false;
+  bool _isPolling = false;
+  int _noLeidasCount = 0;
+  String? _errorMessage;
+
+  List<NotificacionModel> get notificaciones =>
+      List<NotificacionModel>.unmodifiable(_notificaciones);
+  List<NotificacionModel> get items => notificaciones;
+  bool get isLoading => _isLoading;
+  bool get loading => _isLoading;
+  bool get isPolling => _isPolling;
+  int get noLeidasCount => _noLeidasCount;
+  String? get errorMessage => _errorMessage;
+
+  Future<void> cargarNotificaciones() async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await ApiService.get<dynamic>(
+        AppConstants.notificationsEndpoint,
+      );
+      final payload = _normalizeMap(response.data);
+      final rawResults = response.data is List
+          ? response.data as List<dynamic>
+          : (payload['results'] is List
+                ? payload['results'] as List
+                : <dynamic>[]);
+
+      final nuevas = rawResults
+          .map((item) => NotificacionModel.fromJson(_normalizeMap(item)))
+          .toList();
+
+      _notificaciones
+        ..clear()
+        ..addAll(nuevas);
+      _noLeidasCount = nuevas.where((item) => !item.leida).length;
+      _errorMessage = null;
+    } on DioException catch (error) {
+      _errorMessage = _extractErrorMessage(error);
+    } catch (_) {
+      _errorMessage = 'No fue posible cargar las notificaciones.';
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> cargarConteoNoLeidas() async {
+    try {
+      final response = await ApiService.get<Map<String, dynamic>>(
+        AppConstants.unreadNotificationsCountEndpoint,
+      );
+      final payload = _normalizeMap(response.data);
+      _noLeidasCount =
+          _toInt(payload['no_leidas']) ??
+          _toInt(payload['count']) ??
+          _noLeidasCount;
+      notifyListeners();
+    } catch (_) {
+      // El polling no debe interrumpir la experiencia principal.
+    }
+  }
+
+  Future<void> marcarLeida(String id) async {
+    final index = _notificaciones.indexWhere((item) => item.id == id);
+    if (index < 0) {
+      return;
+    }
+
+    final current = _notificaciones[index];
+    if (current.leida) {
+      return;
+    }
+
+    _notificaciones[index] = current.copyWith(leida: true);
+    _noLeidasCount = (_noLeidasCount - 1).clamp(0, 999999);
+    notifyListeners();
+
+    try {
+      await ApiService.post<Map<String, dynamic>>(
+        '${AppConstants.notificationsEndpoint}$id/leer/',
+      );
+      await cargarConteoNoLeidas();
+    } catch (_) {
+      _notificaciones[index] = current;
+      _noLeidasCount += 1;
+      notifyListeners();
+    }
+  }
+
+  Future<void> marcarTodasLeidas() async {
+    if (_notificaciones.isEmpty && _noLeidasCount == 0) {
+      return;
+    }
+
+    final previous = List<NotificacionModel>.from(_notificaciones);
+    for (var i = 0; i < _notificaciones.length; i++) {
+      _notificaciones[i] = _notificaciones[i].copyWith(leida: true);
+    }
+    _noLeidasCount = 0;
+    notifyListeners();
+
+    try {
+      await ApiService.post<Map<String, dynamic>>(
+        '${AppConstants.notificationsEndpoint}leer-todas/',
+      );
+      await cargarConteoNoLeidas();
+    } catch (_) {
+      _notificaciones
+        ..clear()
+        ..addAll(previous);
+      _noLeidasCount = previous.where((item) => !item.leida).length;
+      notifyListeners();
+    }
+  }
+
+  void startPolling() {
+    if (_isPolling) {
+      return;
+    }
+
+    _isPolling = true;
+    unawaited(cargarConteoNoLeidas());
+    _pollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
+      unawaited(cargarConteoNoLeidas());
+    });
+  }
+
+  void stopPolling() {
+    _pollingTimer?.cancel();
+    _pollingTimer = null;
+    _isPolling = false;
+  }
+
+  void reset() {
+    stopPolling();
+    _notificaciones.clear();
+    _isLoading = false;
+    _noLeidasCount = 0;
+    _errorMessage = null;
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    stopPolling();
+    super.dispose();
+  }
+
+  Map<String, dynamic> _normalizeMap(dynamic value) {
+    if (value is Map<String, dynamic>) {
+      return value;
+    }
+    if (value is Map) {
+      return value.map(
+        (dynamic key, dynamic val) => MapEntry(key.toString(), val),
+      );
+    }
+    return <String, dynamic>{};
+  }
+
+  int? _toInt(dynamic value) {
+    if (value is int) {
+      return value;
+    }
+    return int.tryParse(value?.toString() ?? '');
+  }
+
+  String _extractErrorMessage(DioException error) {
+    final data = error.response?.data;
+    if (data is Map<String, dynamic>) {
+      final detail = data['detail'];
+      if (detail is String && detail.trim().isNotEmpty) {
+        return detail;
+      }
+      final mensaje = data['mensaje'];
+      if (mensaje is String && mensaje.trim().isNotEmpty) {
+        return mensaje;
+      }
+    }
+    return 'No fue posible completar la operación con notificaciones.';
+  }
+}

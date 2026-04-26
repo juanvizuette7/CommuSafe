@@ -57,10 +57,7 @@ class AuthProvider extends ChangeNotifier {
     return hasSession;
   }
 
-  Future<bool> login({
-    required String email,
-    required String password,
-  }) async {
+  Future<bool> login({required String email, required String password}) async {
     _isLoading = true;
     _errorMessage = null;
     notifyListeners();
@@ -72,9 +69,7 @@ class AuthProvider extends ChangeNotifier {
           'email': email.trim().toLowerCase(),
           'password': password,
         },
-        options: Options(
-          extra: <String, dynamic>{'omitAuth': true},
-        ),
+        options: Options(extra: <String, dynamic>{'omitAuth': true}),
       );
 
       final payload = response.data ?? <String, dynamic>{};

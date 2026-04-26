@@ -96,16 +96,17 @@ class NotificacionModel {
           ? data['tipo_label'].toString().trim()
           : _tipoLabel(tipo),
       leida: data['leida'] == true,
-      fechaEnvio: DateTime.tryParse(data['fecha_envio']?.toString() ?? '') ??
+      fechaEnvio:
+          DateTime.tryParse(data['fecha_envio']?.toString() ?? '') ??
           DateTime.now(),
       incidenteRelacionado:
           data['incidente_relacionado']?.toString().trim().isNotEmpty == true
-              ? data['incidente_relacionado'].toString().trim()
-              : null,
+          ? data['incidente_relacionado'].toString().trim()
+          : null,
       incidenteTitulo:
           data['incidente_titulo']?.toString().trim().isNotEmpty == true
-              ? data['incidente_titulo'].toString().trim()
-              : null,
+          ? data['incidente_titulo'].toString().trim()
+          : null,
     );
   }
 

@@ -79,18 +79,18 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
         return;
       }
       context.read<IncidenteProvider>().aplicarFiltro(
-            categoria: context.read<IncidenteProvider>().categoriaActiva,
-            busqueda: value,
-          );
+        categoria: context.read<IncidenteProvider>().categoriaActiva,
+        busqueda: value,
+      );
     });
   }
 
   Future<void> _clearFilters() async {
     _searchController.clear();
     await context.read<IncidenteProvider>().aplicarFiltro(
-          categoria: null,
-          busqueda: '',
-        );
+      categoria: null,
+      busqueda: '',
+    );
   }
 
   Future<void> _goToCreate() async {
@@ -219,7 +219,8 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
                                   const SizedBox(width: 10),
                               itemBuilder: (BuildContext context, int index) {
                                 final category = _categories[index];
-                                final isActive = provider.categoriaActiva ==
+                                final isActive =
+                                    provider.categoriaActiva ==
                                     category['value'];
                                 return ChoiceChip(
                                   label: Text(category['label'] ?? ''),
@@ -310,24 +311,24 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
                               ),
                               tween: Tween<double>(begin: 0, end: 1),
                               curve: Curves.easeOutCubic,
-                              builder: (
-                                BuildContext context,
-                                double value,
-                                Widget? child,
-                              ) {
-                                return Opacity(
-                                  opacity: value,
-                                  child: Transform.translate(
-                                    offset: Offset(0, (1 - value) * 22),
-                                    child: child,
-                                  ),
-                                );
-                              },
+                              builder:
+                                  (
+                                    BuildContext context,
+                                    double value,
+                                    Widget? child,
+                                  ) {
+                                    return Opacity(
+                                      opacity: value,
+                                      child: Transform.translate(
+                                        offset: Offset(0, (1 - value) * 22),
+                                        child: child,
+                                      ),
+                                    );
+                                  },
                               child: IncidenteCard(
                                 incidente: incidente,
-                                onTap: () => context.push(
-                                  '/incidentes/${incidente.id}',
-                                ),
+                                onTap: () =>
+                                    context.push('/incidentes/${incidente.id}'),
                               ),
                             ),
                           );
@@ -442,9 +443,7 @@ class _IncidentCommandPanel extends StatelessWidget {
                             filtered
                                 ? 'Vista filtrada'
                                 : 'Monitoreo comunitario activo',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
+                            style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(
                                   color: Colors.white,
                                   fontWeight: FontWeight.w900,
@@ -455,9 +454,7 @@ class _IncidentCommandPanel extends StatelessWidget {
                             filtered
                                 ? 'La lista responde a tus criterios actuales.'
                                 : 'Seguimiento en tiempo real para Remansos del Norte.',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall
+                            style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
                                   color: Colors.white.withValues(alpha: 0.82),
                                   height: 1.45,
@@ -525,19 +522,16 @@ class _MetricPill extends StatelessWidget {
             TweenAnimationBuilder<int>(
               duration: const Duration(milliseconds: 550),
               tween: IntTween(begin: 0, end: value),
-              builder: (
-                BuildContext context,
-                int animatedValue,
-                Widget? child,
-              ) {
-                return Text(
-                  animatedValue.toString(),
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              builder:
+                  (BuildContext context, int animatedValue, Widget? child) {
+                    return Text(
+                      animatedValue.toString(),
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         color: color,
                         fontWeight: FontWeight.w900,
                       ),
-                );
-              },
+                    );
+                  },
             ),
             const SizedBox(height: 2),
             Text(
@@ -545,9 +539,9 @@ class _MetricPill extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.78),
-                    fontWeight: FontWeight.w700,
-                  ),
+                color: Colors.white.withValues(alpha: 0.78),
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ],
         ),

@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../incidentes/providers/incidente_provider.dart';
-import '../../notificaciones/providers/notificaciones_provider.dart';
+import '../../notificaciones/providers/notificacion_provider.dart';
 import '../models/usuario_model.dart';
 import '../providers/auth_provider.dart';
 
@@ -15,11 +15,11 @@ class PerfilScreen extends StatelessWidget {
   Future<void> _logout(BuildContext context) async {
     final authProvider = context.read<AuthProvider>();
     final incidenteProvider = context.read<IncidenteProvider>();
-    final notificacionesProvider = context.read<NotificacionesProvider>();
+    final notificacionProvider = context.read<NotificacionProvider>();
 
     await authProvider.logout();
     incidenteProvider.reset();
-    notificacionesProvider.reset();
+    notificacionProvider.reset();
     if (!context.mounted) {
       return;
     }
@@ -106,9 +106,7 @@ class PerfilScreen extends StatelessWidget {
 }
 
 class _ProfileHeader extends StatelessWidget {
-  const _ProfileHeader({
-    required this.usuario,
-  });
+  const _ProfileHeader({required this.usuario});
 
   final UsuarioModel usuario;
 
@@ -130,10 +128,7 @@ class _ProfileHeader extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: <Color>[
-            AppColors.primary,
-            AppColors.accent,
-          ],
+          colors: <Color>[AppColors.primary, AppColors.accent],
         ),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(30),
@@ -159,7 +154,8 @@ class _ProfileHeader extends StatelessWidget {
               child: usuario.fotoPerfilUrl == null
                   ? Text(
                       usuario.iniciales,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
                             color: Colors.white,
                             fontWeight: FontWeight.w800,
                           ),
@@ -172,9 +168,9 @@ class _ProfileHeader extends StatelessWidget {
             usuario.nombreCompleto,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                ),
+              color: Colors.white,
+              fontWeight: FontWeight.w800,
+            ),
           ),
           const SizedBox(height: 10),
           Container(
@@ -182,16 +178,14 @@ class _ProfileHeader extends StatelessWidget {
             decoration: BoxDecoration(
               color: _badgeColor().withValues(alpha: 0.22),
               borderRadius: BorderRadius.circular(999),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.16),
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
             ),
             child: Text(
               usuario.rolLegible,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
         ],
@@ -235,16 +229,16 @@ class _ProfileInfoCard extends StatelessWidget {
                   Text(
                     title,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: AppColors.textSecondary,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     value,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ],
               ),

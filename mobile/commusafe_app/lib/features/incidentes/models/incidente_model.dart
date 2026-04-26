@@ -137,8 +137,8 @@ class IncidenteModel {
     final estado = data['estado']?.toString().trim() ?? '';
     final reportadoPorNombre =
         data['reportado_por_nombre']?.toString().trim().isNotEmpty == true
-            ? data['reportado_por_nombre'].toString().trim()
-            : reportadoPor['nombre_completo']?.toString().trim() ?? 'Sin autor';
+        ? data['reportado_por_nombre'].toString().trim()
+        : reportadoPor['nombre_completo']?.toString().trim() ?? 'Sin autor';
 
     return IncidenteModel(
       id: data['id']?.toString() ?? '',
@@ -147,18 +147,19 @@ class IncidenteModel {
       categoria: categoria,
       categoriaLabel:
           data['categoria_label']?.toString().trim().isNotEmpty == true
-              ? data['categoria_label'].toString().trim()
-              : _categoriaLabel(categoria),
+          ? data['categoria_label'].toString().trim()
+          : _categoriaLabel(categoria),
       prioridad: prioridad,
       prioridadLabel:
           data['prioridad_label']?.toString().trim().isNotEmpty == true
-              ? data['prioridad_label'].toString().trim()
-              : _prioridadLabel(prioridad),
+          ? data['prioridad_label'].toString().trim()
+          : _prioridadLabel(prioridad),
       estado: estado,
       estadoLabel: data['estado_label']?.toString().trim().isNotEmpty == true
           ? data['estado_label'].toString().trim()
           : estadoDisplayForCode(estado),
-      ubicacionReferencia: data['ubicacion_referencia']?.toString().trim() ?? '',
+      ubicacionReferencia:
+          data['ubicacion_referencia']?.toString().trim() ?? '',
       reportadoPorNombre: reportadoPorNombre,
       fechaReporte: DateTime.tryParse(data['fecha_reporte']?.toString() ?? ''),
       totalEvidencias: _asInt(data['total_evidencias']) ?? evidenciasRaw.length,
@@ -171,8 +172,8 @@ class IncidenteModel {
       reportadoPorEmail: reportadoPor['email']?.toString().trim() ?? '',
       reportadoPorUnidad:
           reportadoPor['unidad_residencial']?.toString().trim() ?? '',
-      atendidoPorNombre: data['atendido_por_nombre']?.toString().trim().isNotEmpty ==
-              true
+      atendidoPorNombre:
+          data['atendido_por_nombre']?.toString().trim().isNotEmpty == true
           ? data['atendido_por_nombre'].toString().trim()
           : atendidoPor['nombre_completo']?.toString().trim() ?? '',
       observacionesCierre:
@@ -181,7 +182,8 @@ class IncidenteModel {
         data['fecha_actualizacion']?.toString() ?? '',
       ),
       fechaCierre: DateTime.tryParse(data['fecha_cierre']?.toString() ?? ''),
-      detalleCompleto: data.containsKey('historial') ||
+      detalleCompleto:
+          data.containsKey('historial') ||
           data.containsKey('evidencias') ||
           data.containsKey('reportado_por') ||
           data.containsKey('observaciones_cierre'),

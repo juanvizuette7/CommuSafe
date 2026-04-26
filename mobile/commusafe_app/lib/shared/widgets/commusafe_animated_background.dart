@@ -54,10 +54,7 @@ class _CommuSafeAnimatedBackgroundState
           child: child,
         );
       },
-      child: Padding(
-        padding: widget.padding,
-        child: widget.child,
-      ),
+      child: Padding(padding: widget.padding, child: widget.child),
     );
   }
 }

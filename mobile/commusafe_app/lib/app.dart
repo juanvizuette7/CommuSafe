@@ -3,11 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'core/theme/app_theme.dart';
-import 'features/asistente/screens/asistente_screen.dart';
+import 'features/asistente/screens/chat_screen.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/perfil_screen.dart';
-import 'features/emergencias/screens/emergencias_screen.dart';
+import 'features/emergencias/screens/contactos_emergencia_screen.dart';
 import 'features/incidentes/screens/crear_incidente_screen.dart';
 import 'features/incidentes/screens/detalle_incidente_screen.dart';
 import 'features/incidentes/screens/lista_incidentes_screen.dart';
@@ -62,11 +62,7 @@ class AppRouter {
           },
         ),
         ShellRoute(
-          builder: (
-            BuildContext context,
-            GoRouterState state,
-            Widget child,
-          ) {
+          builder: (BuildContext context, GoRouterState state, Widget child) {
             return MainLayout(child: child);
           },
           routes: <RouteBase>[
@@ -106,13 +102,13 @@ class AppRouter {
             GoRoute(
               path: '/asistente',
               builder: (BuildContext context, GoRouterState state) {
-                return const AsistenteScreen();
+                return const ChatScreen();
               },
             ),
             GoRoute(
               path: '/emergencias',
               builder: (BuildContext context, GoRouterState state) {
-                return const EmergenciasScreen();
+                return const ContactosEmergenciaScreen();
               },
             ),
           ],
@@ -144,7 +140,8 @@ class _SessionBootstrapScreen extends StatefulWidget {
   const _SessionBootstrapScreen();
 
   @override
-  State<_SessionBootstrapScreen> createState() => _SessionBootstrapScreenState();
+  State<_SessionBootstrapScreen> createState() =>
+      _SessionBootstrapScreenState();
 }
 
 class _SessionBootstrapScreenState extends State<_SessionBootstrapScreen> {
@@ -168,10 +165,7 @@ class _SessionBootstrapScreenState extends State<_SessionBootstrapScreen> {
 
     return FutureBuilder<bool>(
       future: _sessionFuture,
-      builder: (
-        BuildContext context,
-        AsyncSnapshot<bool> snapshot,
-      ) {
+      builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
           return const _StartupLoadingScreen();
         }
@@ -205,20 +199,14 @@ class _StartupLoadingScreen extends StatelessWidget {
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: <Color>[
-              AppColors.primary,
-              AppColors.accent,
-            ],
+            colors: <Color>[AppColors.primary, AppColors.accent],
           ),
         ),
         child: const Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              CircularProgressIndicator(
-                color: Colors.white,
-                strokeWidth: 2.6,
-              ),
+              CircularProgressIndicator(color: Colors.white, strokeWidth: 2.6),
               SizedBox(height: 20),
               Text(
                 'Cargando sesión de CommuSafe...',

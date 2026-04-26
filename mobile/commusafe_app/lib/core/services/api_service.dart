@@ -31,19 +31,17 @@ class ApiService {
 
     _dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (RequestOptions options, RequestInterceptorHandler handler) async {
-          final token = await StorageService.getAccessToken();
-          if (token != null &&
-              token.isNotEmpty &&
-              options.extra['omitAuth'] != true) {
-            options.headers['Authorization'] = 'Bearer $token';
-          }
-          handler.next(options);
-        },
-        onError: (
-          DioException error,
-          ErrorInterceptorHandler handler,
-        ) async {
+        onRequest:
+            (RequestOptions options, RequestInterceptorHandler handler) async {
+              final token = await StorageService.getAccessToken();
+              if (token != null &&
+                  token.isNotEmpty &&
+                  options.extra['omitAuth'] != true) {
+                options.headers['Authorization'] = 'Bearer $token';
+              }
+              handler.next(options);
+            },
+        onError: (DioException error, ErrorInterceptorHandler handler) async {
           final statusCode = error.response?.statusCode;
           final alreadyRetried = error.requestOptions.extra['retried'] == true;
           final isRefreshRequest =
@@ -104,7 +102,9 @@ class ApiService {
     }
   }
 
-  static Future<Response<dynamic>> _retryRequest(RequestOptions requestOptions) async {
+  static Future<Response<dynamic>> _retryRequest(
+    RequestOptions requestOptions,
+  ) async {
     final freshToken = await StorageService.getAccessToken();
     final headers = Map<String, dynamic>.from(requestOptions.headers);
     if (freshToken != null && freshToken.isNotEmpty) {
@@ -119,10 +119,7 @@ class ApiService {
       followRedirects: requestOptions.followRedirects,
       receiveDataWhenStatusError: requestOptions.receiveDataWhenStatusError,
       validateStatus: requestOptions.validateStatus,
-      extra: <String, dynamic>{
-        ...requestOptions.extra,
-        'retried': true,
-      },
+      extra: <String, dynamic>{...requestOptions.extra, 'retried': true},
     );
 
     return _dio.request<dynamic>(
@@ -212,9 +209,7 @@ class ApiService {
       path,
       data: formData,
       queryParameters: queryParameters,
-      options: Options(
-        contentType: 'multipart/form-data',
-      ),
+      options: Options(contentType: 'multipart/form-data'),
     );
   }
 }

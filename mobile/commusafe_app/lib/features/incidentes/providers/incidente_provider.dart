@@ -58,10 +58,7 @@ class IncidenteProvider extends ChangeNotifier {
     }
 
     final targetPage = refresh ? 1 : _paginaActual;
-    await _fetchIncidentes(
-      page: targetPage,
-      reset: refresh || targetPage == 1,
-    );
+    await _fetchIncidentes(page: targetPage, reset: refresh || targetPage == 1);
   }
 
   Future<void> cargarMas() async {
@@ -72,10 +69,7 @@ class IncidenteProvider extends ChangeNotifier {
     await _fetchIncidentes(page: _paginaActual + 1, reset: false);
   }
 
-  Future<void> aplicarFiltro({
-    String? categoria,
-    String? busqueda,
-  }) async {
+  Future<void> aplicarFiltro({String? categoria, String? busqueda}) async {
     _categoriaActiva = categoria?.trim().isEmpty ?? true
         ? null
         : categoria?.trim().toUpperCase();
@@ -134,10 +128,7 @@ class IncidenteProvider extends ChangeNotifier {
       final multipartFiles = <MultipartFile>[];
       for (final imagen in imagenes.take(3)) {
         multipartFiles.add(
-          await MultipartFile.fromFile(
-            imagen.path,
-            filename: imagen.name,
-          ),
+          await MultipartFile.fromFile(imagen.path, filename: imagen.name),
         );
       }
 
@@ -253,7 +244,8 @@ class IncidenteProvider extends ChangeNotifier {
         queryParameters: <String, dynamic>{
           'page': page,
           'ordering': '-fecha_reporte',
-          if ((_categoriaActiva ?? '').isNotEmpty) 'categoria': _categoriaActiva,
+          if ((_categoriaActiva ?? '').isNotEmpty)
+            'categoria': _categoriaActiva,
           if (_busquedaActiva.isNotEmpty) 'q': _busquedaActiva,
         },
       );
@@ -261,9 +253,7 @@ class IncidenteProvider extends ChangeNotifier {
       final rawResults = payload['results'];
       final results = rawResults is List ? rawResults : <dynamic>[];
       final nuevosIncidentes = results
-          .map(
-            (dynamic item) => IncidenteModel.fromJson(_normalizeMap(item)),
-          )
+          .map((dynamic item) => IncidenteModel.fromJson(_normalizeMap(item)))
           .toList();
 
       if (reset) {
@@ -286,7 +276,8 @@ class IncidenteProvider extends ChangeNotifier {
       _paginaActual = page;
       final count = _toInt(payload['count']) ?? _incidentes.length;
       final next = payload['next'];
-      _hasMore = next != null ||
+      _hasMore =
+          next != null ||
           (_incidentes.length < count && nuevosIncidentes.isNotEmpty);
       _errorMessage = null;
     } on DioException catch (error) {
@@ -313,10 +304,12 @@ class IncidenteProvider extends ChangeNotifier {
   }
 
   bool _coincideConFiltros(IncidenteModel incidente) {
-    final sameCategory = _categoriaActiva == null ||
+    final sameCategory =
+        _categoriaActiva == null ||
         incidente.categoria.toUpperCase() == _categoriaActiva;
     final query = _busquedaActiva.toLowerCase();
-    final matchesQuery = query.isEmpty ||
+    final matchesQuery =
+        query.isEmpty ||
         incidente.titulo.toLowerCase().contains(query) ||
         incidente.descripcion.toLowerCase().contains(query);
     return sameCategory && matchesQuery;

@@ -5,11 +5,7 @@ import '../../features/incidentes/models/incidente_model.dart';
 import 'incident_badges.dart';
 
 class IncidenteCard extends StatefulWidget {
-  const IncidenteCard({
-    super.key,
-    required this.incidente,
-    this.onTap,
-  });
+  const IncidenteCard({super.key, required this.incidente, this.onTap});
 
   final IncidenteModel incidente;
   final VoidCallback? onTap;
@@ -44,9 +40,7 @@ class _IncidenteCardState extends State<IncidenteCard> {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: priorityColor.withValues(alpha: 0.11),
-              ),
+              border: Border.all(color: priorityColor.withValues(alpha: 0.11)),
               boxShadow: <BoxShadow>[
                 BoxShadow(
                   color: priorityColor.withValues(alpha: 0.10),
@@ -74,10 +68,7 @@ class _IncidenteCardState extends State<IncidenteCard> {
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
-                          colors: <Color>[
-                            priorityColor,
-                            categoryStyle.color,
-                          ],
+                          colors: <Color>[priorityColor, categoryStyle.color],
                         ),
                       ),
                     ),
@@ -148,16 +139,15 @@ class _IncidenteCardState extends State<IncidenteCard> {
                                 incidente.descripcion,
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
+                                style: Theme.of(context).textTheme.bodyMedium
                                     ?.copyWith(
                                       color: AppColors.textSecondary,
                                       height: 1.45,
                                     ),
                               ),
-                              if (incidente
-                                  .ubicacionReferencia.trim().isNotEmpty) ...<Widget>[
+                              if (incidente.ubicacionReferencia
+                                  .trim()
+                                  .isNotEmpty) ...<Widget>[
                                 const SizedBox(height: 10),
                                 _MetaLine(
                                   icon: Icons.place_outlined,
@@ -205,10 +195,7 @@ class _IncidenteCardState extends State<IncidenteCard> {
       case 'SEGURIDAD':
         return const _CategoryVisual(Icons.lock_rounded, AppColors.danger);
       case 'CONVIVENCIA':
-        return const _CategoryVisual(
-          Icons.groups_rounded,
-          Color(0xFF2563EB),
-        );
+        return const _CategoryVisual(Icons.groups_rounded, Color(0xFF2563EB));
       case 'INFRAESTRUCTURA':
         return const _CategoryVisual(
           Icons.settings_suggest_rounded,
@@ -229,9 +216,7 @@ class _IncidenteCardState extends State<IncidenteCard> {
 }
 
 class _CategoryMark extends StatelessWidget {
-  const _CategoryMark({
-    required this.style,
-  });
+  const _CategoryMark({required this.style});
 
   final _CategoryVisual style;
 
@@ -250,15 +235,9 @@ class _CategoryMark extends StatelessWidget {
             style.color.withValues(alpha: 0.06),
           ],
         ),
-        border: Border.all(
-          color: style.color.withValues(alpha: 0.16),
-        ),
+        border: Border.all(color: style.color.withValues(alpha: 0.16)),
       ),
-      child: Icon(
-        style.icon,
-        color: style.color,
-        size: 30,
-      ),
+      child: Icon(style.icon, color: style.color, size: 30),
     );
   }
 }
@@ -287,9 +266,9 @@ class _MetaLine extends StatelessWidget {
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.textSecondary,
-                  fontWeight: FontWeight.w700,
-                ),
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       ],
@@ -300,9 +279,7 @@ class _MetaLine extends StatelessWidget {
 }
 
 class _EvidenceChip extends StatelessWidget {
-  const _EvidenceChip({
-    required this.count,
-  });
+  const _EvidenceChip({required this.count});
 
   final int count;
 
@@ -326,9 +303,9 @@ class _EvidenceChip extends StatelessWidget {
           Text(
             '$count fotos',
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: AppColors.accent,
-                  fontWeight: FontWeight.w800,
-                ),
+              color: AppColors.accent,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ],
       ),

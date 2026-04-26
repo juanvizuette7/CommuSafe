@@ -85,9 +85,7 @@ class AppTheme {
         elevation: 0,
         shadowColor: Colors.black.withValues(alpha: 0.08),
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -118,7 +116,10 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: const Color(0xFFF1F5F9),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 16,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide.none,
@@ -140,9 +141,7 @@ class AppTheme {
           borderSide: const BorderSide(color: AppColors.danger, width: 1.4),
         ),
       ),
-      drawerTheme: const DrawerThemeData(
-        backgroundColor: AppColors.surface,
-      ),
+      drawerTheme: const DrawerThemeData(backgroundColor: AppColors.surface),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppColors.primary,

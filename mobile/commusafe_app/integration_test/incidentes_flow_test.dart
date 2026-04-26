@@ -38,7 +38,9 @@ void main() {
         final uniqueSuffix = DateTime.now().millisecondsSinceEpoch;
         final incidentTitle = 'Prueba S7 $uniqueSuffix';
 
-        final residentContext = tester.element(find.byType(ListaIncidentesScreen));
+        final residentContext = tester.element(
+          find.byType(ListaIncidentesScreen),
+        );
         final incidentProvider = Provider.of<IncidenteProvider>(
           residentContext,
           listen: false,
@@ -61,7 +63,9 @@ void main() {
         expect(
           createdIncident,
           isNotNull,
-          reason: incidentProvider.errorMessage ?? 'La creación del incidente devolvió null.',
+          reason:
+              incidentProvider.errorMessage ??
+              'La creación del incidente devolvió null.',
         );
         expect(createdIncident!.tieneEvidencias, isTrue);
 
@@ -132,12 +136,16 @@ void main() {
           debugLabel: 'confirmación de cambio de estado',
         );
 
-        final detailContext = tester.element(find.byType(DetalleIncidenteScreen));
+        final detailContext = tester.element(
+          find.byType(DetalleIncidenteScreen),
+        );
         final updatedProvider = Provider.of<IncidenteProvider>(
           detailContext,
           listen: false,
         );
-        final updatedIncident = updatedProvider.incidentePorId(createdIncident.id);
+        final updatedIncident = updatedProvider.incidentePorId(
+          createdIncident.id,
+        );
 
         expect(updatedIncident, isNotNull);
         expect(updatedIncident!.estado, 'EN_PROCESO');

@@ -38,15 +38,13 @@ class _LoginScreenState extends State<LoginScreen>
       parent: _animationController,
       curve: Curves.easeOutCubic,
     );
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.12),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeOutQuart,
-      ),
-    );
+    _slideAnimation =
+        Tween<Offset>(begin: const Offset(0, 0.12), end: Offset.zero).animate(
+          CurvedAnimation(
+            parent: _animationController,
+            curve: Curves.easeOutQuart,
+          ),
+        );
     _animationController.forward();
   }
 
@@ -137,8 +135,9 @@ class _LoginScreenState extends State<LoginScreen>
                                           height: 58,
                                           width: 58,
                                           decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(20),
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
                                             gradient: const LinearGradient(
                                               colors: <Color>[
                                                 AppColors.primary,
@@ -206,8 +205,8 @@ class _LoginScreenState extends State<LoginScreen>
                                         ),
                                         SizedBox(width: 10),
                                         _SignalBadge(
-                                          icon:
-                                              Icons.notifications_active_outlined,
+                                          icon: Icons
+                                              .notifications_active_outlined,
                                           label: 'Alertas',
                                           color: AppColors.danger,
                                         ),
@@ -226,8 +225,7 @@ class _LoginScreenState extends State<LoginScreen>
                                           authProvider.clearError(),
                                       decoration: const InputDecoration(
                                         labelText: 'Correo electrónico',
-                                        prefixIcon:
-                                            Icon(Icons.email_outlined),
+                                        prefixIcon: Icon(Icons.email_outlined),
                                       ),
                                       validator: (String? value) {
                                         final text = value?.trim() ?? '';
@@ -284,19 +282,24 @@ class _LoginScreenState extends State<LoginScreen>
                                       onFieldSubmitted: (_) => _submit(),
                                     ),
                                     if (errorMessage != null &&
-                                        errorMessage.trim().isNotEmpty) ...<Widget>[
+                                        errorMessage
+                                            .trim()
+                                            .isNotEmpty) ...<Widget>[
                                       const SizedBox(height: 18),
                                       Container(
                                         width: double.infinity,
                                         padding: const EdgeInsets.all(14),
                                         decoration: BoxDecoration(
-                                          color: AppColors.danger
-                                              .withValues(alpha: 0.10),
-                                          borderRadius:
-                                              BorderRadius.circular(16),
+                                          color: AppColors.danger.withValues(
+                                            alpha: 0.10,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
                                           border: Border.all(
-                                            color: AppColors.danger
-                                                .withValues(alpha: 0.20),
+                                            color: AppColors.danger.withValues(
+                                              alpha: 0.20,
+                                            ),
                                           ),
                                         ),
                                         child: Row(
@@ -343,8 +346,9 @@ class _LoginScreenState extends State<LoginScreen>
                                         ),
                                         boxShadow: <BoxShadow>[
                                           BoxShadow(
-                                            color: AppColors.primary
-                                                .withValues(alpha: 0.30),
+                                            color: AppColors.primary.withValues(
+                                              alpha: 0.30,
+                                            ),
                                             blurRadius: 22,
                                             offset: const Offset(0, 13),
                                           ),
@@ -353,8 +357,9 @@ class _LoginScreenState extends State<LoginScreen>
                                       child: Material(
                                         color: Colors.transparent,
                                         child: InkWell(
-                                          borderRadius:
-                                              BorderRadius.circular(16),
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
                                           onTap: isLoading ? null : _submit,
                                           child: SizedBox(
                                             height: 58,
@@ -373,14 +378,17 @@ class _LoginScreenState extends State<LoginScreen>
                                                         width: 22,
                                                         child:
                                                             CircularProgressIndicator(
-                                                          strokeWidth: 2.4,
-                                                          color: Colors.white,
-                                                        ),
+                                                              strokeWidth: 2.4,
+                                                              color:
+                                                                  Colors.white,
+                                                            ),
                                                       )
                                                     : Text(
                                                         'Ingresar',
-                                                        key: const ValueKey<
-                                                            String>('label'),
+                                                        key:
+                                                            const ValueKey<
+                                                              String
+                                                            >('label'),
                                                         style: Theme.of(context)
                                                             .textTheme
                                                             .titleSmall
@@ -418,9 +426,7 @@ class _LoginScreenState extends State<LoginScreen>
 }
 
 class _LoginSignalHeader extends StatelessWidget {
-  const _LoginSignalHeader({
-    required this.animation,
-  });
+  const _LoginSignalHeader({required this.animation});
 
   final Animation<double> animation;
 
@@ -430,10 +436,7 @@ class _LoginSignalHeader extends StatelessWidget {
       animation: animation,
       builder: (BuildContext context, Widget? child) {
         final pulse = 0.92 + (animation.value * 0.08);
-        return Transform.scale(
-          scale: pulse,
-          child: child,
-        );
+        return Transform.scale(scale: pulse, child: child);
       },
       child: SizedBox(
         height: 164,
@@ -450,9 +453,7 @@ class _LoginSignalHeader extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.14),
                 borderRadius: BorderRadius.circular(26),
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.28),
-                ),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.28)),
               ),
               child: const Icon(
                 Icons.security_rounded,
@@ -468,10 +469,7 @@ class _LoginSignalHeader extends StatelessWidget {
 }
 
 class _Ring extends StatelessWidget {
-  const _Ring({
-    required this.size,
-    required this.opacity,
-  });
+  const _Ring({required this.size, required this.opacity});
 
   final double size;
   final double opacity;
@@ -524,9 +522,9 @@ class _SignalBadge extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: color,
-                      fontWeight: FontWeight.w800,
-                    ),
+                  color: color,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ],

@@ -67,8 +67,8 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                 Text(
                   'Agregar evidencia fotográfica',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
                 const SizedBox(height: 18),
                 ListTile(
@@ -143,12 +143,9 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
   }
 
   void _showSnack(String message, {Color color = AppColors.primary}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-      ),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: color));
   }
 
   Future<void> _callEmergencyLine() async {
@@ -182,10 +179,7 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
       return;
     }
 
-    _showSnack(
-      'Incidente reportado correctamente.',
-      color: AppColors.success,
-    );
+    _showSnack('Incidente reportado correctamente.', color: AppColors.success);
     context.pop(true);
   }
 
@@ -211,7 +205,8 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
             children: <Widget>[
               _FormCard(
                 title: 'Información principal',
-                subtitle: 'Describe claramente el incidente que estás reportando.',
+                subtitle:
+                    'Describe claramente el incidente que estás reportando.',
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
@@ -232,8 +227,8 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                     Text(
                       'Categoría',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w700,
-                          ),
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     SizedBox(
@@ -283,7 +278,9 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                                 color: AppColors.danger.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(18),
                                 border: Border.all(
-                                  color: AppColors.danger.withValues(alpha: 0.24),
+                                  color: AppColors.danger.withValues(
+                                    alpha: 0.24,
+                                  ),
                                 ),
                               ),
                               child: Column(
@@ -398,7 +395,9 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                                   borderRadius: BorderRadius.circular(18),
                                   border: Border.all(
                                     color: canAdd
-                                        ? AppColors.primary.withValues(alpha: 0.2)
+                                        ? AppColors.primary.withValues(
+                                            alpha: 0.2,
+                                          )
                                         : const Color(0xFFE2E8F0),
                                   ),
                                 ),
@@ -475,9 +474,9 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                     Text(
                       'Seleccionadas: ${_imagenes.length}/3',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.textSecondary,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
@@ -544,17 +543,17 @@ class _FormCard extends StatelessWidget {
         children: <Widget>[
           Text(
             title,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 6),
           Text(
             subtitle,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppColors.textSecondary,
-                  height: 1.5,
-                ),
+              color: AppColors.textSecondary,
+              height: 1.5,
+            ),
           ),
           const SizedBox(height: 20),
           child,

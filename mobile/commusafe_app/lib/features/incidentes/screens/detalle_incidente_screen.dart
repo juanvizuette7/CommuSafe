@@ -14,10 +14,7 @@ import '../models/incidente_model.dart';
 import '../providers/incidente_provider.dart';
 
 class DetalleIncidenteScreen extends StatefulWidget {
-  const DetalleIncidenteScreen({
-    super.key,
-    required this.incidenteId,
-  });
+  const DetalleIncidenteScreen({super.key, required this.incidenteId});
 
   final String incidenteId;
 
@@ -135,8 +132,7 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
     final remainingStates = _availableStates(updated, usuario);
     setState(() {
       _comentarioController.clear();
-      _selectedState =
-          remainingStates.isEmpty ? null : remainingStates.first;
+      _selectedState = remainingStates.isEmpty ? null : remainingStates.first;
     });
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
@@ -172,23 +168,24 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
     final authProvider = context.watch<AuthProvider>();
     final usuario = authProvider.usuarioActual;
     final incidente = provider.incidentePorId(widget.incidenteId);
-    final availableStates =
-        incidente == null ? <String>[] : _availableStates(incidente, usuario);
+    final availableStates = incidente == null
+        ? <String>[]
+        : _availableStates(incidente, usuario);
 
     if (_selectedState == null && availableStates.isNotEmpty) {
       _selectedState = availableStates.first;
     } else if (_selectedState != null &&
         !availableStates.contains(_selectedState)) {
-      _selectedState =
-          availableStates.isEmpty ? null : availableStates.first;
+      _selectedState = availableStates.isEmpty ? null : availableStates.first;
     }
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: RefreshIndicator(
-        onRefresh: () => context
-            .read<IncidenteProvider>()
-            .cargarDetalle(widget.incidenteId, forceRefresh: true),
+        onRefresh: () => context.read<IncidenteProvider>().cargarDetalle(
+          widget.incidenteId,
+          forceRefresh: true,
+        ),
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(
             parent: BouncingScrollPhysics(),
@@ -204,8 +201,11 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                 onPressed: () => context.pop(),
               ),
               flexibleSpace: FlexibleSpaceBar(
-                titlePadding:
-                    const EdgeInsetsDirectional.only(start: 72, bottom: 20, end: 20),
+                titlePadding: const EdgeInsetsDirectional.only(
+                  start: 72,
+                  bottom: 20,
+                  end: 20,
+                ),
                 title: Text(
                   incidente?.titulo ?? 'Detalle del incidente',
                   maxLines: 1,
@@ -250,10 +250,9 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                             ),
                           const SizedBox(height: 12),
                           Text(
-                            incidente?.categoriaLabel ?? 'Cargando incidente...',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
+                            incidente?.categoriaLabel ??
+                                'Cargando incidente...',
+                            style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(
                                   color: Colors.white.withValues(alpha: 0.9),
                                   fontWeight: FontWeight.w700,
@@ -271,11 +270,15 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
                 child: incidente == null
                     ? _DetailLoadingState(
-                        loading: provider.detalleEstaCargando(widget.incidenteId),
+                        loading: provider.detalleEstaCargando(
+                          widget.incidenteId,
+                        ),
                         errorMessage: provider.errorMessage,
-                        onRetry: () => context
-                            .read<IncidenteProvider>()
-                            .cargarDetalle(widget.incidenteId, forceRefresh: true),
+                        onRetry: () =>
+                            context.read<IncidenteProvider>().cargarDetalle(
+                              widget.incidenteId,
+                              forceRefresh: true,
+                            ),
                       )
                     : Column(
                         children: <Widget>[
@@ -286,7 +289,9 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                               children: <Widget>[
                                 Row(
                                   children: <Widget>[
-                                    _CategoryIcon(categoria: incidente.categoria),
+                                    _CategoryIcon(
+                                      categoria: incidente.categoria,
+                                    ),
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: Text(
@@ -316,7 +321,9 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                                           'es_CO',
                                         ).format(incidente.fechaReporte!),
                                 ),
-                                if (incidente.ubicacionReferencia.trim().isNotEmpty)
+                                if (incidente.ubicacionReferencia
+                                    .trim()
+                                    .isNotEmpty)
                                   _DetailRow(
                                     icon: Icons.place_outlined,
                                     label: 'Ubicación',
@@ -325,19 +332,13 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                                 const SizedBox(height: 10),
                                 Text(
                                   'Descripción',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleSmall
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.w800,
-                                      ),
+                                  style: Theme.of(context).textTheme.titleSmall
+                                      ?.copyWith(fontWeight: FontWeight.w800),
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
                                   incidente.descripcion,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyMedium
+                                  style: Theme.of(context).textTheme.bodyMedium
                                       ?.copyWith(
                                         color: AppColors.textSecondary,
                                         height: 1.6,
@@ -353,8 +354,9 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                               children: <Widget>[
                                 CircleAvatar(
                                   radius: 28,
-                                  backgroundColor:
-                                      AppColors.primary.withValues(alpha: 0.12),
+                                  backgroundColor: AppColors.primary.withValues(
+                                    alpha: 0.12,
+                                  ),
                                   child: Text(
                                     incidente.inicialesReportante,
                                     style: Theme.of(context)
@@ -369,7 +371,8 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                                 const SizedBox(width: 14),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: <Widget>[
                                       Text(
                                         incidente.reportadoPorNombre,
@@ -382,7 +385,9 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        incidente.reportadoPorEmail.trim().isEmpty
+                                        incidente.reportadoPorEmail
+                                                .trim()
+                                                .isEmpty
                                             ? 'Sin correo disponible'
                                             : incidente.reportadoPorEmail,
                                         style: Theme.of(context)
@@ -392,16 +397,21 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                                               color: AppColors.textSecondary,
                                             ),
                                       ),
-                                      if (incidente.reportadoPorUnidad.trim().isNotEmpty)
+                                      if (incidente.reportadoPorUnidad
+                                          .trim()
+                                          .isNotEmpty)
                                         Padding(
-                                          padding: const EdgeInsets.only(top: 4),
+                                          padding: const EdgeInsets.only(
+                                            top: 4,
+                                          ),
                                           child: Text(
                                             incidente.reportadoPorUnidad,
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodySmall
                                                 ?.copyWith(
-                                                  color: AppColors.textSecondary,
+                                                  color:
+                                                      AppColors.textSecondary,
                                                 ),
                                           ),
                                         ),
@@ -428,65 +438,82 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                                         });
                                       },
                                       itemBuilder: (BuildContext context, int index) {
-                                        final evidencia = incidente.evidencias[index];
+                                        final evidencia =
+                                            incidente.evidencias[index];
                                         return GestureDetector(
                                           onTap: () => _openEvidenceGallery(
                                             incidente.evidencias,
                                             index,
                                           ),
                                           child: Padding(
-                                            padding: const EdgeInsets.only(right: 12),
+                                            padding: const EdgeInsets.only(
+                                              right: 12,
+                                            ),
                                             child: ClipRRect(
-                                              borderRadius: BorderRadius.circular(22),
+                                              borderRadius:
+                                                  BorderRadius.circular(22),
                                               child: Stack(
                                                 fit: StackFit.expand,
                                                 children: <Widget>[
                                                   CachedNetworkImage(
-                                                    imageUrl: evidencia.imagenUrl,
+                                                    imageUrl:
+                                                        evidencia.imagenUrl,
                                                     fit: BoxFit.cover,
-                                                    placeholder: (
-                                                      BuildContext context,
-                                                      String url,
-                                                    ) {
-                                                      return Container(
-                                                        color: const Color(0xFFF1F5F9),
-                                                        child: const Center(
-                                                          child:
-                                                              CircularProgressIndicator(),
-                                                        ),
-                                                      );
-                                                    },
-                                                    errorWidget: (
-                                                      BuildContext context,
-                                                      String url,
-                                                      Object error,
-                                                    ) {
-                                                      return Container(
-                                                        color: const Color(0xFFF1F5F9),
-                                                        child: const Icon(
-                                                          Icons.broken_image_outlined,
-                                                          color: AppColors.textSecondary,
-                                                        ),
-                                                      );
-                                                    },
+                                                    placeholder:
+                                                        (
+                                                          BuildContext context,
+                                                          String url,
+                                                        ) {
+                                                          return Container(
+                                                            color: const Color(
+                                                              0xFFF1F5F9,
+                                                            ),
+                                                            child: const Center(
+                                                              child:
+                                                                  CircularProgressIndicator(),
+                                                            ),
+                                                          );
+                                                        },
+                                                    errorWidget:
+                                                        (
+                                                          BuildContext context,
+                                                          String url,
+                                                          Object error,
+                                                        ) {
+                                                          return Container(
+                                                            color: const Color(
+                                                              0xFFF1F5F9,
+                                                            ),
+                                                            child: const Icon(
+                                                              Icons
+                                                                  .broken_image_outlined,
+                                                              color: AppColors
+                                                                  .textSecondary,
+                                                            ),
+                                                          );
+                                                        },
                                                   ),
-                                                  if (evidencia.descripcion.isNotEmpty)
+                                                  if (evidencia
+                                                      .descripcion
+                                                      .isNotEmpty)
                                                     Positioned(
                                                       left: 12,
                                                       right: 12,
                                                       bottom: 12,
                                                       child: Container(
                                                         padding:
-                                                            const EdgeInsets.all(12),
+                                                            const EdgeInsets.all(
+                                                              12,
+                                                            ),
                                                         decoration: BoxDecoration(
-                                                          color:
-                                                              Colors.black.withValues(
-                                                            alpha: 0.45,
-                                                          ),
+                                                          color: Colors.black
+                                                              .withValues(
+                                                                alpha: 0.45,
+                                                              ),
                                                           borderRadius:
                                                               BorderRadius.circular(
-                                                            16,
-                                                          ),
+                                                                16,
+                                                              ),
                                                         ),
                                                         child: Text(
                                                           evidencia.descripcion,
@@ -494,9 +521,11 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                                                               .textTheme
                                                               .bodySmall
                                                               ?.copyWith(
-                                                                color: Colors.white,
+                                                                color: Colors
+                                                                    .white,
                                                                 fontWeight:
-                                                                    FontWeight.w600,
+                                                                    FontWeight
+                                                                        .w600,
                                                               ),
                                                         ),
                                                       ),
@@ -515,10 +544,12 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                                     children: List<Widget>.generate(
                                       incidente.evidencias.length,
                                       (int index) {
-                                        final isActive = _currentEvidencePage == index;
+                                        final isActive =
+                                            _currentEvidencePage == index;
                                         return AnimatedContainer(
-                                          duration:
-                                              const Duration(milliseconds: 220),
+                                          duration: const Duration(
+                                            milliseconds: 220,
+                                          ),
                                           width: isActive ? 22 : 8,
                                           height: 8,
                                           margin: const EdgeInsets.symmetric(
@@ -528,8 +559,9 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                                             color: isActive
                                                 ? AppColors.primary
                                                 : AppColors.muted,
-                                            borderRadius:
-                                                BorderRadius.circular(999),
+                                            borderRadius: BorderRadius.circular(
+                                              999,
+                                            ),
                                           ),
                                         );
                                       },
@@ -559,7 +591,8 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                                         final item = incidente.historial[index];
                                         return _TimelineItem(
                                           item: item,
-                                          isLast: index ==
+                                          isLast:
+                                              index ==
                                               incidente.historial.length - 1,
                                         );
                                       },
@@ -584,8 +617,9 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                                       ),
                                       items: availableStates
                                           .map(
-                                            (String state) =>
-                                                DropdownMenuItem<String>(
+                                            (
+                                              String state,
+                                            ) => DropdownMenuItem<String>(
                                               value: state,
                                               child: Text(
                                                 IncidenteModel.estadoDisplayForCode(
@@ -626,18 +660,18 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                                         onPressed: provider.isUpdatingState
                                             ? null
                                             : () => _submitStatusUpdate(
-                                                  incidente,
-                                                  usuario,
-                                                ),
+                                                incidente,
+                                                usuario,
+                                              ),
                                         child: provider.isUpdatingState
                                             ? const SizedBox(
                                                 height: 22,
                                                 width: 22,
                                                 child:
                                                     CircularProgressIndicator(
-                                                  color: Colors.white,
-                                                  strokeWidth: 2.4,
-                                                ),
+                                                      color: Colors.white,
+                                                      strokeWidth: 2.4,
+                                                    ),
                                               )
                                             : const Text('Actualizar'),
                                       ),
@@ -659,10 +693,7 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
 }
 
 class _SectionCard extends StatelessWidget {
-  const _SectionCard({
-    required this.title,
-    required this.child,
-  });
+  const _SectionCard({required this.title, required this.child});
 
   final String title;
   final Widget child;
@@ -688,9 +719,9 @@ class _SectionCard extends StatelessWidget {
         children: <Widget>[
           Text(
             title,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
           ),
           const SizedBox(height: 18),
           child,
@@ -701,9 +732,7 @@ class _SectionCard extends StatelessWidget {
 }
 
 class _CategoryIcon extends StatelessWidget {
-  const _CategoryIcon({
-    required this.categoria,
-  });
+  const _CategoryIcon({required this.categoria});
 
   final String categoria;
 
@@ -747,10 +776,7 @@ class _CategoryIcon extends StatelessWidget {
 }
 
 class _LargeStateBadge extends StatelessWidget {
-  const _LargeStateBadge({
-    required this.label,
-    required this.color,
-  });
+  const _LargeStateBadge({required this.label, required this.color});
 
   final String label;
   final Color color;
@@ -766,9 +792,9 @@ class _LargeStateBadge extends StatelessWidget {
       child: Text(
         label,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: color,
-              fontWeight: FontWeight.w800,
-            ),
+          color: color,
+          fontWeight: FontWeight.w800,
+        ),
       ),
     );
   }
@@ -798,9 +824,9 @@ class _DetailRow extends StatelessWidget {
             child: RichText(
               text: TextSpan(
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.textSecondary,
-                      height: 1.5,
-                    ),
+                  color: AppColors.textSecondary,
+                  height: 1.5,
+                ),
                 children: <InlineSpan>[
                   TextSpan(
                     text: '$label: ',
@@ -821,10 +847,7 @@ class _DetailRow extends StatelessWidget {
 }
 
 class _TimelineItem extends StatelessWidget {
-  const _TimelineItem({
-    required this.item,
-    required this.isLast,
-  });
+  const _TimelineItem({required this.item, required this.isLast});
 
   final HistorialModel item;
   final bool isLast;
@@ -841,17 +864,10 @@ class _TimelineItem extends StatelessWidget {
             Container(
               width: 16,
               height: 16,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: color,
-              ),
+              decoration: BoxDecoration(shape: BoxShape.circle, color: color),
             ),
             if (!isLast)
-              Container(
-                width: 2,
-                height: 74,
-                color: AppColors.muted,
-              ),
+              Container(width: 2, height: 74, color: AppColors.muted),
           ],
         ),
         const SizedBox(width: 14),
@@ -873,9 +889,8 @@ class _TimelineItem extends StatelessWidget {
                       Expanded(
                         child: Text(
                           item.cambiadoPorNombre,
-                          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                                fontWeight: FontWeight.w800,
-                              ),
+                          style: Theme.of(context).textTheme.titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w800),
                         ),
                       ),
                       Text(
@@ -886,8 +901,8 @@ class _TimelineItem extends StatelessWidget {
                                 'es_CO',
                               ).format(item.fechaCambio!),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.textSecondary,
-                            ),
+                          color: AppColors.textSecondary,
+                        ),
                       ),
                     ],
                   ),
@@ -895,19 +910,19 @@ class _TimelineItem extends StatelessWidget {
                   Text(
                     item.transicionLegible,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: color,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      color: color,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   if (item.comentario.trim().isNotEmpty) ...<Widget>[
                     const SizedBox(height: 8),
                     Text(
                       item.comentario,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: AppColors.textSecondary,
-                            height: 1.5,
-                            fontStyle: FontStyle.italic,
-                          ),
+                        color: AppColors.textSecondary,
+                        height: 1.5,
+                        fontStyle: FontStyle.italic,
+                      ),
                     ),
                   ],
                 ],
@@ -947,9 +962,9 @@ class _DetailLoadingState extends StatelessWidget {
           Text(
             errorMessage ?? 'No fue posible cargar el incidente.',
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: AppColors.textSecondary,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
           ),
           const SizedBox(height: 18),
           FilledButton.icon(
@@ -1018,19 +1033,18 @@ class _EvidenceGalleryDialogState extends State<_EvidenceGalleryDialog> {
                       imageUrl: evidencia.imagenUrl,
                       fit: BoxFit.contain,
                       placeholder: (BuildContext context, String url) {
-                        return const CircularProgressIndicator(color: Colors.white);
-                      },
-                      errorWidget: (
-                        BuildContext context,
-                        String url,
-                        Object error,
-                      ) {
-                        return const Icon(
-                          Icons.broken_image_outlined,
-                          color: Colors.white70,
-                          size: 48,
+                        return const CircularProgressIndicator(
+                          color: Colors.white,
                         );
                       },
+                      errorWidget:
+                          (BuildContext context, String url, Object error) {
+                            return const Icon(
+                              Icons.broken_image_outlined,
+                              color: Colors.white70,
+                              size: 48,
+                            );
+                          },
                     ),
                   ),
                 );
@@ -1041,9 +1055,7 @@ class _EvidenceGalleryDialogState extends State<_EvidenceGalleryDialog> {
               left: 16,
               child: IconButton.filled(
                 onPressed: () => Navigator.of(context).pop(),
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.black54,
-                ),
+                style: IconButton.styleFrom(backgroundColor: Colors.black54),
                 icon: const Icon(Icons.close_rounded),
               ),
             ),
@@ -1053,9 +1065,9 @@ class _EvidenceGalleryDialogState extends State<_EvidenceGalleryDialog> {
               child: Text(
                 '${_currentPage + 1}/${widget.evidencias.length}',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                    ),
+                  color: Colors.white,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             ),
           ],

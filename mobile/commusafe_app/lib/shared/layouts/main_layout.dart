@@ -1,4 +1,3 @@
-import 'package:badges/badges.dart' as badges;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -8,15 +7,32 @@ import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_theme.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/incidentes/providers/incidente_provider.dart';
-import '../../features/notificaciones/providers/notificaciones_provider.dart';
+import '../../features/notificaciones/providers/notificacion_provider.dart';
 
-class MainLayout extends StatelessWidget {
-  const MainLayout({
-    super.key,
-    required this.child,
-  });
+class MainLayout extends StatefulWidget {
+  const MainLayout({super.key, required this.child});
 
   final Widget child;
+
+  @override
+  State<MainLayout> createState() => _MainLayoutState();
+}
+
+class _MainLayoutState extends State<MainLayout> {
+  bool _pollingStarted = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_pollingStarted) {
+      return;
+    }
+    _pollingStarted = true;
+    final authProvider = context.read<AuthProvider>();
+    if (authProvider.hasSession) {
+      context.read<NotificacionProvider>().startPolling();
+    }
+  }
 
   int _currentIndexForLocation(String location) {
     if (location.startsWith('/notificaciones')) {
@@ -32,23 +48,14 @@ class MainLayout extends StatelessWidget {
   }
 
   String _titleForLocation(String location) {
-    if (location.startsWith('/notificaciones')) {
-      return 'Notificaciones';
-    }
-    if (location.startsWith('/asistente')) {
-      return 'Asistente virtual';
-    }
     if (location.startsWith('/perfil')) {
       return 'Perfil';
     }
-    if (location.startsWith('/emergencias')) {
-      return 'Contactos de emergencia';
-    }
-    return 'Incidentes';
+    return 'CommuSafe';
   }
 
   bool _showTopAppBar(String location) {
-    return !location.startsWith('/incidentes');
+    return location.startsWith('/perfil');
   }
 
   void _onNavigationTap(BuildContext context, int index) {
@@ -69,29 +76,32 @@ class MainLayout extends StatelessWidget {
   }
 
   Future<void> _logout(BuildContext context) async {
-    await context.read<AuthProvider>().logout();
+    final authProvider = context.read<AuthProvider>();
+    final incidenteProvider = context.read<IncidenteProvider>();
+    final notificacionProvider = context.read<NotificacionProvider>();
+
+    await authProvider.logout();
+    incidenteProvider.reset();
+    notificacionProvider.reset();
     if (!context.mounted) {
       return;
     }
-    context.read<IncidenteProvider>().reset();
-    context.read<NotificacionesProvider>().reset();
     context.go('/login');
   }
 
   @override
   Widget build(BuildContext context) {
     final state = GoRouterState.of(context);
-    final currentLocation = state.uri.toString();
-    final notificationsProvider = context.watch<NotificacionesProvider>();
+    final currentLocation = state.uri.path;
+    final notificationsProvider = context.watch<NotificacionProvider>();
     final authProvider = context.watch<AuthProvider>();
     final usuario = authProvider.usuarioActual;
     final currentIndex = _currentIndexForLocation(currentLocation);
+    final unreadCount = notificationsProvider.noLeidasCount;
 
     return Scaffold(
       appBar: _showTopAppBar(currentLocation)
-          ? AppBar(
-              title: Text(_titleForLocation(currentLocation)),
-            )
+          ? AppBar(title: Text(_titleForLocation(currentLocation)))
           : null,
       drawer: Drawer(
         child: SafeArea(
@@ -106,10 +116,7 @@ class MainLayout extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(24),
                     gradient: const LinearGradient(
-                      colors: <Color>[
-                        AppColors.primary,
-                        AppColors.accent,
-                      ],
+                      colors: <Color>[AppColors.primary, AppColors.accent],
                     ),
                   ),
                   child: Column(
@@ -119,7 +126,9 @@ class MainLayout extends StatelessWidget {
                         radius: 28,
                         backgroundColor: Colors.white.withValues(alpha: 0.18),
                         backgroundImage: usuario?.fotoPerfilUrl != null
-                            ? CachedNetworkImageProvider(usuario!.fotoPerfilUrl!)
+                            ? CachedNetworkImageProvider(
+                                usuario!.fotoPerfilUrl!,
+                              )
                             : null,
                         child: usuario?.fotoPerfilUrl == null
                             ? Text(
@@ -135,7 +144,8 @@ class MainLayout extends StatelessWidget {
                       const SizedBox(height: 14),
                       Text(
                         usuario?.nombreCompleto ?? AppConstants.appName,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
                             ),
@@ -144,24 +154,28 @@ class MainLayout extends StatelessWidget {
                       Text(
                         usuario?.rolLegible ?? 'Sesión no disponible',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.white.withValues(alpha: 0.78),
-                            ),
+                          color: Colors.white.withValues(alpha: 0.78),
+                        ),
                       ),
                       if (usuario?.email != null) ...<Widget>[
                         const SizedBox(height: 8),
                         Text(
                           usuario!.email,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
                                 color: Colors.white.withValues(alpha: 0.86),
                               ),
                         ),
                       ],
                       if (usuario?.unidadResidencial != null &&
-                          usuario!.unidadResidencial!.trim().isNotEmpty) ...<Widget>[
+                          usuario!.unidadResidencial!
+                              .trim()
+                              .isNotEmpty) ...<Widget>[
                         const SizedBox(height: 4),
                         Text(
                           usuario.unidadResidencial!,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
                                 color: Colors.white.withValues(alpha: 0.74),
                               ),
                         ),
@@ -199,7 +213,7 @@ class MainLayout extends StatelessWidget {
           ),
         ),
       ),
-      body: child,
+      body: widget.child,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         type: BottomNavigationBarType.fixed,
@@ -210,16 +224,10 @@ class MainLayout extends StatelessWidget {
             label: 'Incidentes',
           ),
           BottomNavigationBarItem(
-            icon: badges.Badge(
-              showBadge: notificationsProvider.noLeidasCount > 0,
-              badgeContent: Text(
-                notificationsProvider.noLeidasCount.toString(),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+            icon: Badge(
+              isLabelVisible: unreadCount > 0,
+              backgroundColor: AppColors.danger,
+              label: Text(unreadCount > 99 ? '99+' : unreadCount.toString()),
               child: const Icon(Icons.notifications_outlined),
             ),
             label: 'Alertas',

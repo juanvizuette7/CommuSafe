@@ -30,17 +30,17 @@ class HistorialModel {
       estadoAnterior: data['estado_anterior']?.toString() ?? '',
       estadoAnteriorLabel:
           data['estado_anterior_label']?.toString().trim().isNotEmpty == true
-              ? data['estado_anterior_label'].toString().trim()
-              : 'Sin estado previo',
+          ? data['estado_anterior_label'].toString().trim()
+          : 'Sin estado previo',
       estadoNuevo: data['estado_nuevo']?.toString() ?? '',
-      estadoNuevoLabel: data['estado_nuevo_label']?.toString().trim().isNotEmpty ==
-              true
+      estadoNuevoLabel:
+          data['estado_nuevo_label']?.toString().trim().isNotEmpty == true
           ? data['estado_nuevo_label'].toString().trim()
           : data['estado_nuevo']?.toString().replaceAll('_', ' ') ?? '',
       cambiadoPorNombre:
           cambiadoPor['nombre_completo']?.toString().trim().isNotEmpty == true
-              ? cambiadoPor['nombre_completo'].toString().trim()
-              : 'Sistema',
+          ? cambiadoPor['nombre_completo'].toString().trim()
+          : 'Sistema',
       fechaCambio: DateTime.tryParse(data['fecha_cambio']?.toString() ?? ''),
       comentario: data['comentario']?.toString().trim() ?? '',
     );

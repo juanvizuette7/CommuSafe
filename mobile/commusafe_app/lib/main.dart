@@ -8,7 +8,7 @@ import 'core/services/api_service.dart';
 import 'core/services/notification_service.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/incidentes/providers/incidente_provider.dart';
-import 'features/notificaciones/providers/notificaciones_provider.dart';
+import 'features/notificaciones/providers/notificacion_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,14 +20,12 @@ Future<void> main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider<AuthProvider>(
-          create: (_) => AuthProvider(),
-        ),
+        ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
         ChangeNotifierProvider<IncidenteProvider>(
           create: (_) => IncidenteProvider(),
         ),
-        ChangeNotifierProvider<NotificacionesProvider>(
-          create: (_) => NotificacionesProvider(),
+        ChangeNotifierProvider<NotificacionProvider>(
+          create: (_) => NotificacionProvider(),
         ),
       ],
       child: const CommuSafeApp(),

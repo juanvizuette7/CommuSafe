@@ -53,7 +53,8 @@ class UsuarioModel {
     final nombre = json['nombre']?.toString().trim() ?? '';
     final apellido = json['apellido']?.toString().trim() ?? '';
     final nombreCompleto =
-        json['nombre_completo']?.toString().trim() ?? '$nombre $apellido'.trim();
+        json['nombre_completo']?.toString().trim() ??
+        '$nombre $apellido'.trim();
 
     return UsuarioModel(
       id: json['id']?.toString() ?? '',

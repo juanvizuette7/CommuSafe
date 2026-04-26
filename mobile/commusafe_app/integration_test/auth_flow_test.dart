@@ -20,10 +20,7 @@ void main() {
         find.byType(TextFormField).at(0),
         'residente1@remansos.com',
       );
-      await tester.enterText(
-        find.byType(TextFormField).at(1),
-        'Commu2026*',
-      );
+      await tester.enterText(find.byType(TextFormField).at(1), 'Commu2026*');
       await tester.tap(find.text('Ingresar'));
       await tester.pump();
       await _pumpUntilVisible(
@@ -37,10 +34,7 @@ void main() {
       await tester.tap(find.text('Perfil'));
       await tester.pumpAndSettle(const Duration(seconds: 2));
 
-      await _pumpUntilVisible(
-        tester,
-        find.text('María López'),
-      );
+      await _pumpUntilVisible(tester, find.text('María López'));
 
       expect(find.text('María López'), findsWidgets);
       expect(find.text('residente1@remansos.com'), findsOneWidget);

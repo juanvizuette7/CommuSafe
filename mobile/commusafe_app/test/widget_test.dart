@@ -11,9 +11,7 @@ void main() {
     await tester.pumpWidget(
       ChangeNotifierProvider<AuthProvider>(
         create: (_) => AuthProvider(),
-        child: const MaterialApp(
-          home: LoginScreen(),
-        ),
+        child: const MaterialApp(home: LoginScreen()),
       ),
     );
 
