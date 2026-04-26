@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/empty_state_card.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../models/notificacion_model.dart';
 import '../providers/notificacion_provider.dart';
 
@@ -45,9 +46,20 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
     }
   }
 
+  Future<void> _goToCreateNotice() async {
+    final created = await context.push<bool>('/notificaciones/crear');
+    if (!mounted || created != true) {
+      return;
+    }
+    await context.read<NotificacionProvider>().cargarNotificaciones();
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<NotificacionProvider>();
+    final usuario = context.watch<AuthProvider>().usuarioActual;
+    final canCreateNotice =
+        usuario?.esAdmin == true || usuario?.esVigilante == true;
     final items = provider.notificaciones;
 
     return Scaffold(
@@ -55,6 +67,12 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
       appBar: AppBar(
         title: const Text('Notificaciones'),
         actions: <Widget>[
+          if (canCreateNotice)
+            IconButton(
+              onPressed: _goToCreateNotice,
+              icon: const Icon(Icons.add_alert_rounded),
+              tooltip: 'Crear aviso',
+            ),
           TextButton(
             onPressed: provider.noLeidasCount == 0
                 ? null
@@ -66,6 +84,15 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
           ),
         ],
       ),
+      floatingActionButton: canCreateNotice
+          ? FloatingActionButton.extended(
+              onPressed: _goToCreateNotice,
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.campaign_rounded),
+              label: const Text('Crear aviso'),
+            )
+          : null,
       body: RefreshIndicator(
         onRefresh: provider.cargarNotificaciones,
         child: provider.isLoading && items.isEmpty
@@ -81,7 +108,12 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
                 physics: const AlwaysScrollableScrollPhysics(
                   parent: BouncingScrollPhysics(),
                 ),
-                padding: const EdgeInsets.fromLTRB(16, 18, 16, 28),
+                padding: EdgeInsets.fromLTRB(
+                  16,
+                  18,
+                  16,
+                  canCreateNotice ? 104 : 28,
+                ),
                 itemCount: items.length,
                 separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemBuilder: (BuildContext context, int index) {

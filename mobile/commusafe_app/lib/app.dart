@@ -11,6 +11,7 @@ import 'features/emergencias/screens/contactos_emergencia_screen.dart';
 import 'features/incidentes/screens/crear_incidente_screen.dart';
 import 'features/incidentes/screens/detalle_incidente_screen.dart';
 import 'features/incidentes/screens/lista_incidentes_screen.dart';
+import 'features/notificaciones/screens/crear_aviso_screen.dart';
 import 'features/notificaciones/screens/notificaciones_screen.dart';
 import 'shared/layouts/main_layout.dart';
 
@@ -92,6 +93,14 @@ class AppRouter {
               builder: (BuildContext context, GoRouterState state) {
                 return const NotificacionesScreen();
               },
+              routes: <RouteBase>[
+                GoRoute(
+                  path: 'crear',
+                  builder: (BuildContext context, GoRouterState state) {
+                    return const CrearAvisoScreen();
+                  },
+                ),
+              ],
             ),
             GoRoute(
               path: '/perfil',

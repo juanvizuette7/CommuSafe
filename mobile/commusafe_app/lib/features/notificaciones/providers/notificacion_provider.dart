@@ -13,6 +13,7 @@ class NotificacionProvider extends ChangeNotifier {
   Timer? _pollingTimer;
   bool _isLoading = false;
   bool _isPolling = false;
+  bool _isCreatingNotice = false;
   int _noLeidasCount = 0;
   String? _errorMessage;
 
@@ -22,6 +23,7 @@ class NotificacionProvider extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get loading => _isLoading;
   bool get isPolling => _isPolling;
+  bool get isCreatingNotice => _isCreatingNotice;
   int get noLeidasCount => _noLeidasCount;
   String? get errorMessage => _errorMessage;
 
@@ -129,6 +131,42 @@ class NotificacionProvider extends ChangeNotifier {
     }
   }
 
+  Future<int?> crearAviso({
+    required String titulo,
+    required String cuerpo,
+    required String audiencia,
+    required String tipo,
+  }) async {
+    _isCreatingNotice = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await ApiService.post<Map<String, dynamic>>(
+        AppConstants.createNoticeEndpoint,
+        data: <String, dynamic>{
+          'titulo': titulo.trim(),
+          'cuerpo': cuerpo.trim(),
+          'audiencia': audiencia.trim().toUpperCase(),
+          'tipo': tipo.trim().toUpperCase(),
+        },
+      );
+      final payload = _normalizeMap(response.data);
+      _errorMessage = null;
+      await cargarConteoNoLeidas();
+      return _toInt(payload['total_destinatarios']) ?? 0;
+    } on DioException catch (error) {
+      _errorMessage = _extractErrorMessage(error);
+      return null;
+    } catch (_) {
+      _errorMessage = 'No fue posible enviar el aviso comunitario.';
+      return null;
+    } finally {
+      _isCreatingNotice = false;
+      notifyListeners();
+    }
+  }
+
   void startPolling() {
     if (_isPolling) {
       return;
@@ -151,6 +189,7 @@ class NotificacionProvider extends ChangeNotifier {
     stopPolling();
     _notificaciones.clear();
     _isLoading = false;
+    _isCreatingNotice = false;
     _noLeidasCount = 0;
     _errorMessage = null;
     notifyListeners();
@@ -195,6 +234,18 @@ class NotificacionProvider extends ChangeNotifier {
       final mensaje = data['mensaje'];
       if (mensaje is String && mensaje.trim().isNotEmpty) {
         return mensaje;
+      }
+      final nonFieldErrors = data['non_field_errors'];
+      if (nonFieldErrors is List && nonFieldErrors.isNotEmpty) {
+        return nonFieldErrors.first.toString();
+      }
+      for (final value in data.values) {
+        if (value is List && value.isNotEmpty) {
+          return value.first.toString();
+        }
+        if (value is String && value.trim().isNotEmpty) {
+          return value;
+        }
       }
     }
     return 'No fue posible completar la operación con notificaciones.';

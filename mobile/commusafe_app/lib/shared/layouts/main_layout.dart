@@ -194,6 +194,19 @@ class _MainLayoutState extends State<MainLayout> {
                     context.push('/emergencias');
                   },
                 ),
+                if (usuario?.esAdmin == true ||
+                    usuario?.esVigilante == true) ...<Widget>[
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.campaign_rounded),
+                    title: const Text('Crear aviso'),
+                    subtitle: const Text('Enviar alertas a residentes'),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      context.push('/notificaciones/crear');
+                    },
+                  ),
+                ],
                 const Divider(height: 32),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
