@@ -15,6 +15,7 @@ class UsuarioIncidenteSerializer(serializers.Serializer):
     apellido = serializers.CharField(read_only=True)
     nombre_completo = serializers.CharField(read_only=True)
     rol = serializers.CharField(read_only=True)
+    telefono = serializers.CharField(read_only=True)
     unidad_residencial = serializers.CharField(read_only=True)
 
 

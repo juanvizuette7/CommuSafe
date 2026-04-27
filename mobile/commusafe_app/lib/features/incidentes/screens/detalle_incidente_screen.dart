@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/incident_badges.dart';
@@ -156,6 +157,20 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
         );
       },
     );
+  }
+
+  Future<void> _callPhone(String phone) async {
+    final normalized = phone.replaceAll(RegExp(r'\s+'), '');
+    final uri = Uri(scheme: 'tel', path: normalized);
+    final launched = await launchUrl(uri);
+    if (!launched && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No fue posible abrir el marcador del teléfono.'),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+    }
   }
 
   Color _headerColor(IncidenteModel? incidente) {
@@ -413,6 +428,48 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                                                   color:
                                                       AppColors.textSecondary,
                                                 ),
+                                          ),
+                                        ),
+                                      if (incidente.reportadoPorTelefono
+                                          .trim()
+                                          .isNotEmpty)
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            top: 10,
+                                          ),
+                                          child: TextButton.icon(
+                                            onPressed: () => _callPhone(
+                                              incidente.reportadoPorTelefono,
+                                            ),
+                                            style: TextButton.styleFrom(
+                                              foregroundColor:
+                                                  AppColors.primary,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                    horizontal: 10,
+                                                    vertical: 8,
+                                                  ),
+                                              minimumSize: Size.zero,
+                                              tapTargetSize:
+                                                  MaterialTapTargetSize
+                                                      .shrinkWrap,
+                                              backgroundColor: AppColors.primary
+                                                  .withValues(alpha: 0.08),
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(14),
+                                              ),
+                                            ),
+                                            icon: const Icon(
+                                              Icons.phone_rounded,
+                                              size: 17,
+                                            ),
+                                            label: Text(
+                                              incidente.reportadoPorTelefono,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w800,
+                                              ),
+                                            ),
                                           ),
                                         ),
                                     ],

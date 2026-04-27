@@ -19,6 +19,7 @@ USUARIOS_DEMO = [
         "apellido": "Gonzalez",
         "rol": Usuario.Rol.ADMINISTRADOR,
         "unidad_residencial": "Administracion",
+        "telefono": "+57 300 555 0100",
         "is_staff": True,
     },
     {
@@ -28,6 +29,7 @@ USUARIOS_DEMO = [
         "apellido": "Garcia",
         "rol": Usuario.Rol.VIGILANTE,
         "unidad_residencial": "Porteria principal",
+        "telefono": "+57 301 555 0101",
     },
     {
         "email": "vigilante2@remansos.com",
@@ -36,6 +38,7 @@ USUARIOS_DEMO = [
         "apellido": "Martinez",
         "rol": Usuario.Rol.VIGILANTE,
         "unidad_residencial": "Porteria norte",
+        "telefono": "+57 302 555 0102",
     },
     {
         "email": "residente1@remansos.com",
@@ -44,6 +47,7 @@ USUARIOS_DEMO = [
         "apellido": "Lopez",
         "rol": Usuario.Rol.RESIDENTE,
         "unidad_residencial": "Apto 101 Torre A",
+        "telefono": "+57 310 555 0101",
     },
     {
         "email": "residente2@remansos.com",
@@ -52,6 +56,7 @@ USUARIOS_DEMO = [
         "apellido": "Perez",
         "rol": Usuario.Rol.RESIDENTE,
         "unidad_residencial": "Apto 202 Torre B",
+        "telefono": "+57 311 555 0202",
     },
     {
         "email": "residente3@remansos.com",
@@ -60,6 +65,7 @@ USUARIOS_DEMO = [
         "apellido": "Rodriguez",
         "rol": Usuario.Rol.RESIDENTE,
         "unidad_residencial": "Apto 305 Torre A",
+        "telefono": "+57 312 555 0305",
     },
     {
         "email": "residente4@remansos.com",
@@ -68,6 +74,7 @@ USUARIOS_DEMO = [
         "apellido": "Ramirez",
         "rol": Usuario.Rol.RESIDENTE,
         "unidad_residencial": "Apto 410 Torre C",
+        "telefono": "+57 313 555 0410",
     },
     {
         "email": "residente5@remansos.com",
@@ -76,6 +83,7 @@ USUARIOS_DEMO = [
         "apellido": "Castro",
         "rol": Usuario.Rol.RESIDENTE,
         "unidad_residencial": "Casa 12",
+        "telefono": "+57 314 555 0012",
     },
 ]
 
@@ -280,6 +288,7 @@ class Command(BaseCommand):
                 "apellido": datos["apellido"],
                 "rol": datos["rol"],
                 "unidad_residencial": datos["unidad_residencial"],
+                "telefono": datos["telefono"],
                 "is_staff": datos.get("is_staff", False),
                 "activo": True,
             }

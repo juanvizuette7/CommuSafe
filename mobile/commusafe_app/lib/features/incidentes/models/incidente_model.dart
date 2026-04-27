@@ -23,6 +23,7 @@ class IncidenteModel {
     required this.historial,
     required this.reportadoPorEmail,
     required this.reportadoPorUnidad,
+    required this.reportadoPorTelefono,
     required this.atendidoPorNombre,
     required this.observacionesCierre,
     required this.fechaActualizacion,
@@ -47,6 +48,7 @@ class IncidenteModel {
   final List<HistorialModel> historial;
   final String reportadoPorEmail;
   final String reportadoPorUnidad;
+  final String reportadoPorTelefono;
   final String atendidoPorNombre;
   final String observacionesCierre;
   final DateTime? fechaActualizacion;
@@ -94,6 +96,7 @@ class IncidenteModel {
     List<HistorialModel>? historial,
     String? reportadoPorEmail,
     String? reportadoPorUnidad,
+    String? reportadoPorTelefono,
     String? atendidoPorNombre,
     String? observacionesCierre,
     DateTime? fechaActualizacion,
@@ -118,6 +121,7 @@ class IncidenteModel {
       historial: historial ?? this.historial,
       reportadoPorEmail: reportadoPorEmail ?? this.reportadoPorEmail,
       reportadoPorUnidad: reportadoPorUnidad ?? this.reportadoPorUnidad,
+      reportadoPorTelefono: reportadoPorTelefono ?? this.reportadoPorTelefono,
       atendidoPorNombre: atendidoPorNombre ?? this.atendidoPorNombre,
       observacionesCierre: observacionesCierre ?? this.observacionesCierre,
       fechaActualizacion: fechaActualizacion ?? this.fechaActualizacion,
@@ -172,6 +176,7 @@ class IncidenteModel {
       reportadoPorEmail: reportadoPor['email']?.toString().trim() ?? '',
       reportadoPorUnidad:
           reportadoPor['unidad_residencial']?.toString().trim() ?? '',
+      reportadoPorTelefono: reportadoPor['telefono']?.toString().trim() ?? '',
       atendidoPorNombre:
           data['atendido_por_nombre']?.toString().trim().isNotEmpty == true
           ? data['atendido_por_nombre'].toString().trim()
