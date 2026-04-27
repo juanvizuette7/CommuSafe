@@ -13,7 +13,7 @@
             </p>
         </div>
 
-        <form method="post" class="space-y-6 p-6">
+        <form method="post" class="space-y-6 p-6" x-data="{ audiencia: '{% if audiencias %}{{ audiencias.0.0 }}{% else %}RESIDENTES{% endif %}' }">
             {% csrf_token %}
 
             <div>
@@ -44,14 +44,76 @@
                     <div class="mt-3 grid gap-3">
                         {% for value, label in audiencias %}
                         <label class="group flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 transition hover:border-primary/40 hover:bg-white">
-                            <input type="radio" name="audiencia" value="{{ value }}" {% if forloop.first %}checked{% endif %} class="h-4 w-4 border-slate-300 text-primary focus:ring-primary">
+                            <input type="radio" name="audiencia" value="{{ value }}" x-model="audiencia" {% if forloop.first %}checked{% endif %} class="h-4 w-4 border-slate-300 text-primary focus:ring-primary">
                             <span class="text-sm font-bold text-slate-700">{{ label }}</span>
                         </label>
                         {% endfor %}
                     </div>
+                    <div x-show="audiencia === 'ESPECIFICOS'" x-cloak class="mt-4 rounded-[24px] border border-primary/15 bg-primary/5 p-4">
+                        <div class="flex items-start gap-3">
+                            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">&#128101;</div>
+                            <div>
+                                <p class="text-sm font-black text-primary">Usuarios específicos</p>
+                                <p class="mt-1 text-xs leading-5 text-slate-600">
+                                    Selecciona uno o varios residentes y, si eres administrador, también vigilantes específicos.
+                                </p>
+                            </div>
+                        </div>
+
+                        {% if residentes_destinatarios %}
+                        <div class="mt-5">
+                            <p class="text-xs font-black uppercase tracking-[0.16em] text-slate-500">Residentes</p>
+                            <div class="mt-3 grid max-h-64 gap-2 overflow-y-auto pr-1">
+                                {% for usuario in residentes_destinatarios %}
+                                <label class="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-3 transition hover:border-primary/40">
+                                    <input type="checkbox" name="destinatarios_ids" value="{{ usuario.id }}" class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary">
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block truncate text-sm font-bold text-slate-800">{{ usuario.nombre_completo }}</span>
+                                        <span class="block truncate text-xs text-slate-500">{{ usuario.unidad_residencial|default:"Sin unidad" }} · {{ usuario.telefono|default:"Sin celular" }}</span>
+                                    </span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if vigilantes_destinatarios %}
+                        <div class="mt-5">
+                            <p class="text-xs font-black uppercase tracking-[0.16em] text-slate-500">Vigilantes</p>
+                            <div class="mt-3 grid gap-2">
+                                {% for usuario in vigilantes_destinatarios %}
+                                <label class="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-3 transition hover:border-primary/40">
+                                    <input type="checkbox" name="destinatarios_ids" value="{{ usuario.id }}" class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary">
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block truncate text-sm font-bold text-slate-800">{{ usuario.nombre_completo }}</span>
+                                        <span class="block truncate text-xs text-slate-500">{{ usuario.unidad_residencial|default:"Sin puesto" }} · {{ usuario.telefono|default:"Sin celular" }}</span>
+                                    </span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if administradores_destinatarios %}
+                        <div class="mt-5">
+                            <p class="text-xs font-black uppercase tracking-[0.16em] text-slate-500">Administración</p>
+                            <div class="mt-3 grid gap-2">
+                                {% for usuario in administradores_destinatarios %}
+                                <label class="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-3 transition hover:border-primary/40">
+                                    <input type="checkbox" name="destinatarios_ids" value="{{ usuario.id }}" class="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary">
+                                    <span class="min-w-0 flex-1">
+                                        <span class="block truncate text-sm font-bold text-slate-800">{{ usuario.nombre_completo }}</span>
+                                        <span class="block truncate text-xs text-slate-500">{{ usuario.email }} · {{ usuario.telefono|default:"Sin celular" }}</span>
+                                    </span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
                     {% if audiencia_forzada_residentes %}
                     <p class="mt-3 rounded-2xl bg-blue-50 px-4 py-3 text-xs font-semibold leading-5 text-blue-700">
-                        Por control operativo, las cuentas de vigilancia envían avisos únicamente a residentes.
+                        Por control operativo, las cuentas de vigilancia envían avisos únicamente a residentes o residentes seleccionados.
                     </p>
                     {% endif %}
                 </div>

@@ -22,12 +22,14 @@ class AudienciaAviso:
     RESIDENTES = "RESIDENTES"
     VIGILANTES = "VIGILANTES"
     ADMINISTRADORES = "ADMINISTRADORES"
+    ESPECIFICOS = "ESPECIFICOS"
 
     CHOICES = (
         (TODOS, "Todos los usuarios activos"),
         (RESIDENTES, "Residentes activos"),
         (VIGILANTES, "Vigilantes activos"),
         (ADMINISTRADORES, "Administradores activos"),
+        (ESPECIFICOS, "Usuarios seleccionados"),
     )
 
 
@@ -168,20 +170,38 @@ def _usuarios_por_audiencia(audiencia):
     return queryset
 
 
+def usuarios_disponibles_para_aviso(usuario):
+    """Devuelve usuarios activos que el solicitante puede elegir como destinatarios."""
+
+    queryset = Usuario.objects.filter(activo=True).order_by("rol", "nombre", "apellido", "email")
+    if usuario.es_vigilante:
+        queryset = queryset.filter(rol=Usuario.Rol.RESIDENTE)
+    return queryset
+
+
 def notificar_aviso_comunitario(
     *,
     titulo,
     cuerpo,
     audiencia=AudienciaAviso.TODOS,
     tipo=Notificacion.Tipo.AVISO_ADMIN,
+    destinatarios=None,
 ):
     """Crea un aviso manual segmentado por audiencia y devuelve su resultado."""
 
-    destinatarios = _usuarios_por_audiencia(audiencia)
+    destinatarios_queryset = (
+        Usuario.objects.filter(id__in=[usuario.id for usuario in destinatarios], activo=True)
+        if destinatarios is not None
+        else _usuarios_por_audiencia(audiencia)
+    )
     total = 0
     enviados_push = 0
+    vistos = set()
 
-    for destinatario in destinatarios.iterator():
+    for destinatario in destinatarios_queryset.iterator():
+        if destinatario.id in vistos:
+            continue
+        vistos.add(destinatario.id)
         notificacion = _crear_registro_y_enviar_push(
             destinatario=destinatario,
             titulo=titulo,

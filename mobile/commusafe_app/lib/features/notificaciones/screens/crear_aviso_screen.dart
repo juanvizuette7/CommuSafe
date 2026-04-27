@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../models/destinatario_aviso_model.dart';
 import '../providers/notificacion_provider.dart';
 
 class CrearAvisoScreen extends StatefulWidget {
@@ -17,6 +18,7 @@ class _CrearAvisoScreenState extends State<CrearAvisoScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _tituloController = TextEditingController();
   final TextEditingController _cuerpoController = TextEditingController();
+  final Set<String> _destinatariosSeleccionados = <String>{};
 
   String _tipo = 'AVISO_ADMIN';
   String _audiencia = 'RESIDENTES';
@@ -61,7 +63,35 @@ class _CrearAvisoScreenState extends State<CrearAvisoScreen> {
       icon: Icons.admin_panel_settings_rounded,
       description: 'Equipo administrativo activo.',
     ),
+    _NoticeOption(
+      value: 'ESPECIFICOS',
+      label: 'Usuarios específicos',
+      icon: Icons.how_to_reg_rounded,
+      description: 'Selecciona uno o varios usuarios concretos.',
+    ),
   ];
+
+  static const List<_NoticeOption> _audienciasVigilante = <_NoticeOption>[
+    _NoticeOption(
+      value: 'RESIDENTES',
+      label: 'Residentes',
+      icon: Icons.apartment_rounded,
+      description: 'Usuarios residentes activos.',
+    ),
+    _NoticeOption(
+      value: 'ESPECIFICOS',
+      label: 'Residentes específicos',
+      icon: Icons.how_to_reg_rounded,
+      description: 'Selecciona uno o varios residentes concretos.',
+    ),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    final provider = context.read<NotificacionProvider>();
+    Future<void>.microtask(provider.cargarDestinatariosAviso);
+  }
 
   @override
   void dispose() {
@@ -75,12 +105,25 @@ class _CrearAvisoScreenState extends State<CrearAvisoScreen> {
       return;
     }
 
+    if (_audiencia == 'ESPECIFICOS' && _destinatariosSeleccionados.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Selecciona al menos un destinatario específico.'),
+          backgroundColor: AppColors.danger,
+        ),
+      );
+      return;
+    }
+
     final provider = context.read<NotificacionProvider>();
     final total = await provider.crearAviso(
       titulo: _tituloController.text,
       cuerpo: _cuerpoController.text,
       audiencia: _audiencia,
       tipo: _tipo,
+      destinatariosIds: _audiencia == 'ESPECIFICOS'
+          ? _destinatariosSeleccionados.toList()
+          : const <String>[],
     );
 
     if (!mounted) {
@@ -108,6 +151,16 @@ class _CrearAvisoScreenState extends State<CrearAvisoScreen> {
     context.pop(true);
   }
 
+  void _toggleDestinatario(String id, bool selected) {
+    setState(() {
+      if (selected) {
+        _destinatariosSeleccionados.add(id);
+      } else {
+        _destinatariosSeleccionados.remove(id);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final usuario = context.watch<AuthProvider>().usuarioActual;
@@ -115,7 +168,7 @@ class _CrearAvisoScreenState extends State<CrearAvisoScreen> {
     final puedeCrear = usuario?.esAdmin == true || usuario?.esVigilante == true;
     final audiencias = usuario?.esAdmin == true
         ? _audienciasAdmin
-        : _audienciasAdmin.where((item) => item.value == 'RESIDENTES').toList();
+        : _audienciasVigilante;
 
     if (!puedeCrear) {
       return Scaffold(
@@ -190,6 +243,21 @@ class _CrearAvisoScreenState extends State<CrearAvisoScreen> {
                 ),
               ),
             ),
+            if (_audiencia == 'ESPECIFICOS') ...<Widget>[
+              const SizedBox(height: 4),
+              _SpecificRecipientsSection(
+                residentes: provider.residentesAviso,
+                vigilantes: usuario?.esAdmin == true
+                    ? provider.vigilantesAviso
+                    : const <DestinatarioAvisoModel>[],
+                administradores: usuario?.esAdmin == true
+                    ? provider.administradoresAviso
+                    : const <DestinatarioAvisoModel>[],
+                selectedIds: _destinatariosSeleccionados,
+                isLoading: provider.isLoadingNoticeRecipients,
+                onChanged: _toggleDestinatario,
+              ),
+            ],
             const SizedBox(height: 20),
             TextFormField(
               controller: _tituloController,
@@ -267,6 +335,216 @@ class _CrearAvisoScreenState extends State<CrearAvisoScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _SpecificRecipientsSection extends StatelessWidget {
+  const _SpecificRecipientsSection({
+    required this.residentes,
+    required this.vigilantes,
+    required this.administradores,
+    required this.selectedIds,
+    required this.isLoading,
+    required this.onChanged,
+  });
+
+  final List<DestinatarioAvisoModel> residentes;
+  final List<DestinatarioAvisoModel> vigilantes;
+  final List<DestinatarioAvisoModel> administradores;
+  final Set<String> selectedIds;
+  final bool isLoading;
+  final void Function(String id, bool selected) onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading) {
+      return Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: const Color(0xFFE2E8F0)),
+        ),
+        child: const Row(
+          children: <Widget>[
+            SizedBox(
+              height: 20,
+              width: 20,
+              child: CircularProgressIndicator(strokeWidth: 2.4),
+            ),
+            SizedBox(width: 12),
+            Expanded(child: Text('Cargando destinatarios disponibles...')),
+          ],
+        ),
+      );
+    }
+
+    final hasRecipients =
+        residentes.isNotEmpty ||
+        vigilantes.isNotEmpty ||
+        administradores.isNotEmpty;
+    if (!hasRecipients) {
+      return Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: AppColors.danger.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: AppColors.danger.withValues(alpha: 0.16)),
+        ),
+        child: Text(
+          'No hay destinatarios activos disponibles para seleccionar.',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: AppColors.danger,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.12)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Container(
+                height: 42,
+                width: 42,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.groups_2_rounded,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      'Selecciona destinatarios',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    Text(
+                      '${selectedIds.length} usuario(s) seleccionados',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (residentes.isNotEmpty)
+            _RecipientsGroup(
+              title: 'Residentes',
+              recipients: residentes,
+              selectedIds: selectedIds,
+              onChanged: onChanged,
+            ),
+          if (vigilantes.isNotEmpty)
+            _RecipientsGroup(
+              title: 'Vigilantes',
+              recipients: vigilantes,
+              selectedIds: selectedIds,
+              onChanged: onChanged,
+            ),
+          if (administradores.isNotEmpty)
+            _RecipientsGroup(
+              title: 'Administración',
+              recipients: administradores,
+              selectedIds: selectedIds,
+              onChanged: onChanged,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RecipientsGroup extends StatelessWidget {
+  const _RecipientsGroup({
+    required this.title,
+    required this.recipients,
+    required this.selectedIds,
+    required this.onChanged,
+  });
+
+  final String title;
+  final List<DestinatarioAvisoModel> recipients;
+  final Set<String> selectedIds;
+  final void Function(String id, bool selected) onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text(
+            title,
+            style: Theme.of(context).textTheme.labelLarge?.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.8,
+            ),
+          ),
+          const SizedBox(height: 8),
+          ...recipients.map((recipient) {
+            final selected = selectedIds.contains(recipient.id);
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Material(
+                color: selected
+                    ? AppColors.primary.withValues(alpha: 0.08)
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                child: CheckboxListTile(
+                  value: selected,
+                  onChanged: (value) => onChanged(recipient.id, value ?? false),
+                  activeColor: AppColors.primary,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  side: const BorderSide(color: Color(0xFFCBD5E1)),
+                  title: Text(
+                    recipient.nombreCompleto,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  subtitle: Text(
+                    recipient.descripcion,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 2,
+                  ),
+                ),
+              ),
+            );
+          }),
+        ],
       ),
     );
   }

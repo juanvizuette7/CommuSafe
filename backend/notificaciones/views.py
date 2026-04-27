@@ -7,8 +7,12 @@ from rest_framework.response import Response
 from usuarios.permissions import EsAdministradorOVigilante
 
 from .models import Notificacion
-from .serializers import AvisoComunitarioSerializer, NotificacionSerializer
-from .services import notificar_aviso_comunitario
+from .serializers import (
+    AvisoComunitarioSerializer,
+    DestinatarioAvisoSerializer,
+    NotificacionSerializer,
+)
+from .services import notificar_aviso_comunitario, usuarios_disponibles_para_aviso
 
 
 class NotificacionViewSet(viewsets.ReadOnlyModelViewSet):
@@ -64,3 +68,26 @@ class NotificacionViewSet(viewsets.ReadOnlyModelViewSet):
             },
             status=status.HTTP_201_CREATED,
         )
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="destinatarios-avisos",
+        permission_classes=[permissions.IsAuthenticated, EsAdministradorOVigilante],
+    )
+    def destinatarios_avisos(self, request):
+        usuarios = usuarios_disponibles_para_aviso(request.user)
+        serializer = DestinatarioAvisoSerializer(usuarios, many=True)
+        por_rol = {
+            "residentes": [],
+            "vigilantes": [],
+            "administradores": [],
+        }
+        for usuario in serializer.data:
+            if usuario["rol"] == "RESIDENTE":
+                por_rol["residentes"].append(usuario)
+            elif usuario["rol"] == "VIGILANTE":
+                por_rol["vigilantes"].append(usuario)
+            elif usuario["rol"] == "ADMINISTRADOR":
+                por_rol["administradores"].append(usuario)
+        return Response(por_rol)

@@ -15,6 +15,8 @@ class AppConstants {
   static const String incidentsEndpoint = '/api/incidentes/';
   static const String notificationsEndpoint = '/api/notificaciones/';
   static const String createNoticeEndpoint = '/api/notificaciones/avisos/';
+  static const String noticeRecipientsEndpoint =
+      '/api/notificaciones/destinatarios-avisos/';
   static const String unreadNotificationsCountEndpoint =
       '/api/notificaciones/no-leidas-count/';
   static const String chatEndpoint = '/api/asistente/chat/';

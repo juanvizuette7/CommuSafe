@@ -17,7 +17,11 @@ from incidentes.serializers import CambiarEstadoSerializer
 from incidentes.services import cambiar_estado_incidente
 from notificaciones.models import Notificacion
 from notificaciones.serializers import AvisoComunitarioSerializer
-from notificaciones.services import AudienciaAviso, notificar_aviso_comunitario
+from notificaciones.services import (
+    AudienciaAviso,
+    notificar_aviso_comunitario,
+    usuarios_disponibles_para_aviso,
+)
 from usuarios.models import Usuario
 
 
@@ -282,7 +286,10 @@ def avisos_comunitarios(request):
 
     if request.method == "POST":
         datos = request.POST.copy()
-        if request.user.es_vigilante:
+        destinatarios_ids = request.POST.getlist("destinatarios_ids")
+        if destinatarios_ids:
+            datos.setlist("destinatarios_ids", destinatarios_ids)
+        if request.user.es_vigilante and datos.get("audiencia") != AudienciaAviso.ESPECIFICOS:
             datos["audiencia"] = AudienciaAviso.RESIDENTES
 
         serializer = AvisoComunitarioSerializer(data=datos, context={"request": request})
@@ -304,7 +311,15 @@ def avisos_comunitarios(request):
 
     audiencias = AudienciaAviso.CHOICES
     if request.user.es_vigilante:
-        audiencias = ((AudienciaAviso.RESIDENTES, "Residentes activos"),)
+        audiencias = (
+            (AudienciaAviso.RESIDENTES, "Residentes activos"),
+            (AudienciaAviso.ESPECIFICOS, "Usuarios seleccionados"),
+        )
+
+    destinatarios_disponibles = usuarios_disponibles_para_aviso(request.user)
+    residentes_destinatarios = destinatarios_disponibles.filter(rol=Usuario.Rol.RESIDENTE)
+    vigilantes_destinatarios = destinatarios_disponibles.filter(rol=Usuario.Rol.VIGILANTE)
+    administradores_destinatarios = destinatarios_disponibles.filter(rol=Usuario.Rol.ADMINISTRADOR)
 
     avisos_recientes = (
         Notificacion.objects.filter(
@@ -332,6 +347,9 @@ def avisos_comunitarios(request):
         ],
         avisos_recientes=avisos_recientes,
         audiencia_forzada_residentes=request.user.es_vigilante,
+        residentes_destinatarios=residentes_destinatarios,
+        vigilantes_destinatarios=vigilantes_destinatarios,
+        administradores_destinatarios=administradores_destinatarios,
     )
     return render(request, "panel/avisos.html", contexto)
 
