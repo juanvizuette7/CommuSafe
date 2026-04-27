@@ -43,7 +43,150 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
     final incidenteId = item.incidenteRelacionado;
     if (incidenteId != null && incidenteId.isNotEmpty) {
       context.push('/incidentes/$incidenteId');
+      return;
     }
+
+    await _showNotificationDetail(item);
+  }
+
+  Future<void> _showNotificationDetail(NotificacionModel item) async {
+    final color = _notificationColor(item);
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Container(
+            margin: const EdgeInsets.all(14),
+            padding: const EdgeInsets.fromLTRB(22, 14, 22, 22),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(28),
+              boxShadow: <BoxShadow>[
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.18),
+                  blurRadius: 26,
+                  offset: const Offset(0, 14),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Center(
+                  child: Container(
+                    width: 46,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: AppColors.muted,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Container(
+                      height: 56,
+                      width: 56,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: <Color>[
+                            color,
+                            color.withValues(alpha: 0.72),
+                          ],
+                        ),
+                      ),
+                      child: Icon(
+                        item.iconoPorTipo(),
+                        color: Colors.white,
+                        size: 28,
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            item.tipoLabel,
+                            style: Theme.of(context).textTheme.labelLarge
+                                ?.copyWith(
+                                  color: color,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.2,
+                                ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            item.titulo,
+                            style: Theme.of(context).textTheme.titleLarge
+                                ?.copyWith(
+                                  color: AppColors.textPrimary,
+                                  fontWeight: FontWeight.w900,
+                                  height: 1.08,
+                                ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            item.tiempoRelativo,
+                            style: Theme.of(context).textTheme.labelMedium
+                                ?.copyWith(
+                                  color: AppColors.textSecondary,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: AppColors.background,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppColors.muted),
+                  ),
+                  child: Text(
+                    item.cuerpo,
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: AppColors.textPrimary,
+                      height: 1.35,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.check_rounded),
+                    label: const Text('Entendido'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _goToCreateNotice() async {
@@ -151,6 +294,21 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
   }
 }
 
+Color _notificationColor(NotificacionModel item) {
+  switch (item.tipo.toUpperCase()) {
+    case 'EMERGENCIA':
+      return AppColors.danger;
+    case 'INCIDENTE_NUEVO':
+      return AppColors.inProgress;
+    case 'CAMBIO_ESTADO':
+      return AppColors.success;
+    case 'AVISO_ADMIN':
+      return AppColors.warning;
+    default:
+      return AppColors.primary;
+  }
+}
+
 class _NotificationTile extends StatelessWidget {
   const _NotificationTile({required this.item, required this.onTap});
 
@@ -158,18 +316,7 @@ class _NotificationTile extends StatelessWidget {
   final VoidCallback onTap;
 
   Color _typeColor() {
-    switch (item.tipo.toUpperCase()) {
-      case 'EMERGENCIA':
-        return AppColors.danger;
-      case 'INCIDENTE_NUEVO':
-        return AppColors.inProgress;
-      case 'CAMBIO_ESTADO':
-        return AppColors.success;
-      case 'AVISO_ADMIN':
-        return AppColors.textSecondary;
-      default:
-        return AppColors.primary;
-    }
+    return _notificationColor(item);
   }
 
   @override
