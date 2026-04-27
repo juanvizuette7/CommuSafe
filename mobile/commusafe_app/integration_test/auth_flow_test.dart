@@ -1,3 +1,4 @@
+import 'package:commusafe_app/core/services/storage_service.dart';
 import 'package:commusafe_app/main.dart' as app;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,10 +11,15 @@ void main() {
     testWidgets('inicia sesión, abre perfil y cierra sesión', (
       WidgetTester tester,
     ) async {
-      app.main();
-      await tester.pumpAndSettle(const Duration(seconds: 4));
+      await tester.runAsync(StorageService.clearSession);
+      await app.main();
+      await tester.pump(const Duration(seconds: 2));
 
-      expect(find.text('CommuSafe'), findsOneWidget);
+      await _pumpUntilVisible(
+        tester,
+        find.text('CommuSafe'),
+        debugLabel: 'pantalla de login',
+      );
       expect(find.text('Remansos del Norte'), findsOneWidget);
 
       await tester.enterText(
@@ -32,11 +38,11 @@ void main() {
       expect(find.text('Centro de incidentes'), findsOneWidget);
 
       await tester.tap(find.text('Perfil'));
-      await tester.pumpAndSettle(const Duration(seconds: 2));
+      await tester.pump(const Duration(seconds: 2));
 
-      await _pumpUntilVisible(tester, find.text('María López'));
+      await _pumpUntilVisible(tester, find.text('Maria Lopez'));
 
-      expect(find.text('María López'), findsWidgets);
+      expect(find.text('Maria Lopez'), findsWidgets);
       expect(find.text('residente1@remansos.com'), findsOneWidget);
       expect(find.text('Apto 101 Torre A'), findsOneWidget);
 

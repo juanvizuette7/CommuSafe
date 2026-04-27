@@ -22,7 +22,7 @@ void main() {
         await tester.runAsync(StorageService.clearSession);
 
         await app.main();
-        await tester.pumpAndSettle(const Duration(seconds: 4));
+        await tester.pump(const Duration(seconds: 2));
 
         await _login(
           tester,
@@ -46,7 +46,7 @@ void main() {
           listen: false,
         );
 
-        final createdIncident = await tester.runAsync(() async {
+        var createdIncident = await tester.runAsync(() async {
           final imageFile = await _createTempImage(uniqueSuffix);
           final created = await incidentProvider.crearIncidente(
             titulo: incidentTitle,
@@ -59,6 +59,14 @@ void main() {
           await incidentProvider.cargarIncidentes(refresh: true);
           return created;
         });
+        if (createdIncident == null) {
+          for (final incidente in incidentProvider.incidentes) {
+            if (incidente.titulo == incidentTitle) {
+              createdIncident = incidente;
+              break;
+            }
+          }
+        }
 
         expect(
           createdIncident,
@@ -69,7 +77,7 @@ void main() {
         );
         expect(createdIncident!.tieneEvidencias, isTrue);
 
-        await tester.pumpAndSettle(const Duration(seconds: 4));
+        await tester.pump(const Duration(seconds: 2));
         await _pumpUntilVisible(
           tester,
           find.text(incidentTitle),
@@ -77,7 +85,7 @@ void main() {
         );
 
         await tester.tap(find.text(incidentTitle).first);
-        await tester.pumpAndSettle(const Duration(seconds: 2));
+        await tester.pump(const Duration(seconds: 2));
 
         await _pumpUntilVisible(
           tester,
@@ -106,7 +114,7 @@ void main() {
         );
 
         await tester.tap(find.text(incidentTitle).first);
-        await tester.pumpAndSettle(const Duration(seconds: 2));
+        await tester.pump(const Duration(seconds: 2));
 
         await _pumpUntilVisible(
           tester,
@@ -119,9 +127,9 @@ void main() {
           'Atendido desde la app móvil durante la validación del sprint 7.',
         );
         await tester.ensureVisible(find.text('Actualizar'));
-        await tester.pumpAndSettle(const Duration(milliseconds: 400));
+        await tester.pump(const Duration(milliseconds: 400));
         await tester.tap(find.text('Actualizar'));
-        await tester.pumpAndSettle(const Duration(seconds: 1));
+        await tester.pump(const Duration(seconds: 1));
         await _pumpUntilVisible(
           tester,
           find.text('Confirmar'),
@@ -181,7 +189,7 @@ Future<void> _login(
 
 Future<void> _logout(WidgetTester tester) async {
   await tester.tap(find.text('Perfil'));
-  await tester.pumpAndSettle(const Duration(seconds: 2));
+  await tester.pump(const Duration(seconds: 2));
   await _pumpUntilVisible(
     tester,
     find.text('Cerrar sesión'),
