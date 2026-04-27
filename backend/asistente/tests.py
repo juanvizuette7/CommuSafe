@@ -15,6 +15,7 @@ from .views import _api_llm_configurada, _extraer_texto_anthropic, _normalizar_h
 Usuario = get_user_model()
 
 
+@override_settings(LLM_API_KEY="", GEMINI_API_KEY="", LLM_PROVIDER="gemini")
 class ChatAsistenteFallbackTests(APITestCase):
     """Pruebas del fallback del asistente."""
 
@@ -28,7 +29,6 @@ class ChatAsistenteFallbackTests(APITestCase):
             rol=Usuario.Rol.RESIDENTE,
         )
 
-    @override_settings(LLM_API_KEY="")
     def test_responde_con_fallback_para_horarios(self):
         self.client.force_authenticate(self.usuario)
         response = self.client.post(
@@ -42,9 +42,8 @@ class ChatAsistenteFallbackTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["modo"], "fallback")
-        self.assertIn("áreas comunes", response.data["respuesta"].lower())
+        self.assertIn("areas comunes", response.data["respuesta"].lower())
 
-    @override_settings(LLM_API_KEY="")
     def test_limita_historial_a_ultimos_ocho_mensajes(self):
         self.client.force_authenticate(self.usuario)
         historial = [{"rol": "usuario", "contenido": f"Mensaje {indice}"} for indice in range(12)]
@@ -60,7 +59,6 @@ class ChatAsistenteFallbackTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["modo"], "fallback")
 
-    @override_settings(LLM_API_KEY="")
     def test_consulta_fuera_de_alcance_da_respuesta_controlada(self):
         self.client.force_authenticate(self.usuario)
         response = self.client.post(
@@ -72,9 +70,8 @@ class ChatAsistenteFallbackTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("administración", response.data["respuesta"].lower())
+        self.assertIn("administracion", response.data["respuesta"].lower())
 
-    @override_settings(LLM_API_KEY="")
     def test_acepta_historial_con_campo_mensaje_y_roles_alias(self):
         self.client.force_authenticate(self.usuario)
         response = self.client.post(
@@ -92,7 +89,6 @@ class ChatAsistenteFallbackTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["modo"], "fallback")
 
-    @override_settings(LLM_API_KEY="")
     def test_rechaza_mensaje_de_historial_sin_contenido(self):
         self.client.force_authenticate(self.usuario)
         response = self.client.post(
@@ -107,7 +103,6 @@ class ChatAsistenteFallbackTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("historial", response.data)
 
-    @override_settings(LLM_API_KEY="")
     def test_fallback_para_cuotas_normas_y_app(self):
         self.client.force_authenticate(self.usuario)
 
@@ -145,11 +140,13 @@ class ChatAsistenteHelpersTests(APITestCase):
     """Pruebas unitarias de helpers de la vista del asistente."""
 
     def test_api_llm_configurada(self):
-        with override_settings(LLM_API_KEY=""):
+        with override_settings(LLM_API_KEY="", GEMINI_API_KEY=""):
             self.assertFalse(_api_llm_configurada())
-        with override_settings(LLM_API_KEY="REEMPLAZAR_KEY"):
+        with override_settings(LLM_API_KEY="REEMPLAZAR_KEY", GEMINI_API_KEY=""):
             self.assertFalse(_api_llm_configurada())
-        with override_settings(LLM_API_KEY="clave-real"):
+        with override_settings(LLM_API_KEY="clave-real", GEMINI_API_KEY=""):
+            self.assertTrue(_api_llm_configurada())
+        with override_settings(LLM_API_KEY="", GEMINI_API_KEY="clave-real"):
             self.assertTrue(_api_llm_configurada())
 
     def test_normalizar_historial(self):
@@ -181,6 +178,7 @@ class ChatAsistenteHelpersTests(APITestCase):
         self.assertIn("No tengo una respuesta", texto)
 
 
+@override_settings(GEMINI_API_KEY="", LLM_PROVIDER="anthropic")
 class ChatAsistenteIAModeTests(APITestCase):
     """Pruebas del flujo con IA configurada."""
 

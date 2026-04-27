@@ -157,4 +157,7 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 FCM_SERVER_KEY = config("FCM_SERVER_KEY", default="")
+LLM_PROVIDER = config("LLM_PROVIDER", default="gemini")
 LLM_API_KEY = config("LLM_API_KEY", default="")
+GEMINI_API_KEY = config("GEMINI_API_KEY", default="")
+GEMINI_MODEL = config("GEMINI_MODEL", default="gemini-2.5-flash-lite")

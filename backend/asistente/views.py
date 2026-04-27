@@ -1,6 +1,17 @@
-"""Vistas del módulo de asistente virtual."""
+"""Vistas del modulo de asistente virtual."""
 
-from anthropic import Anthropic
+try:
+    from anthropic import Anthropic
+except ImportError:  # pragma: no cover
+    Anthropic = None
+
+try:
+    from google import genai
+    from google.genai import types as genai_types
+except ImportError:  # pragma: no cover
+    genai = None
+    genai_types = None
+
 from django.conf import settings
 from rest_framework import permissions, serializers, status
 from rest_framework.response import Response
@@ -9,26 +20,26 @@ from rest_framework.views import APIView
 
 CONOCIMIENTO_REMANSOS = """
 Conjunto residencial: Remansos del Norte.
-Administración: atención de lunes a viernes de 8:00 a. m. a 5:00 p. m. y sábados de 8:00 a. m. a 12:00 m.
-Portería y vigilancia: atención permanente 24/7.
-Horarios de áreas comunes: de 6:00 a. m. a 10:00 p. m.
+Administracion: atencion de lunes a viernes de 8:00 a. m. a 5:00 p. m. y sabados de 8:00 a. m. a 12:00 m.
+Porteria y vigilancia: atencion permanente 24/7.
+Horarios de areas comunes: de 6:00 a. m. a 10:00 p. m.
 Normas de convivencia base: respetar horarios de descanso entre 10:00 p. m. y 6:00 a. m., recoger excrementos de mascotas, usar correa en zonas comunes, no obstruir pasillos ni escaleras, respetar el reglamento de uso de zonas comunes.
-Procedimiento de incidentes en CommuSafe: el residente reporta, vigilancia atiende, administración supervisa y puede cerrar el caso.
-Emergencias: contactar portería de inmediato y, si la situación es crítica, llamar a la línea 123.
-Cuotas de administración: se consultan y gestionan con administración; si el usuario requiere valores exactos o estado de cartera, debe contactar directamente a la administración.
-Uso de CommuSafe: permite iniciar sesión, reportar incidentes, ver notificaciones, consultar estados y recibir orientación básica del asistente.
-Si una pregunta sale de este alcance, el asistente debe decirlo claramente y sugerir contactar a la administración.
+Procedimiento de incidentes en CommuSafe: el residente reporta, vigilancia atiende, administracion supervisa y puede cerrar el caso.
+Emergencias: contactar porteria de inmediato y, si la situacion es critica, llamar a la linea 123.
+Cuotas de administracion: se consultan y gestionan con administracion; si el usuario requiere valores exactos o estado de cartera, debe contactar directamente a la administracion.
+Uso de CommuSafe: permite iniciar sesion, reportar incidentes, ver notificaciones, consultar estados y recibir orientacion basica del asistente.
+Si una pregunta sale de este alcance, el asistente debe decirlo claramente y sugerir contactar a la administracion.
 """.strip()
 
 
 SYSTEM_PROMPT = f"""
 Eres el asistente virtual oficial de CommuSafe para el conjunto residencial Remansos del Norte.
-Respondes siempre en español, con tono amable, claro y conciso.
-Solo puedes responder con base en esta información autorizada:
+Respondes siempre en espanol, con tono amable, claro y conciso.
+Solo puedes responder con base en esta informacion autorizada:
 {CONOCIMIENTO_REMANSOS}
-No inventes políticas, valores, nombres de personas, multas ni decisiones administrativas.
-Si la información no está disponible o requiere confirmación humana, indica que el usuario debe contactar a la administración o a portería.
-Evita respuestas largas y mantén el foco en ayudar al residente dentro del contexto del conjunto y la app.
+No inventes politicas, valores, nombres de personas, multas ni decisiones administrativas.
+Si la informacion no esta disponible o requiere confirmacion humana, indica que el usuario debe contactar a la administracion o a porteria.
+Evita respuestas largas y manten el foco en ayudar al residente dentro del contexto del conjunto y la app.
 """.strip()
 
 
@@ -57,9 +68,25 @@ class ChatAsistenteSerializer(serializers.Serializer):
         return value[-8:]
 
 
+def _valor_configurado(valor):
+    valor_limpio = (valor or "").strip()
+    if not valor_limpio:
+        return False
+
+    marcadores_invalidos = ["REEMPLAZAR", "PLACEHOLDER", "PEGA AQUI", "PEGA AQUÍ", "[", "]"]
+    return not any(marcador in valor_limpio.upper() for marcador in marcadores_invalidos)
+
+
+def _gemini_configurada():
+    return genai is not None and _valor_configurado(getattr(settings, "GEMINI_API_KEY", ""))
+
+
+def _anthropic_configurada():
+    return Anthropic is not None and _valor_configurado(getattr(settings, "LLM_API_KEY", ""))
+
+
 def _api_llm_configurada():
-    valor = (settings.LLM_API_KEY or "").strip()
-    return bool(valor and "REEMPLAZAR" not in valor.upper())
+    return _gemini_configurada() or _anthropic_configurada()
 
 
 def _normalizar_historial(historial):
@@ -70,37 +97,46 @@ def _normalizar_historial(historial):
     return mensajes
 
 
+def _normalizar_historial_gemini(historial, mensaje_actual):
+    lineas = []
+    for item in historial[-8:]:
+        rol = "Asistente" if item["rol"] in {"assistant", "asistente"} else "Usuario"
+        lineas.append(f"{rol}: {item['contenido'].strip()}")
+    lineas.append(f"Usuario: {mensaje_actual}")
+    return "\n".join(lineas)
+
+
 def _respuesta_fallback(mensaje):
     texto = mensaje.lower()
 
-    if any(palabra in texto for palabra in ["horario", "horarios", "salón", "zona común", "zonas comunes"]):
+    if any(palabra in texto for palabra in ["horario", "horarios", "salon", "zona comun", "zonas comunes"]):
         return (
-            "En Remansos del Norte, las áreas comunes funcionan de 6:00 a. m. a 10:00 p. m. "
-            "La administración atiende de lunes a viernes de 8:00 a. m. a 5:00 p. m. y sábados de 8:00 a. m. a 12:00 m."
+            "En Remansos del Norte, las areas comunes funcionan de 6:00 a. m. a 10:00 p. m. "
+            "La administracion atiende de lunes a viernes de 8:00 a. m. a 5:00 p. m. y sabados de 8:00 a. m. a 12:00 m."
         )
     if any(palabra in texto for palabra in ["emergencia", "gas", "incendio", "ambulancia", "urgencia"]):
         return (
-            "Si se trata de una emergencia, contacta de inmediato a portería y, si hay riesgo para la vida o la seguridad, "
-            "llama también a la línea 123. Si puedes, registra el incidente en CommuSafe para dejar trazabilidad."
+            "Si se trata de una emergencia, contacta de inmediato a porteria y, si hay riesgo para la vida o la seguridad, "
+            "llama tambien a la linea 123. Si puedes, registra el incidente en CommuSafe para dejar trazabilidad."
         )
-    if any(palabra in texto for palabra in ["cuota", "administración", "cartera", "pago"]):
+    if any(palabra in texto for palabra in ["cuota", "administracion", "cartera", "pago"]):
         return (
-            "Las cuotas de administración y el estado de cartera se gestionan directamente con la administración del conjunto. "
-            "Si necesitas el valor exacto o confirmar un pago, debes comunicarte con administración."
+            "Las cuotas de administracion y el estado de cartera se gestionan directamente con la administracion del conjunto. "
+            "Si necesitas el valor exacto o confirmar un pago, debes comunicarte con administracion."
         )
     if any(palabra in texto for palabra in ["norma", "convivencia", "ruido", "mascota", "reglamento"]):
         return (
-            "Las normas básicas de convivencia incluyen respetar el horario de descanso entre 10:00 p. m. y 6:00 a. m., "
+            "Las normas basicas de convivencia incluyen respetar el horario de descanso entre 10:00 p. m. y 6:00 a. m., "
             "usar correa para las mascotas en zonas comunes, recoger sus residuos y no obstruir pasillos o escaleras."
         )
-    if any(palabra in texto for palabra in ["app", "commusafe", "incidente", "reporte", "notificación"]):
+    if any(palabra in texto for palabra in ["app", "commusafe", "incidente", "reporte", "notificacion"]):
         return (
-            "Con CommuSafe puedes reportar incidentes, consultar su estado, recibir notificaciones y comunicarte mejor con vigilancia y administración."
+            "Con CommuSafe puedes reportar incidentes, consultar su estado, recibir notificaciones y comunicarte mejor con vigilancia y administracion."
         )
 
     return (
-        "No tengo una respuesta confirmada para esa consulta dentro de la información autorizada de Remansos del Norte. "
-        "Te recomiendo contactar directamente a la administración para obtener orientación precisa."
+        "No tengo una respuesta confirmada para esa consulta dentro de la informacion autorizada de Remansos del Norte. "
+        "Te recomiendo contactar directamente a la administracion para obtener orientacion precisa."
     )
 
 
@@ -108,6 +144,49 @@ def _extraer_texto_anthropic(respuesta):
     bloques = getattr(respuesta, "content", []) or []
     textos = [getattr(bloque, "text", "").strip() for bloque in bloques if getattr(bloque, "text", "").strip()]
     return "\n".join(textos).strip()
+
+
+def _llamar_anthropic(mensaje, historial):
+    mensajes = _normalizar_historial(historial)
+    mensajes.append({"role": "user", "content": mensaje})
+
+    cliente = Anthropic(api_key=settings.LLM_API_KEY)
+    respuesta = cliente.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=600,
+        system=SYSTEM_PROMPT,
+        messages=mensajes,
+    )
+    return _extraer_texto_anthropic(respuesta)
+
+
+def _llamar_gemini(mensaje, historial):
+    cliente = genai.Client(api_key=settings.GEMINI_API_KEY)
+    contenido = _normalizar_historial_gemini(historial, mensaje)
+    respuesta = cliente.models.generate_content(
+        model=getattr(settings, "GEMINI_MODEL", "gemini-2.5-flash-lite"),
+        contents=contenido,
+        config=genai_types.GenerateContentConfig(
+            system_instruction=SYSTEM_PROMPT,
+            max_output_tokens=600,
+            temperature=0.3,
+        ),
+    )
+    return (getattr(respuesta, "text", "") or "").strip()
+
+
+def _resolver_proveedor():
+    proveedor_preferido = (getattr(settings, "LLM_PROVIDER", "gemini") or "gemini").lower().strip()
+
+    if proveedor_preferido == "gemini" and _gemini_configurada():
+        return "gemini", _llamar_gemini
+    if proveedor_preferido == "anthropic" and _anthropic_configurada():
+        return "anthropic", _llamar_anthropic
+    if _gemini_configurada():
+        return "gemini", _llamar_gemini
+    if _anthropic_configurada():
+        return "anthropic", _llamar_anthropic
+    return "fallback", None
 
 
 class ChatAsistenteView(APIView):
@@ -121,41 +200,34 @@ class ChatAsistenteView(APIView):
 
         mensaje = serializer.validated_data["mensaje"].strip()
         historial = serializer.validated_data.get("historial", [])
+        proveedor, funcion_llm = _resolver_proveedor()
 
-        if not _api_llm_configurada():
+        if funcion_llm is None:
             return Response(
                 {
                     "respuesta": _respuesta_fallback(mensaje),
                     "modo": "fallback",
+                    "proveedor": "fallback",
                 },
                 status=status.HTTP_200_OK,
             )
 
-        mensajes = _normalizar_historial(historial)
-        mensajes.append({"role": "user", "content": mensaje})
-
         try:
-            cliente = Anthropic(api_key=settings.LLM_API_KEY)
-            respuesta = cliente.messages.create(
-                model="claude-haiku-4-5-20251001",
-                max_tokens=600,
-                system=SYSTEM_PROMPT,
-                messages=mensajes,
-            )
-            texto = _extraer_texto_anthropic(respuesta)
+            texto = funcion_llm(mensaje, historial)
+            modo = "ia" if texto else "fallback"
             if not texto:
                 texto = _respuesta_fallback(mensaje)
-                modo = "fallback"
-            else:
-                modo = "ia"
+                proveedor = "fallback"
         except Exception:
             texto = _respuesta_fallback(mensaje)
             modo = "fallback"
+            proveedor = "fallback"
 
         return Response(
             {
                 "respuesta": texto,
                 "modo": modo,
+                "proveedor": proveedor,
             },
             status=status.HTTP_200_OK,
         )
