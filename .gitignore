@@ -1,6 +1,7 @@
 .pytest_cache/
 backend/pytest-cache-files-*/
 backend/.coverage
+backend/.env
 backend/media/
 backend/htmlcov/
 backend/staticfiles/
@@ -11,3 +12,4 @@ venv/
 **/__pycache__/
 *.pyc
 *.log
+mobile/commusafe_app/android/app/google-services.json
