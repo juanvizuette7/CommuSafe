@@ -1,0 +1,1 @@
+web: gunicorn commusafe_backend.wsgi:application --log-file -
