@@ -3,7 +3,10 @@ class AppConstants {
 
   static const String appName = 'CommuSafe';
   static const String residentialComplexName = 'Remansos del Norte';
-  static const String baseUrl = 'http://10.0.2.2:8000';
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://10.0.2.2:8000',
+  );
 
   static const Duration requestTimeout = Duration(seconds: 10);
 
