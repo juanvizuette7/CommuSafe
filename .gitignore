@@ -2,6 +2,8 @@
 backend/pytest-cache-files-*/
 backend/.coverage
 backend/.env
+backend/firebase-service-account.json
+backend/*firebase-adminsdk*.json
 backend/db.sqlite3
 *.sqlite3
 dist/
