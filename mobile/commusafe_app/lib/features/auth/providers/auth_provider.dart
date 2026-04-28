@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/services/api_service.dart';
+import '../../../core/services/firebase_messaging_service.dart';
 import '../../../core/services/storage_service.dart';
 import '../models/usuario_model.dart';
 
@@ -53,6 +56,10 @@ class AuthProvider extends ChangeNotifier {
     }
 
     _isInitializing = false;
+    if (hasSession) {
+      FirebaseMessagingService.registerTokenRefreshSync();
+      unawaited(FirebaseMessagingService.syncTokenWithBackend());
+    }
     notifyListeners();
     return hasSession;
   }
@@ -103,6 +110,9 @@ class AuthProvider extends ChangeNotifier {
       } catch (_) {
         // Si el perfil detallado falla, se conserva la información mínima del login.
       }
+
+      FirebaseMessagingService.registerTokenRefreshSync();
+      unawaited(FirebaseMessagingService.syncTokenWithBackend());
 
       _initializationFuture = Future<bool>.value(true);
       _isLoading = false;

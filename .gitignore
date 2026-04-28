@@ -4,6 +4,7 @@ backend/.coverage
 backend/.env
 backend/db.sqlite3
 *.sqlite3
+dist/
 backend/media/
 backend/htmlcov/
 backend/staticfiles/

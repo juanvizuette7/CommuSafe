@@ -27,7 +27,7 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
     _initialized = true;
     final provider = context.read<NotificacionProvider>();
     Future<void>.microtask(() async {
-      provider.startPolling();
+      await provider.cargarConteoNoLeidas();
       await provider.cargarNotificaciones();
     });
   }
@@ -96,10 +96,7 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         gradient: LinearGradient(
-                          colors: <Color>[
-                            color,
-                            color.withValues(alpha: 0.72),
-                          ],
+                          colors: <Color>[color, color.withValues(alpha: 0.72)],
                         ),
                       ),
                       child: Icon(

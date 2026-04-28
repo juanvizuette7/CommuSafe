@@ -19,18 +19,18 @@ class MainLayout extends StatefulWidget {
 }
 
 class _MainLayoutState extends State<MainLayout> {
-  bool _pollingStarted = false;
+  bool _notificationCountLoaded = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (_pollingStarted) {
+    if (_notificationCountLoaded) {
       return;
     }
-    _pollingStarted = true;
+    _notificationCountLoaded = true;
     final authProvider = context.read<AuthProvider>();
     if (authProvider.hasSession) {
-      context.read<NotificacionProvider>().startPolling();
+      context.read<NotificacionProvider>().cargarConteoNoLeidas();
     }
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import 'core/services/navigation_service.dart';
 import 'core/theme/app_theme.dart';
 import 'features/asistente/screens/chat_screen.dart';
 import 'features/auth/providers/auth_provider.dart';
@@ -28,7 +29,10 @@ class _CommuSafeAppState extends State<CommuSafeApp> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _router ??= AppRouter.create(context.read<AuthProvider>());
+    if (_router == null) {
+      _router = AppRouter.create(context.read<AuthProvider>());
+      AppNavigationService.setRouter(_router!);
+    }
   }
 
   @override

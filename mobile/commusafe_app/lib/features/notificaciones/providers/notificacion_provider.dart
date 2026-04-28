@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
@@ -17,9 +15,7 @@ class NotificacionProvider extends ChangeNotifier {
   final List<DestinatarioAvisoModel> _administradoresAviso =
       <DestinatarioAvisoModel>[];
 
-  Timer? _pollingTimer;
   bool _isLoading = false;
-  bool _isPolling = false;
   bool _isCreatingNotice = false;
   bool _isLoadingNoticeRecipients = false;
   int _noLeidasCount = 0;
@@ -36,7 +32,6 @@ class NotificacionProvider extends ChangeNotifier {
   List<NotificacionModel> get items => notificaciones;
   bool get isLoading => _isLoading;
   bool get loading => _isLoading;
-  bool get isPolling => _isPolling;
   bool get isCreatingNotice => _isCreatingNotice;
   bool get isLoadingNoticeRecipients => _isLoadingNoticeRecipients;
   int get noLeidasCount => _noLeidasCount;
@@ -89,7 +84,7 @@ class NotificacionProvider extends ChangeNotifier {
           _noLeidasCount;
       notifyListeners();
     } catch (_) {
-      // El polling no debe interrumpir la experiencia principal.
+      // El refresco manual no debe interrumpir la experiencia principal.
     }
   }
 
@@ -215,26 +210,7 @@ class NotificacionProvider extends ChangeNotifier {
     }
   }
 
-  void startPolling() {
-    if (_isPolling) {
-      return;
-    }
-
-    _isPolling = true;
-    unawaited(cargarConteoNoLeidas());
-    _pollingTimer = Timer.periodic(const Duration(seconds: 30), (_) {
-      unawaited(cargarConteoNoLeidas());
-    });
-  }
-
-  void stopPolling() {
-    _pollingTimer?.cancel();
-    _pollingTimer = null;
-    _isPolling = false;
-  }
-
   void reset() {
-    stopPolling();
     _notificaciones.clear();
     _isLoading = false;
     _isCreatingNotice = false;
@@ -245,12 +221,6 @@ class NotificacionProvider extends ChangeNotifier {
     _vigilantesAviso.clear();
     _administradoresAviso.clear();
     notifyListeners();
-  }
-
-  @override
-  void dispose() {
-    stopPolling();
-    super.dispose();
   }
 
   Map<String, dynamic> _normalizeMap(dynamic value) {

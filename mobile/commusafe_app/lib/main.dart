@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import 'app.dart';
 import 'core/services/api_service.dart';
+import 'core/services/firebase_messaging_service.dart';
 import 'core/services/notification_service.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/incidentes/providers/incidente_provider.dart';
@@ -14,8 +15,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await initializeDateFormatting('es_CO');
   Intl.defaultLocale = 'es_CO';
+  FirebaseMessagingService.registerBackgroundHandler();
   await ApiService.init();
   await NotificationService.init();
+  await FirebaseMessagingService.init();
 
   runApp(
     MultiProvider(

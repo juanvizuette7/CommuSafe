@@ -4,10 +4,14 @@ import logging
 import os
 
 from django.conf import settings
+
 try:
-    from pyfcm import FCMNotification
-except ImportError:  # pragma: no cover - dependencia opcional en tiempo de ejecución
-    FCMNotification = None
+    import firebase_admin
+    from firebase_admin import credentials, messaging
+except ImportError:  # pragma: no cover - dependencia opcional en tiempo de ejecucion
+    firebase_admin = None
+    credentials = None
+    messaging = None
 
 from usuarios.models import Usuario
 
@@ -15,6 +19,7 @@ from .models import Notificacion
 
 
 logger = logging.getLogger(__name__)
+_firebase_app = None
 
 
 class AudienciaAviso:
@@ -34,37 +39,51 @@ class AudienciaAviso:
 
 
 def _configuracion_push_disponible():
-    if FCMNotification is None:
+    if firebase_admin is None or credentials is None or messaging is None:
         return False
-    valor = (settings.FCM_SERVER_KEY or "").strip()
+    valor = (settings.FIREBASE_CREDENTIALS_PATH or "").strip()
     return bool(valor and "REEMPLAZAR" not in valor.upper() and os.path.exists(valor))
 
 
+def _obtener_firebase_app():
+    """Inicializa Firebase Admin una sola vez y reutiliza la app."""
+
+    global _firebase_app
+    if _firebase_app is not None:
+        return _firebase_app
+
+    try:
+        _firebase_app = firebase_admin.get_app()
+    except ValueError:
+        credencial = credentials.Certificate(settings.FIREBASE_CREDENTIALS_PATH)
+        _firebase_app = firebase_admin.initialize_app(credencial)
+    return _firebase_app
+
+
 def _intentar_enviar_push(*, usuario, titulo, cuerpo, incidente=None):
-    """Intenta enviar una notificación push sin romper el flujo principal."""
+    """Intenta enviar una notificacion push sin romper el flujo principal."""
 
     try:
         if not usuario.fcm_token or not _configuracion_push_disponible():
             return False
 
-        cliente = FCMNotification(service_account_file=settings.FCM_SERVER_KEY)
-        cliente.notify(
-            fcm_token=usuario.fcm_token,
-            notification_title=titulo,
-            notification_body=cuerpo,
-            data_payload={
+        mensaje = messaging.Message(
+            token=usuario.fcm_token,
+            notification=messaging.Notification(title=titulo, body=cuerpo),
+            data={
                 "tipo": "notificacion_commusafe",
                 "incidente_id": str(incidente.id) if incidente else "",
             },
         )
+        messaging.send(mensaje, app=_obtener_firebase_app())
         return True
     except Exception as exc:
-        logger.warning("No se pudo enviar notificación push a %s: %s", usuario.email, exc)
+        logger.warning("No se pudo enviar notificacion push a %s: %s", usuario.email, exc)
         return False
 
 
 def _crear_registro_y_enviar_push(*, destinatario, titulo, cuerpo, tipo, incidente_relacionado=None):
-    """Crea la notificación en base de datos y luego intenta enviarla por push."""
+    """Crea la notificacion en base de datos y luego intenta enviarla por push."""
 
     enviada_push = _intentar_enviar_push(
         usuario=destinatario,
@@ -100,7 +119,7 @@ def notificar_incidente_nuevo(incidente):
     vistos = set()
     titulo = f"Nuevo incidente reportado: {incidente.titulo}"
     cuerpo = (
-        f"Se registró un incidente de categoría {incidente.get_categoria_display().lower()} "
+        f"Se registro un incidente de categoria {incidente.get_categoria_display().lower()} "
         f"con prioridad {incidente.get_prioridad_display().lower()}."
     )
     tipo = (
@@ -129,10 +148,8 @@ def notificar_cambio_estado(incidente, estado_nuevo):
     if incidente.atendido_por_id and incidente.atendido_por_id != incidente.reportado_por_id:
         destinatarios.append(incidente.atendido_por)
 
-    titulo = f"Actualización del incidente: {incidente.titulo}"
-    cuerpo = (
-        f"El incidente ahora se encuentra en estado {dict(incidente.Estado.choices)[estado_nuevo].lower()}."
-    )
+    titulo = f"Actualizacion del incidente: {incidente.titulo}"
+    cuerpo = f"El incidente ahora se encuentra en estado {dict(incidente.Estado.choices)[estado_nuevo].lower()}."
 
     vistos = set()
     for destinatario in destinatarios:

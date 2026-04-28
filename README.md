@@ -27,7 +27,8 @@ El proyecto se construyó bajo el modelo incremental: cada sprint entregó un in
 | Provider | 6.1.5 | Manejo de estado en Flutter |
 | GoRouter | 16.2.1 | Navegación declarativa en Flutter |
 | Anthropic SDK | 0.96.0 | Integración del asistente virtual con IA |
-| PyFCM | 2.1.0 | Servicio base para notificaciones push |
+| Firebase Cloud Messaging | Android | Notificaciones push reales en dispositivos Android |
+| Firebase Admin SDK | 6.5.0 | Envio de push desde el backend Django |
 | Pytest / Coverage | 9.0.3 / 7.13.5 | Pruebas automatizadas y cobertura |
 
 ## Requisitos Locales
@@ -96,6 +97,42 @@ flutter run
 ```
 
 La app usa como URL base `http://10.0.2.2:8000`, que permite al emulador Android conectarse al backend local.
+
+### Configuracion de Firebase Cloud Messaging
+
+Para compilar con Firebase real, reemplaza el archivo local:
+
+```text
+mobile/commusafe_app/android/app/google-services.json
+```
+
+por el archivo descargado desde Firebase Console en la app Android cuyo paquete es:
+
+```text
+com.commusafe.commusafe_app
+```
+
+El repositorio incluye `mobile/commusafe_app/android/app/google-services.example.json` como referencia de estructura, pero el archivo real `google-services.json` queda ignorado por Git.
+
+En el backend, descarga las credenciales del Service Account desde Firebase Console:
+
+```text
+Project settings > Service accounts > Generate new private key
+```
+
+Guarda el JSON fuera del repositorio, por ejemplo:
+
+```text
+backend/firebase-service-account.json
+```
+
+y configura en `backend/.env`:
+
+```text
+FIREBASE_CREDENTIALS_PATH=backend/firebase-service-account.json
+```
+
+Ese archivo no debe subirse a Git. El backend usa `firebase-admin` para enviar `messaging.Message` con `notification` y `data.incidente_id`.
 
 ## Credenciales Demo
 
@@ -209,7 +246,7 @@ DB_PORT
 DB_NAME
 DB_USER
 DB_PASSWORD
-FCM_SERVER_KEY
+FIREBASE_CREDENTIALS_PATH
 LLM_API_KEY
 ```
 
