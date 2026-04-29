@@ -4,7 +4,36 @@
 {% block title %}{{ page_title }} | CommuSafe{% endblock title %}
 
 {% block body %}
-<div x-data="{ mobileSidebar: false }" class="min-h-screen bg-surface">
+<div
+    x-data="{
+        mobileSidebar: false,
+        notificacionesNoLeidas: {{ notificaciones_no_leidas|default:0 }},
+        tokenPanel() {
+            const cookie = document.cookie.split('; ').find((item) => item.startsWith('commusafe_panel_access='));
+            return cookie ? decodeURIComponent(cookie.split('=')[1]) : '';
+        },
+        async refrescarNotificaciones() {
+            const token = this.tokenPanel();
+            if (!token) {
+                return;
+            }
+            try {
+                const response = await fetch('/api/notificaciones/no-leidas-count/', {
+                    headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
+                });
+                if (!response.ok) {
+                    return;
+                }
+                const data = await response.json();
+                this.notificacionesNoLeidas = Number(data.no_leidas || 0);
+            } catch (error) {
+                console.warn('No se pudo actualizar el conteo de notificaciones.', error);
+            }
+        },
+    }"
+    x-init="refrescarNotificaciones(); setInterval(() => refrescarNotificaciones(), 60000)"
+    class="min-h-screen bg-surface"
+>
     <div class="fixed inset-y-0 left-0 z-40 hidden w-[260px] lg:block">
         <aside class="flex h-full flex-col bg-[linear-gradient(180deg,_#1A1A2E_0%,_#16213E_52%,_#0F3460_100%)] px-5 py-6 text-white shadow-glass">
             <div class="rounded-[24px] border border-white/10 bg-white/10 px-4 py-4 backdrop-blur-md">
@@ -30,10 +59,23 @@
                     <span class="text-lg">&#128276;</span>
                     <span>Avisos</span>
                 </a>
+                <a href="{% url 'panel_web:panel_notificaciones' %}" class="flex items-center justify-between gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition {% if active_nav == 'notificaciones' %}bg-white/15 text-white shadow-soft{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
+                    <span class="inline-flex items-center gap-3">
+                        <span class="text-lg">&#128276;</span>
+                        <span>Notificaciones</span>
+                    </span>
+                    <span x-cloak x-show="notificacionesNoLeidas > 0" x-text="notificacionesNoLeidas" class="min-w-6 rounded-full bg-danger px-2 py-1 text-center text-xs font-black text-white shadow-soft"></span>
+                </a>
                 <a href="{% url 'panel_web:usuarios_lista' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition {% if active_nav == 'usuarios' %}bg-white/15 text-white shadow-soft{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
                     <span class="text-lg">&#128101;</span>
                     <span>Usuarios</span>
                 </a>
+                {% if active_nav == 'usuarios' and usuario_panel.es_administrador %}
+                <a href="{% url 'panel_web:usuario_crear' %}" class="ml-7 flex items-center gap-2 rounded-2xl px-4 py-2 text-xs font-bold text-slate-300 transition hover:bg-white/10 hover:text-white">
+                    <span>+</span>
+                    <span>Nuevo Usuario</span>
+                </a>
+                {% endif %}
             </nav>
 
             <div class="mt-auto rounded-[24px] border border-white/10 bg-white/10 p-4 backdrop-blur-md">
@@ -79,7 +121,7 @@
             </div>
             <div class="hidden items-center gap-3 md:flex">
                 <div class="rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-600">
-                    Notificaciones pendientes: {{ notificaciones_no_leidas }}
+                    Notificaciones pendientes: <span x-text="notificacionesNoLeidas"></span>
                 </div>
                 <div class="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white shadow-soft">
                     {{ usuario_panel.get_rol_display }}
@@ -101,7 +143,16 @@
                 <a href="{% url 'panel_web:dashboard' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold {% if active_nav == 'dashboard' %}bg-white/15{% else %}text-slate-300{% endif %}">&#128202; <span>Dashboard</span></a>
                 <a href="{% url 'panel_web:incidentes_lista' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold {% if active_nav == 'incidentes' %}bg-white/15{% else %}text-slate-300{% endif %}">&#128680; <span>Incidentes</span></a>
                 <a href="{% url 'panel_web:avisos' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold {% if active_nav == 'avisos' %}bg-white/15{% else %}text-slate-300{% endif %}">&#128276; <span>Avisos</span></a>
+                <a href="{% url 'panel_web:panel_notificaciones' %}" class="flex items-center justify-between gap-3 rounded-2xl px-4 py-3 text-sm font-semibold {% if active_nav == 'notificaciones' %}bg-white/15{% else %}text-slate-300{% endif %}">
+                    <span>&#128276; <span>Notificaciones</span></span>
+                    <span x-cloak x-show="notificacionesNoLeidas > 0" x-text="notificacionesNoLeidas" class="min-w-6 rounded-full bg-danger px-2 py-1 text-center text-xs font-black text-white"></span>
+                </a>
                 <a href="{% url 'panel_web:usuarios_lista' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold {% if active_nav == 'usuarios' %}bg-white/15{% else %}text-slate-300{% endif %}">&#128101; <span>Usuarios</span></a>
+                {% if active_nav == 'usuarios' and usuario_panel.es_administrador %}
+                <a href="{% url 'panel_web:usuario_crear' %}" class="ml-7 flex items-center gap-2 rounded-2xl px-4 py-2 text-xs font-bold text-slate-300">
+                    + <span>Nuevo Usuario</span>
+                </a>
+                {% endif %}
             </nav>
         </div>
     </div>

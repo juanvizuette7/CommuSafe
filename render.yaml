@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: commusafe
+    env: python
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt && cd backend && python manage.py migrate && python manage.py collectstatic --noinput
+    startCommand: cd backend && gunicorn commusafe_backend.wsgi:application --bind 0.0.0.0:$PORT
+    envVars:
+      - key: DJANGO_SETTINGS_MODULE
+        value: commusafe_backend.settings_prod
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: .onrender.com,commusafe.onrender.com
+      - key: CSRF_TRUSTED_ORIGINS
+        value: https://*.onrender.com,https://commusafe.onrender.com
+      - key: DATABASE_URL
+        fromDatabase:
+          name: commusafe-db
+          property: connectionString
+      - key: LLM_PROVIDER
+        value: gemini
+      - key: GEMINI_MODEL
+        value: gemini-2.5-flash-lite
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: FIREBASE_CREDENTIALS_PATH
+        sync: false
+
+databases:
+  - name: commusafe-db
+    plan: free
+    databaseName: commusafe
+    user: commusafe

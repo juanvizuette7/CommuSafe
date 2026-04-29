@@ -162,3 +162,19 @@ LLM_PROVIDER = config("LLM_PROVIDER", default="gemini")
 LLM_API_KEY = config("LLM_API_KEY", default="")
 GEMINI_API_KEY = config("GEMINI_API_KEY", default="")
 GEMINI_MODEL = config("GEMINI_MODEL", default="gemini-2.5-flash-lite")
+
+EMAIL_HOST = config("EMAIL_HOST", default="smtp.gmail.com")
+EMAIL_PORT = config("EMAIL_PORT", default=587, cast=int)
+EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=cast_bool)
+EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="").strip()
+if not DEFAULT_FROM_EMAIL:
+    DEFAULT_FROM_EMAIL = EMAIL_HOST_USER or "CommuSafe <no-reply@commusafe.local>"
+
+EMAIL_BACKEND = config("EMAIL_BACKEND", default="").strip()
+if not EMAIL_BACKEND:
+    if DEBUG or not (EMAIL_HOST_USER and EMAIL_HOST_PASSWORD):
+        EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+    else:
+        EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"

@@ -132,6 +132,8 @@ class UsuarioAdminUpdateSerializer(serializers.ModelSerializer):
 class UsuarioUpdateSerializer(serializers.ModelSerializer):
     """Serializer de actualización del perfil propio."""
 
+    foto_perfil = serializers.ImageField(required=False, allow_null=True)
+
     class Meta:
         model = Usuario
         fields = ["nombre", "apellido", "unidad_residencial", "telefono", "foto_perfil"]

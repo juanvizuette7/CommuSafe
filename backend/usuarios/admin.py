@@ -4,7 +4,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from .forms import UsuarioChangeForm, UsuarioCreationForm
-from .models import Usuario
+from .models import PasswordResetToken, Usuario
 
 
 @admin.register(Usuario)
@@ -57,3 +57,17 @@ class UsuarioAdmin(UserAdmin):
     @admin.display(description="Nombre completo")
     def nombre_completo_admin(self, obj):
         return obj.nombre_completo
+
+
+@admin.register(PasswordResetToken)
+class PasswordResetTokenAdmin(admin.ModelAdmin):
+    """Admin de auditoria para recuperaciones de contrasena."""
+
+    list_display = ("usuario", "creado", "expira", "usado", "esta_vigente")
+    list_filter = ("usado", "creado", "expira")
+    search_fields = ("usuario__email", "usuario__nombre", "usuario__apellido", "token")
+    readonly_fields = ("id", "usuario", "token", "creado", "expira", "usado")
+
+    @admin.display(boolean=True, description="Vigente")
+    def esta_vigente(self, obj):
+        return obj.esta_vigente

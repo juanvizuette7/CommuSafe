@@ -8,15 +8,22 @@
             <h2 class="text-2xl font-black text-primary">Usuarios del sistema</h2>
             <p class="mt-1 text-sm text-slate-500">Consulta y gestiona cuentas activas e inactivas.</p>
         </div>
-        <div class="flex flex-wrap gap-2">
-            <a href="{% querystring rol='' %}" class="rounded-full px-4 py-2 text-sm font-semibold transition {% if not rol_activo %}bg-primary text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">
-                Todos
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+            {% if request.user.es_administrador %}
+            <a href="{% url 'panel_web:usuario_crear' %}" class="inline-flex items-center justify-center rounded-2xl bg-primary px-5 py-3 text-sm font-black text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-accent">
+                + Nuevo Usuario
             </a>
-            {% for value, label in roles %}
-            <a href="{% querystring rol=value %}" class="rounded-full px-4 py-2 text-sm font-semibold transition {% if rol_activo == value %}bg-primary text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">
-                {{ label }}
-            </a>
-            {% endfor %}
+            {% endif %}
+            <div class="flex flex-wrap gap-2">
+                <a href="{% querystring rol='' %}" class="rounded-full px-4 py-2 text-sm font-semibold transition {% if not rol_activo %}bg-primary text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">
+                    Todos
+                </a>
+                {% for value, label in roles %}
+                <a href="{% querystring rol=value %}" class="rounded-full px-4 py-2 text-sm font-semibold transition {% if rol_activo == value %}bg-primary text-white{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %}">
+                    {{ label }}
+                </a>
+                {% endfor %}
+            </div>
         </div>
     </div>
 
@@ -30,7 +37,7 @@
                         <th class="px-5 py-4">Rol</th>
                         <th class="px-5 py-4">Unidad</th>
                         <th class="px-5 py-4">Estado</th>
-                        <th class="px-5 py-4 text-right">Acción</th>
+                        <th class="px-5 py-4 text-right">Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 bg-white">
@@ -64,13 +71,37 @@
                                 {% if usuario.activo %}Activo{% else %}Inactivo{% endif %}
                             </span>
                         </td>
-                        <td class="px-5 py-4 text-right">
+                        <td class="px-5 py-4">
+                            <div class="flex flex-wrap items-center justify-end gap-2">
+                                {% if request.user.es_administrador %}
+                                <a href="{% url 'panel_web:usuario_editar' usuario.id %}" class="inline-flex rounded-xl bg-accent px-3 py-2 text-xs font-bold text-white transition hover:bg-primary">
+                                    Editar
+                                </a>
+                                <form method="post" action="{% url 'panel_web:usuario_cambiar_rol' usuario.id %}" class="flex items-center gap-2">
+                                    {% csrf_token %}
+                                    <select name="nuevo_rol" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/10">
+                                        {% for value, label in roles %}
+                                        <option value="{{ value }}" {% if usuario.rol == value %}selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="inline-flex rounded-xl border border-slate-200 bg-slate-100 px-3 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-200">
+                                        Cambiar rol
+                                    </button>
+                                </form>
+                                <form method="post" action="{% url 'panel_web:usuario_eliminar' usuario.id %}" onsubmit="return confirm('¿Eliminar definitivamente a {{ usuario.nombre_completo|escapejs }}? Esta acción no se puede deshacer.');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="inline-flex rounded-xl border border-danger/20 bg-danger/10 px-3 py-2 text-xs font-bold text-danger transition hover:bg-danger hover:text-white">
+                                        Eliminar
+                                    </button>
+                                </form>
+                                {% endif %}
                             <form method="post" action="{% url 'panel_web:usuario_toggle_activo' usuario.id %}">
                                 {% csrf_token %}
                                 <button type="submit" class="inline-flex rounded-xl px-3 py-2 text-xs font-semibold transition {% if usuario.activo %}border border-danger/20 bg-danger/10 text-danger hover:bg-danger hover:text-white{% else %}border border-success/20 bg-success/10 text-success hover:bg-success hover:text-white{% endif %}">
                                     {% if usuario.activo %}Desactivar{% else %}Activar{% endif %}
                                 </button>
                             </form>
+                            </div>
                         </td>
                     </tr>
                     {% empty %}

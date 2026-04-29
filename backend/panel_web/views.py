@@ -2,15 +2,18 @@
 
 from functools import wraps
 
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db.models import ProtectedError
 from django.db.models import Count, Max, Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from incidentes.models import Incidente
 from incidentes.serializers import CambiarEstadoSerializer
@@ -23,6 +26,15 @@ from notificaciones.services import (
     usuarios_disponibles_para_aviso,
 )
 from usuarios.models import Usuario
+from usuarios.serializers import CambioRolSerializer
+from usuarios.services import PasswordResetError, confirmar_reset_password, crear_y_enviar_token_reset
+
+from .forms import (
+    PasswordResetConfirmacionForm,
+    PasswordResetSolicitudForm,
+    UsuarioCreacionForm,
+    UsuarioEdicionForm,
+)
 
 
 def _es_usuario_panel(usuario):
@@ -58,6 +70,13 @@ def _contexto_base_panel(request, **extra):
     return contexto
 
 
+def _redirigir_si_no_es_administrador(request):
+    if request.user.es_administrador:
+        return None
+    messages.error(request, "Solo un administrador puede gestionar usuarios desde el panel web.")
+    return redirect("panel_web:usuarios_lista")
+
+
 def _opciones_estado_disponibles(usuario, incidente):
     if incidente.estado == Incidente.Estado.REGISTRADO:
         return [Incidente.Estado.EN_PROCESO]
@@ -68,13 +87,28 @@ def _opciones_estado_disponibles(usuario, incidente):
     return []
 
 
+def _respuesta_con_cookie_jwt_panel(request, usuario, destino):
+    """Crea la redireccion del panel y adjunta un JWT para refrescos del sidebar."""
+
+    access_token = RefreshToken.for_user(usuario).access_token
+    response = redirect(destino)
+    response.set_cookie(
+        "commusafe_panel_access",
+        str(access_token),
+        max_age=8 * 60 * 60,
+        secure=request.is_secure() and not settings.DEBUG,
+        samesite="Lax",
+    )
+    return response
+
+
 @require_http_methods(["GET", "POST"])
 def login_view(request):
     """Autentica al usuario y permite acceso solo a administradores y vigilantes."""
 
     if request.user.is_authenticated:
         if _es_usuario_panel(request.user):
-            return redirect("panel_web:dashboard")
+            return _respuesta_con_cookie_jwt_panel(request, request.user, "panel_web:dashboard")
         logout(request)
         messages.error(
             request,
@@ -96,7 +130,7 @@ def login_view(request):
         else:
             login(request, usuario)
             messages.success(request, f"Bienvenido al panel, {usuario.nombre}.")
-            return redirect("panel_web:dashboard")
+            return _respuesta_con_cookie_jwt_panel(request, usuario, "panel_web:dashboard")
 
     return render(
         request,
@@ -108,13 +142,68 @@ def login_view(request):
     )
 
 
+@require_http_methods(["GET", "POST"])
+def reset_solicitar(request):
+    """Muestra y procesa el formulario publico de recuperacion."""
+
+    form = PasswordResetSolicitudForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        email = form.cleaned_data["email"]
+        usuario = Usuario.objects.filter(email__iexact=email, activo=True).first()
+        if usuario is not None:
+            crear_y_enviar_token_reset(usuario, request)
+        messages.success(
+            request,
+            "Si el correo existe, recibirás un enlace de recuperación en los próximos minutos.",
+        )
+        return redirect("panel_web:reset_solicitar")
+
+    return render(
+        request,
+        "panel/reset_solicitar.html",
+        {
+            "page_title": "Recuperar contraseña",
+            "page_subtitle": "Solicita un enlace seguro para restablecer tu acceso",
+            "form": form,
+        },
+    )
+
+
+@require_http_methods(["GET", "POST"])
+def reset_confirmar(request, token):
+    """Permite definir una contrasena nueva usando un token vigente."""
+
+    form = PasswordResetConfirmacionForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        try:
+            confirmar_reset_password(token, form.cleaned_data["password"])
+        except PasswordResetError as exc:
+            messages.error(request, str(exc))
+        else:
+            messages.success(request, "La contraseña fue actualizada correctamente. Ya puedes iniciar sesión.")
+            return redirect("panel_web:login")
+
+    return render(
+        request,
+        "panel/reset_confirmar.html",
+        {
+            "page_title": "Nueva contraseña",
+            "page_subtitle": "Define una contraseña segura para tu cuenta",
+            "form": form,
+            "token": token,
+        },
+    )
+
+
 @require_GET
 def inicio(request):
     """Redirige al login o al dashboard según el estado de sesión."""
 
     if request.user.is_authenticated and _es_usuario_panel(request.user):
         return redirect("panel_web:dashboard")
-    return redirect("panel_web:login")
+    response = redirect("panel_web:login")
+    response.delete_cookie("commusafe_panel_access")
+    return response
 
 
 @require_POST
@@ -123,7 +212,9 @@ def logout_view(request):
 
     logout(request)
     messages.success(request, "La sesión se cerró correctamente.")
-    return redirect("panel_web:login")
+    response = redirect("panel_web:login")
+    response.delete_cookie("commusafe_panel_access")
+    return response
 
 
 @panel_login_required
@@ -155,6 +246,46 @@ def dashboard(request):
         incidentes_recientes=recientes,
     )
     return render(request, "panel/dashboard.html", contexto)
+
+
+@panel_login_required
+@require_GET
+def panel_notificaciones(request):
+    """Lista las notificaciones propias del usuario autenticado en el panel."""
+
+    queryset = Notificacion.objects.filter(destinatario=request.user).select_related(
+        "incidente_relacionado"
+    ).order_by("-fecha_envio")
+    paginador = Paginator(queryset, 25)
+    page_obj = paginador.get_page(request.GET.get("page"))
+
+    contexto = _contexto_base_panel(
+        request,
+        page_title="Notificaciones",
+        page_subtitle="Alertas y avisos recibidos por tu cuenta",
+        active_nav="notificaciones",
+        page_obj=page_obj,
+    )
+    return render(request, "panel/notificaciones.html", contexto)
+
+
+@panel_login_required
+@require_POST
+def panel_notificacion_leer(request, id):
+    """Marca como leida una notificacion propia del usuario del panel."""
+
+    notificacion = get_object_or_404(Notificacion, id=id, destinatario=request.user)
+    if not notificacion.leida:
+        notificacion.leida = True
+        notificacion.save(update_fields=["leida"])
+        messages.success(request, "La notificación fue marcada como leída.")
+    else:
+        messages.info(request, "La notificación ya estaba marcada como leída.")
+
+    siguiente = request.META.get("HTTP_REFERER")
+    if siguiente:
+        return HttpResponseRedirect(siguiente)
+    return redirect("panel_web:panel_notificaciones")
 
 
 @panel_login_required
@@ -277,6 +408,134 @@ def usuarios_lista(request):
         roles=Usuario.Rol.choices,
     )
     return render(request, "panel/usuarios_lista.html", contexto)
+
+
+@panel_login_required
+@require_http_methods(["GET", "POST"])
+def usuario_crear(request):
+    """Crea una cuenta de usuario desde el panel administrativo."""
+
+    redireccion = _redirigir_si_no_es_administrador(request)
+    if redireccion:
+        return redireccion
+
+    form = UsuarioCreacionForm(request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            usuario = form.save()
+            messages.success(request, f"El usuario {usuario.nombre_completo} fue creado correctamente.")
+            return redirect("panel_web:usuarios_lista")
+        messages.error(request, "Revisa los datos del formulario antes de crear el usuario.")
+
+    contexto = _contexto_base_panel(
+        request,
+        page_title="Nuevo Usuario",
+        page_subtitle="Creación de cuentas para residentes, vigilancia y administración",
+        active_nav="usuarios",
+        form=form,
+        modo_formulario="crear",
+        titulo_formulario="Crear nuevo usuario",
+        texto_boton="Crear usuario",
+    )
+    return render(request, "panel/usuario_form.html", contexto)
+
+
+@panel_login_required
+@require_http_methods(["GET", "POST"])
+def usuario_editar(request, usuario_id):
+    """Edita los datos principales de una cuenta de usuario."""
+
+    redireccion = _redirigir_si_no_es_administrador(request)
+    if redireccion:
+        return redireccion
+
+    usuario = get_object_or_404(Usuario, id=usuario_id)
+    form = UsuarioEdicionForm(request.POST or None, instance=usuario)
+    if request.method == "POST":
+        if form.is_valid():
+            usuario = form.save()
+            messages.success(request, f"El usuario {usuario.nombre_completo} fue actualizado correctamente.")
+            return redirect("panel_web:usuarios_lista")
+        messages.error(request, "Revisa los datos del formulario antes de guardar los cambios.")
+
+    contexto = _contexto_base_panel(
+        request,
+        page_title="Editar Usuario",
+        page_subtitle=f"Actualización de datos de {usuario.nombre_completo}",
+        active_nav="usuarios",
+        form=form,
+        usuario_objetivo=usuario,
+        modo_formulario="editar",
+        titulo_formulario="Editar usuario",
+        texto_boton="Guardar cambios",
+    )
+    return render(request, "panel/usuario_form.html", contexto)
+
+
+@panel_login_required
+@require_POST
+def usuario_cambiar_rol(request, usuario_id):
+    """Cambia el rol de una cuenta usando la misma validación del serializer REST."""
+
+    redireccion = _redirigir_si_no_es_administrador(request)
+    if redireccion:
+        return redireccion
+
+    usuario = get_object_or_404(Usuario, id=usuario_id)
+    serializer = CambioRolSerializer(data={"rol": request.POST.get("nuevo_rol", "")})
+    if serializer.is_valid():
+        usuario.rol = serializer.validated_data["rol"]
+        usuario.is_staff = usuario.rol == Usuario.Rol.ADMINISTRADOR or usuario.is_superuser
+        try:
+            usuario.full_clean()
+            usuario.save(update_fields=["rol", "is_staff"])
+        except Exception as exc:
+            messages.error(request, f"No fue posible cambiar el rol: {exc}")
+        else:
+            messages.success(
+                request,
+                f"El rol de {usuario.nombre_completo} fue actualizado a {usuario.get_rol_display()}.",
+            )
+    else:
+        messages.error(request, "El rol seleccionado no es válido.")
+
+    siguiente = request.META.get("HTTP_REFERER")
+    if siguiente:
+        return HttpResponseRedirect(siguiente)
+    return redirect("panel_web:usuarios_lista")
+
+
+@panel_login_required
+@require_http_methods(["GET", "POST"])
+def usuario_eliminar(request, usuario_id):
+    """Elimina físicamente una cuenta de usuario desde el panel administrativo."""
+
+    redireccion = _redirigir_si_no_es_administrador(request)
+    if redireccion:
+        return redireccion
+
+    usuario = get_object_or_404(Usuario, id=usuario_id)
+    if request.method == "POST":
+        nombre_usuario = usuario.nombre_completo
+        try:
+            usuario.delete()
+        except ProtectedError:
+            messages.error(
+                request,
+                "No se puede eliminar definitivamente este usuario porque tiene incidentes o historial asociado.",
+            )
+            return redirect("panel_web:usuarios_lista")
+        messages.success(request, f"El usuario {nombre_usuario} fue eliminado definitivamente.")
+        return redirect("panel_web:usuarios_lista")
+
+    contexto = _contexto_base_panel(
+        request,
+        page_title="Eliminar Usuario",
+        page_subtitle="Confirmación de eliminación definitiva",
+        active_nav="usuarios",
+        usuario_objetivo=usuario,
+    )
+    return render(request, "panel/usuario_eliminar.html", contexto)
 
 
 @panel_login_required

@@ -3,21 +3,32 @@ class AppConstants {
 
   static const String appName = 'CommuSafe';
   static const String residentialComplexName = 'Remansos del Norte';
-  static const String baseUrl = String.fromEnvironment(
+  static const String baseUrlProduccion = 'https://commusafe.onrender.com';
+  static const bool kIsProduction = bool.fromEnvironment(
+    'PROD',
+    defaultValue: false,
+  );
+  static const String _baseUrlLocal = String.fromEnvironment(
     'API_BASE_URL',
     defaultValue: 'http://10.0.2.2:8000',
   );
+  static const String baseUrl = kIsProduction
+      ? baseUrlProduccion
+      : _baseUrlLocal;
 
   static const Duration requestTimeout = Duration(seconds: 10);
 
   static const String loginEndpoint = '/api/auth/login/';
   static const String refreshEndpoint = '/api/auth/refresh/';
+  static const String resetRequestEndpoint = '/api/auth/reset-solicitar/';
+  static const String resetConfirmEndpoint = '/api/auth/reset-confirmar/';
   static const String profileEndpoint = '/api/auth/perfil/';
   static const String fcmEndpoint = '/api/auth/fcm/';
   static const String usersEndpoint = '/api/auth/usuarios/';
   static const String incidentsEndpoint = '/api/incidentes/';
   static const String notificationsEndpoint = '/api/notificaciones/';
   static const String createNoticeEndpoint = '/api/notificaciones/avisos/';
+  static const String avisosVigentes = '/api/notificaciones/avisos-vigentes/';
   static const String noticeRecipientsEndpoint =
       '/api/notificaciones/destinatarios-avisos/';
   static const String unreadNotificationsCountEndpoint =

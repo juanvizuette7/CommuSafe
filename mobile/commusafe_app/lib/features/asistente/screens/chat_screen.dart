@@ -25,6 +25,7 @@ class _ChatScreenState extends State<ChatScreen> {
           'Hola, soy CommuBot, el asistente virtual de Remansos del Norte. ¿En qué puedo ayudarte?',
       esDelUsuario: false,
       timestamp: DateTime.now(),
+      modo: 'fallback',
     ),
   ];
 
@@ -100,6 +101,7 @@ class _ChatScreenState extends State<ChatScreen> {
         data: <String, dynamic>{'mensaje': text, 'historial': historial},
       ).timeout(const Duration(seconds: 8));
       final respuesta = response.data?['respuesta']?.toString().trim();
+      final modo = response.data?['modo']?.toString().trim() ?? 'fallback';
       setState(() {
         _mensajes.add(
           MensajeModel(
@@ -108,6 +110,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 : 'No pude generar una respuesta en este momento.',
             esDelUsuario: false,
             timestamp: DateTime.now(),
+            modo: modo,
           ),
         );
       });
@@ -119,6 +122,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 'El asistente tardó demasiado en responder. ${_respuestaLocal(text)}',
             esDelUsuario: false,
             timestamp: DateTime.now(),
+            modo: 'fallback',
           ),
         );
       });
@@ -137,6 +141,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 : 'No pude conectarme con el asistente. Intenta nuevamente en unos segundos.',
             esDelUsuario: false,
             timestamp: DateTime.now(),
+            modo: 'fallback',
           ),
         );
       });
@@ -148,6 +153,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 'No pude procesar tu consulta. Verifica la conexión e intenta otra vez.',
             esDelUsuario: false,
             timestamp: DateTime.now(),
+            modo: 'fallback',
           ),
         );
       });
@@ -206,6 +212,10 @@ class _ChatScreenState extends State<ChatScreen> {
     final showSuggestions = _mensajes
         .where((mensaje) => mensaje.esDelUsuario)
         .isEmpty;
+    final ultimoModo = _mensajes
+        .where((mensaje) => !mensaje.esDelUsuario && mensaje.modo != null)
+        .last
+        .modo;
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -247,6 +257,7 @@ class _ChatScreenState extends State<ChatScreen> {
       ),
       body: Column(
         children: <Widget>[
+          _AiModeIndicator(modo: ultimoModo),
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
@@ -280,6 +291,45 @@ class _ChatScreenState extends State<ChatScreen> {
             controller: _controller,
             enabled: !_enviando,
             onSend: () => _sendMessage(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AiModeIndicator extends StatelessWidget {
+  const _AiModeIndicator({required this.modo});
+
+  final String? modo;
+
+  @override
+  Widget build(BuildContext context) {
+    final iaReal = modo == 'ia';
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
+      color: iaReal
+          ? AppColors.success.withValues(alpha: 0.08)
+          : AppColors.muted.withValues(alpha: 0.45),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Container(
+            height: 8,
+            width: 8,
+            decoration: BoxDecoration(
+              color: iaReal ? AppColors.success : AppColors.textSecondary,
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            iaReal ? 'Modo IA real' : 'Modo respuesta local',
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: iaReal ? AppColors.success : AppColors.textSecondary,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ],
       ),

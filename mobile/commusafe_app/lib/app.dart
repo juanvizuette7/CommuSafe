@@ -8,6 +8,8 @@ import 'features/asistente/screens/chat_screen.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/screens/login_screen.dart';
 import 'features/auth/screens/perfil_screen.dart';
+import 'features/auth/screens/reset_confirmar_screen.dart';
+import 'features/auth/screens/reset_solicitar_screen.dart';
 import 'features/emergencias/screens/contactos_emergencia_screen.dart';
 import 'features/incidentes/screens/crear_incidente_screen.dart';
 import 'features/incidentes/screens/detalle_incidente_screen.dart';
@@ -64,6 +66,19 @@ class AppRouter {
           path: '/login',
           builder: (BuildContext context, GoRouterState state) {
             return const LoginScreen();
+          },
+        ),
+        GoRoute(
+          path: '/reset',
+          builder: (BuildContext context, GoRouterState state) {
+            return const ResetSolicitarScreen();
+          },
+        ),
+        GoRoute(
+          path: '/reset/:token',
+          builder: (BuildContext context, GoRouterState state) {
+            final token = state.pathParameters['token'] ?? '';
+            return ResetConfirmarScreen(token: token);
           },
         ),
         ShellRoute(
@@ -129,9 +144,14 @@ class AppRouter {
       ],
       redirect: (BuildContext context, GoRouterState state) {
         final location = state.matchedLocation;
-        final isProtectedRoute = location != '/' && location != '/login';
+        final isPublicRoute =
+            location == '/' ||
+            location == '/login' ||
+            location == '/reset' ||
+            location.startsWith('/reset/');
+        final isProtectedRoute = !isPublicRoute;
 
-        if (authProvider.isInitializing && location != '/') {
+        if (authProvider.isInitializing && isProtectedRoute) {
           return '/';
         }
 

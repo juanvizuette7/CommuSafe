@@ -1,5 +1,8 @@
 """Vistas del módulo de notificaciones."""
 
+from datetime import timedelta
+
+from django.utils import timezone
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -30,6 +33,17 @@ class NotificacionViewSet(viewsets.ReadOnlyModelViewSet):
     def no_leidas_count(self, request):
         total = self.get_queryset().filter(leida=False).count()
         return Response({"no_leidas": total})
+
+    @action(detail=False, methods=["get"], url_path="avisos-vigentes")
+    def avisos_vigentes(self, request):
+        fecha_limite = timezone.now() - timedelta(days=7)
+        queryset = self.get_queryset().filter(
+            tipo__in=[Notificacion.Tipo.AVISO_ADMIN, Notificacion.Tipo.EMERGENCIA],
+            leida=False,
+            fecha_envio__gte=fecha_limite,
+        )
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     @action(detail=True, methods=["post"], url_path="leer")
     def leer(self, request, pk=None):

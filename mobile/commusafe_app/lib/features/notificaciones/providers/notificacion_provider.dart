@@ -3,11 +3,13 @@ import 'package:flutter/foundation.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/services/api_service.dart';
+import '../models/aviso_destacado_model.dart';
 import '../models/destinatario_aviso_model.dart';
 import '../models/notificacion_model.dart';
 
 class NotificacionProvider extends ChangeNotifier {
   final List<NotificacionModel> _notificaciones = <NotificacionModel>[];
+  final List<AvisoDestacadoModel> _avisosVigentes = <AvisoDestacadoModel>[];
   final List<DestinatarioAvisoModel> _residentesAviso =
       <DestinatarioAvisoModel>[];
   final List<DestinatarioAvisoModel> _vigilantesAviso =
@@ -23,6 +25,8 @@ class NotificacionProvider extends ChangeNotifier {
 
   List<NotificacionModel> get notificaciones =>
       List<NotificacionModel>.unmodifiable(_notificaciones);
+  List<AvisoDestacadoModel> get avisosVigentes =>
+      List<AvisoDestacadoModel>.unmodifiable(_avisosVigentes);
   List<DestinatarioAvisoModel> get residentesAviso =>
       List<DestinatarioAvisoModel>.unmodifiable(_residentesAviso);
   List<DestinatarioAvisoModel> get vigilantesAviso =>
@@ -88,18 +92,63 @@ class NotificacionProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> cargarAvisosVigentes() async {
+    try {
+      final response = await ApiService.get<dynamic>(
+        AppConstants.avisosVigentes,
+      );
+      final payload = _normalizeMap(response.data);
+      final rawResults = response.data is List
+          ? response.data as List<dynamic>
+          : (payload['results'] is List
+                ? payload['results'] as List
+                : <dynamic>[]);
+      final fechaLimite = DateTime.now().subtract(const Duration(days: 7));
+
+      final avisos = rawResults
+          .map((item) => _normalizeMap(item))
+          .where((item) {
+            final tipo = item['tipo']?.toString().toUpperCase() ?? '';
+            final leida = item['leida'] == true;
+            final fecha =
+                DateTime.tryParse(item['fecha_envio']?.toString() ?? '') ??
+                DateTime.fromMillisecondsSinceEpoch(0);
+            return !leida &&
+                (tipo == 'AVISO_ADMIN' || tipo == 'EMERGENCIA') &&
+                fecha.isAfter(fechaLimite);
+          })
+          .map(AvisoDestacadoModel.fromJson)
+          .where((item) => item.id.isNotEmpty)
+          .toList();
+
+      _avisosVigentes
+        ..clear()
+        ..addAll(avisos);
+      notifyListeners();
+    } catch (_) {
+      // Los avisos destacados no deben bloquear la carga principal de incidentes.
+    }
+  }
+
   Future<void> marcarLeida(String id) async {
     final index = _notificaciones.indexWhere((item) => item.id == id);
-    if (index < 0) {
+    final avisoIndex = _avisosVigentes.indexWhere((item) => item.id == id);
+    if (index < 0 && avisoIndex < 0) {
       return;
     }
 
-    final current = _notificaciones[index];
-    if (current.leida) {
+    final current = index >= 0 ? _notificaciones[index] : null;
+    final currentAviso = avisoIndex >= 0 ? _avisosVigentes[avisoIndex] : null;
+    if (current?.leida == true && currentAviso == null) {
       return;
     }
 
-    _notificaciones[index] = current.copyWith(leida: true);
+    if (current != null) {
+      _notificaciones[index] = current.copyWith(leida: true);
+    }
+    if (currentAviso != null) {
+      _avisosVigentes.removeAt(avisoIndex);
+    }
     _noLeidasCount = (_noLeidasCount - 1).clamp(0, 999999);
     notifyListeners();
 
@@ -109,7 +158,12 @@ class NotificacionProvider extends ChangeNotifier {
       );
       await cargarConteoNoLeidas();
     } catch (_) {
-      _notificaciones[index] = current;
+      if (current != null) {
+        _notificaciones[index] = current;
+      }
+      if (currentAviso != null) {
+        _avisosVigentes.insert(avisoIndex, currentAviso);
+      }
       _noLeidasCount += 1;
       notifyListeners();
     }
@@ -212,6 +266,7 @@ class NotificacionProvider extends ChangeNotifier {
 
   void reset() {
     _notificaciones.clear();
+    _avisosVigentes.clear();
     _isLoading = false;
     _isCreatingNotice = false;
     _isLoadingNoticeRecipients = false;

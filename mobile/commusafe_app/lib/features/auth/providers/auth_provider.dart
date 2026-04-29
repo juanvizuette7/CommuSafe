@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
@@ -155,6 +156,43 @@ class AuthProvider extends ChangeNotifier {
       if (notifyLoading) {
         _isLoading = false;
       }
+      notifyListeners();
+    }
+  }
+
+  Future<bool> actualizarFotoPerfil(File imagen) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final fileName = imagen.path.split(RegExp(r'[\\/]')).last;
+      final formData = FormData.fromMap(<String, dynamic>{
+        'foto_perfil': await MultipartFile.fromFile(
+          imagen.path,
+          filename: fileName.isEmpty ? 'foto_perfil.jpg' : fileName,
+        ),
+      });
+
+      final response = await ApiService.put<Map<String, dynamic>>(
+        AppConstants.profileEndpoint,
+        data: formData,
+        options: Options(contentType: 'multipart/form-data'),
+      );
+      final payload = response.data ?? <String, dynamic>{};
+      final usuario = UsuarioModel.fromJson(payload);
+      _usuarioActual = usuario;
+      await StorageService.saveUserData(usuario.toJson());
+      _errorMessage = null;
+      return true;
+    } on DioException catch (error) {
+      _errorMessage = _extractErrorMessage(error);
+      return false;
+    } catch (_) {
+      _errorMessage = 'No se pudo subir la foto de perfil.';
+      return false;
+    } finally {
+      _isLoading = false;
       notifyListeners();
     }
   }

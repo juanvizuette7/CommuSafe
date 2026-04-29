@@ -1,1 +1,2 @@
-web: gunicorn commusafe_backend.wsgi:application --log-file -
+web: gunicorn commusafe_backend.wsgi --log-file -
+release: python manage.py migrate

@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
@@ -18,6 +19,7 @@ from .serializers import (
     UsuarioSerializer,
     UsuarioUpdateSerializer,
 )
+from .services import PasswordResetError, confirmar_reset_password, crear_y_enviar_token_reset
 
 
 Usuario = get_user_model()
@@ -36,10 +38,72 @@ class RenovarTokenView(TokenRefreshView):
     permission_classes = [permissions.AllowAny]
 
 
+class SolicitarResetView(APIView):
+    """Solicita un enlace de recuperacion de contrasena por correo."""
+
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        email = (request.data.get("email") or "").strip().lower()
+        if email:
+            usuario = Usuario.objects.filter(email__iexact=email, activo=True).first()
+            if usuario is not None:
+                crear_y_enviar_token_reset(usuario, request)
+
+        return Response(
+            {
+                "mensaje": (
+                    "Si el correo existe, recibirás un enlace de recuperación en los próximos minutos."
+                )
+            },
+            status=status.HTTP_200_OK,
+        )
+
+
+class ConfirmarResetView(APIView):
+    """Confirma un token de recuperacion y asigna una contrasena nueva."""
+
+    permission_classes = [permissions.AllowAny]
+    authentication_classes = []
+
+    def post(self, request):
+        token = (request.data.get("token") or "").strip()
+        password = request.data.get("password") or ""
+        password2 = request.data.get("password2") or ""
+
+        if not token:
+            return Response(
+                {"token": ["El token de recuperación es obligatorio."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not password or not password2:
+            return Response(
+                {"password": ["Debes escribir y confirmar la contraseña nueva."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if password != password2:
+            return Response(
+                {"password2": ["Las contraseñas no coinciden."]},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            confirmar_reset_password(token, password)
+        except PasswordResetError as exc:
+            return Response({"detail": str(exc)}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(
+            {"mensaje": "La contraseña fue actualizada correctamente."},
+            status=status.HTTP_200_OK,
+        )
+
+
 class PerfilPropioView(APIView):
     """Consulta y actualización del perfil autenticado."""
 
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get(self, request):
         serializer = UsuarioSerializer(request.user, context={"request": request})

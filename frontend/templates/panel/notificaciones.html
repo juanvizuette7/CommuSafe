@@ -1,0 +1,102 @@
+{% extends "panel/base.html" %}
+
+{% block panel_content %}
+<section class="space-y-6">
+    <div class="flex flex-col gap-3 rounded-[28px] bg-[linear-gradient(135deg,_#1A1A2E,_#0F3460)] p-6 text-white shadow-glass sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <p class="text-sm font-semibold uppercase tracking-[0.22em] text-slate-300">Centro de alertas</p>
+            <h2 class="mt-2 text-2xl font-black tracking-tight">Notificaciones del panel</h2>
+            <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-200">
+                Consulta avisos administrativos, cambios de estado e incidentes nuevos asignados a tu rol.
+            </p>
+        </div>
+        <div class="rounded-2xl border border-white/15 bg-white/10 px-5 py-3 text-center">
+            <p class="text-3xl font-black">{{ notificaciones_no_leidas }}</p>
+            <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-300">Sin leer</p>
+        </div>
+    </div>
+
+    <div class="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-soft">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-slate-100">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th class="px-6 py-4 text-left text-xs font-black uppercase tracking-[0.18em] text-slate-500">Notificación</th>
+                        <th class="px-6 py-4 text-left text-xs font-black uppercase tracking-[0.18em] text-slate-500">Tipo</th>
+                        <th class="px-6 py-4 text-left text-xs font-black uppercase tracking-[0.18em] text-slate-500">Fecha</th>
+                        <th class="px-6 py-4 text-right text-xs font-black uppercase tracking-[0.18em] text-slate-500">Acción</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for notificacion in page_obj %}
+                    <tr class="transition hover:bg-slate-50 {% if not notificacion.leida %}bg-blue-50/60{% endif %}">
+                        <td class="max-w-xl px-6 py-5">
+                            <div class="flex items-start gap-3">
+                                <span class="mt-1 flex h-3 w-3 rounded-full {% if notificacion.leida %}bg-slate-300{% else %}bg-danger{% endif %}"></span>
+                                <div>
+                                    <p class="font-black text-primary">{{ notificacion.titulo }}</p>
+                                    <p class="mt-1 line-clamp-2 text-sm leading-6 text-slate-500">{{ notificacion.cuerpo|truncatechars:130 }}</p>
+                                    {% if notificacion.incidente_relacionado %}
+                                    <a href="{% url 'panel_web:incidente_detalle' notificacion.incidente_relacionado.id %}" class="mt-2 inline-flex text-xs font-bold text-accent transition hover:text-primary">
+                                        Ver incidente relacionado
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-5">
+                            <span class="inline-flex rounded-full px-3 py-1 text-xs font-black
+                                {% if notificacion.tipo == 'EMERGENCIA' %}bg-danger/10 text-danger
+                                {% elif notificacion.tipo == 'INCIDENTE_NUEVO' %}bg-blue-100 text-blue-700
+                                {% elif notificacion.tipo == 'CAMBIO_ESTADO' %}bg-success/10 text-success
+                                {% else %}bg-slate-100 text-slate-700{% endif %}">
+                                {{ notificacion.get_tipo_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-5 text-sm font-semibold text-slate-500">
+                            Hace {{ notificacion.fecha_envio|timesince }}
+                        </td>
+                        <td class="px-6 py-5 text-right">
+                            {% if not notificacion.leida %}
+                            <form method="post" action="{% url 'panel_web:panel_notificacion_leer' notificacion.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="rounded-2xl bg-primary px-4 py-2 text-xs font-black text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-accent">
+                                    Marcar leída
+                                </button>
+                            </form>
+                            {% else %}
+                            <span class="rounded-2xl bg-slate-100 px-4 py-2 text-xs font-black text-slate-500">Leída</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="px-6 py-14 text-center">
+                            <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-[24px] bg-slate-100 text-3xl">&#128276;</div>
+                            <p class="mt-4 text-lg font-black text-primary">No tienes notificaciones</p>
+                            <p class="mt-2 text-sm text-slate-500">Cuando recibas avisos o actualizaciones aparecerán aquí.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="flex flex-wrap items-center justify-between gap-3">
+        <p class="text-sm font-semibold text-slate-500">
+            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        </p>
+        <div class="flex gap-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 shadow-soft transition hover:bg-slate-50">Anterior</a>
+            {% endif %}
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 shadow-soft transition hover:bg-slate-50">Siguiente</a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</section>
+{% endblock panel_content %}

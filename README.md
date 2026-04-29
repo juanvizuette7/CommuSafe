@@ -134,7 +134,7 @@ FIREBASE_CREDENTIALS_PATH=backend/firebase-service-account.json
 
 Ese archivo no debe subirse a Git. El backend usa `firebase-admin` para enviar `messaging.Message` con `notification` y `data.incidente_id`.
 
-## Credenciales Demo
+## Credenciales de Prueba
 
 | Rol | Correo | Contraseña | Uso principal |
 |---|---|---|---|

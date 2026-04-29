@@ -189,6 +189,46 @@ def _resolver_proveedor():
     return "fallback", None
 
 
+def _modelo_por_proveedor(proveedor):
+    if proveedor == "gemini":
+        return getattr(settings, "GEMINI_MODEL", "gemini-2.5-flash-lite")
+    if proveedor == "anthropic":
+        return "claude-haiku-4-5-20251001"
+    return ""
+
+
+def generar_respuesta_asistente(mensaje, historial=None):
+    """Genera una respuesta del asistente con proveedor real o fallback local."""
+
+    historial = historial or []
+    proveedor, funcion_llm = _resolver_proveedor()
+
+    if funcion_llm is None:
+        return {
+            "respuesta": _respuesta_fallback(mensaje),
+            "modo": "fallback",
+            "proveedor": "fallback",
+        }
+
+    try:
+        texto = funcion_llm(mensaje, historial)
+        if texto:
+            return {
+                "respuesta": texto,
+                "modo": "ia",
+                "proveedor": proveedor,
+                "modelo_usado": _modelo_por_proveedor(proveedor),
+            }
+    except Exception:
+        pass
+
+    return {
+        "respuesta": _respuesta_fallback(mensaje),
+        "modo": "fallback",
+        "proveedor": "fallback",
+    }
+
+
 class ChatAsistenteView(APIView):
     """Endpoint principal del asistente virtual."""
 
@@ -200,34 +240,21 @@ class ChatAsistenteView(APIView):
 
         mensaje = serializer.validated_data["mensaje"].strip()
         historial = serializer.validated_data.get("historial", [])
+        return Response(generar_respuesta_asistente(mensaje, historial), status=status.HTTP_200_OK)
+
+
+class ChatHealthView(APIView):
+    """Expone el estado de configuracion del proveedor de IA."""
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
         proveedor, funcion_llm = _resolver_proveedor()
-
-        if funcion_llm is None:
-            return Response(
-                {
-                    "respuesta": _respuesta_fallback(mensaje),
-                    "modo": "fallback",
-                    "proveedor": "fallback",
-                },
-                status=status.HTTP_200_OK,
-            )
-
-        try:
-            texto = funcion_llm(mensaje, historial)
-            modo = "ia" if texto else "fallback"
-            if not texto:
-                texto = _respuesta_fallback(mensaje)
-                proveedor = "fallback"
-        except Exception:
-            texto = _respuesta_fallback(mensaje)
-            modo = "fallback"
-            proveedor = "fallback"
-
         return Response(
             {
-                "respuesta": texto,
-                "modo": modo,
-                "proveedor": proveedor,
+                "proveedor_activo": proveedor,
+                "modelo": _modelo_por_proveedor(proveedor),
+                "configurado": bool(funcion_llm),
             },
             status=status.HTTP_200_OK,
         )

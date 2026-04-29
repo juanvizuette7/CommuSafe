@@ -1,6 +1,6 @@
-# Guion de Demostración CommuSafe
+# Guion de Presentación CommuSafe
 
-Este guion organiza la presentación del sistema CommuSafe ante el jurado evaluador. El objetivo es demostrar el cumplimiento funcional, la arquitectura incremental y la integración entre backend, panel web y aplicación móvil.
+Este guion organiza la presentación del sistema CommuSafe ante el jurado evaluador. El objetivo es evidenciar el cumplimiento funcional, la arquitectura incremental y la integración entre backend, panel web y aplicación móvil.
 
 ## 1. Inicio del Sistema
 
@@ -42,6 +42,48 @@ cd mobile/commusafe_app
 flutter run
 ```
 
+## Configuración de IA real
+
+1. Entra a Google AI Studio: `https://aistudio.google.com/apikey`.
+2. Inicia sesión con una cuenta de Google y crea una API key nueva para el proyecto CommuSafe.
+3. Abre el archivo `backend/.env` y configura estas variables:
+
+```env
+LLM_PROVIDER=gemini
+GEMINI_API_KEY=PEGA_AQUI_TU_API_KEY_REAL
+GEMINI_MODEL=gemini-2.5-flash-lite
+```
+
+4. Reinicia el servidor Django para que cargue las variables nuevas:
+
+```powershell
+cd backend
+.\venv\Scripts\Activate.ps1
+python manage.py runserver
+```
+
+5. Valida el estado del proveedor con una petición autenticada a:
+
+```text
+GET http://127.0.0.1:8000/api/asistente/health/
+```
+
+6. La respuesta esperada para configuración real debe indicar:
+
+```json
+{
+  "proveedor_activo": "gemini",
+  "modelo": "gemini-2.5-flash-lite",
+  "configurado": true
+}
+```
+
+7. También puedes validar desde consola:
+
+```powershell
+python manage.py probar_asistente "¿Cuáles son los horarios de las áreas comunes?"
+```
+
 ## 2. Datos de Acceso
 
 | Rol | Correo | Contraseña |
@@ -78,7 +120,7 @@ flutter run
 7. Confirmar la actualización.
 8. Mostrar que el historial del incidente registra usuario, fecha, estado anterior, estado nuevo y comentario.
 9. Ir a notificaciones y explicar el conteo de alertas no leídas.
-10. Crear un aviso comunitario desde la app para residentes, si se desea demostrar la gestión móvil de avisos.
+10. Crear un aviso comunitario desde la app para residentes, si se desea presentar la gestión móvil de avisos.
 
 ## 5. Flujo del Administrador en el Panel Web
 
@@ -113,7 +155,7 @@ flutter run
 - La app móvil cubre incidentes, notificaciones, IA, perfil y contactos de emergencia.
 - El panel web entrega una vista operativa para administración y vigilancia.
 
-## 7. Objetivos Específicos Demostrados
+## 7. Objetivos Específicos Cubiertos
 
 - Digitalizar el reporte de incidentes comunitarios.
 - Mejorar la trazabilidad de la atención de incidentes.
@@ -123,7 +165,7 @@ flutter run
 - Integrar un asistente virtual para orientación básica.
 - Presentar una solución escalable y mantenible con arquitectura modular.
 
-## 8. Cierre de la Demostración
+## 8. Cierre de la Presentación
 
 1. Mostrar el APK generado en `mobile/commusafe_app/build/app/outputs/flutter-apk/app-release.apk`.
 2. Mostrar la suite de pruebas ejecutada con `pytest` y `flutter test`.

@@ -1,0 +1,74 @@
+{% extends "panel/base.html" %}
+
+{% block panel_content %}
+<section class="mx-auto max-w-4xl">
+    <div class="overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-glass">
+        <div class="bg-[linear-gradient(135deg,_#1A1A2E_0%,_#16213E_55%,_#0F3460_100%)] px-6 py-8 text-white sm:px-8">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-xs font-bold uppercase tracking-[0.24em] text-white/60">Gestión de usuarios</p>
+                    <h2 class="mt-2 text-3xl font-black tracking-tight">{{ titulo_formulario }}</h2>
+                    <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-200">
+                        Administra los datos de acceso, rol y contacto para que cada actor del sistema tenga permisos correctos.
+                    </p>
+                </div>
+                <div class="flex h-16 w-16 items-center justify-center rounded-[24px] border border-white/15 bg-white/10 text-3xl shadow-soft backdrop-blur">
+                    &#128101;
+                </div>
+            </div>
+        </div>
+
+        <form method="post" class="space-y-7 px-6 py-8 sm:px-8">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="rounded-2xl border border-danger/20 bg-danger/10 px-4 py-3 text-sm font-semibold text-danger">
+                {% for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="grid gap-5 md:grid-cols-2">
+                {% for field in form %}
+                <div class="{% if field.name == 'email' or field.name == 'unidad_residencial' %}md:col-span-2{% endif %}">
+                    {% if field.field.widget.input_type == "checkbox" %}
+                    <label class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 text-sm font-bold text-slate-700">
+                        {{ field }}
+                        <span>{{ field.label }}</span>
+                    </label>
+                    {% else %}
+                    <label for="{{ field.id_for_label }}" class="mb-2 block text-sm font-bold text-slate-700">
+                        {{ field.label }}
+                    </label>
+                    {{ field }}
+                    {% endif %}
+
+                    {% if field.help_text %}
+                    <p class="mt-2 text-xs font-medium text-slate-400">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% for error in field.errors %}
+                    <p class="mt-2 text-xs font-bold text-danger">{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if modo_formulario == "editar" %}
+            <div class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+                La contraseña no se modifica desde este formulario. El cambio de contraseña se gestiona por un flujo separado.
+            </div>
+            {% endif %}
+
+            <div class="flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:items-center sm:justify-end">
+                <a href="{% url 'panel_web:usuarios_lista' %}" class="inline-flex justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-600 transition hover:bg-slate-50">
+                    Cancelar
+                </a>
+                <button type="submit" class="inline-flex justify-center rounded-2xl bg-primary px-6 py-3 text-sm font-black text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-accent">
+                    {{ texto_boton }}
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock panel_content %}

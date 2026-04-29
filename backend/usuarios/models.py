@@ -1,11 +1,27 @@
 """Modelos de la app de usuarios."""
 
+import secrets
 import uuid
+from datetime import timedelta
 
+from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.core.exceptions import ValidationError
 from django.db import models
+from django.utils import timezone
+
+
+def generar_token_reset_password():
+    """Genera un token criptograficamente seguro para recuperacion de contrasena."""
+
+    return secrets.token_urlsafe(48)
+
+
+def expira_token_reset_password():
+    """Define la expiracion por defecto de un token de recuperacion."""
+
+    return timezone.now() + timedelta(hours=1)
 
 
 class UsuarioManager(BaseUserManager):
@@ -116,3 +132,36 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
 
     def get_short_name(self):
         return self.nombre
+
+
+class PasswordResetToken(models.Model):
+    """Token de un solo uso para recuperar la contrasena de una cuenta."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="tokens_reset_password",
+    )
+    token = models.CharField(
+        max_length=128,
+        unique=True,
+        db_index=True,
+        default=generar_token_reset_password,
+        editable=False,
+    )
+    creado = models.DateTimeField(auto_now_add=True)
+    usado = models.BooleanField(default=False)
+    expira = models.DateTimeField(default=expira_token_reset_password)
+
+    class Meta:
+        verbose_name = "Token de recuperacion de contrasena"
+        verbose_name_plural = "Tokens de recuperacion de contrasena"
+        ordering = ("-creado",)
+
+    def __str__(self):
+        return f"Reset de {self.usuario.email} - {'usado' if self.usado else 'activo'}"
+
+    @property
+    def esta_vigente(self):
+        return not self.usado and self.expira > timezone.now() and self.usuario.activo

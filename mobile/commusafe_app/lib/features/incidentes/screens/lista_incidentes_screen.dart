@@ -6,10 +6,12 @@ import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../../shared/widgets/aviso_banner.dart';
 import '../../../shared/widgets/commusafe_animated_background.dart';
 import '../../../shared/widgets/empty_state_card.dart';
 import '../../../shared/widgets/incidente_card.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../notificaciones/providers/notificacion_provider.dart';
 import '../providers/incidente_provider.dart';
 
 class ListaIncidentesScreen extends StatefulWidget {
@@ -37,6 +39,8 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_handleScroll);
+    final notificacionProvider = context.read<NotificacionProvider>();
+    Future<void>.microtask(notificacionProvider.cargarAvisosVigentes);
   }
 
   @override
@@ -106,8 +110,10 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<IncidenteProvider>();
+    final notificacionProvider = context.watch<NotificacionProvider>();
     final authProvider = context.watch<AuthProvider>();
     final usuario = authProvider.usuarioActual;
+    final avisosVigentes = notificacionProvider.avisosVigentes;
     final canCreate =
         usuario?.esResidente == true || usuario?.esVigilante == true;
     final highPriorityCount = provider.incidentes
@@ -127,9 +133,14 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
         child: Stack(
           children: <Widget>[
             RefreshIndicator(
-              onRefresh: () => context
-                  .read<IncidenteProvider>()
-                  .cargarIncidentes(refresh: true),
+              onRefresh: () async {
+                await Future.wait(<Future<void>>[
+                  context.read<IncidenteProvider>().cargarIncidentes(
+                    refresh: true,
+                  ),
+                  context.read<NotificacionProvider>().cargarAvisosVigentes(),
+                ]);
+              },
               child: CustomScrollView(
                 controller: _scrollController,
                 physics: const AlwaysScrollableScrollPhysics(
@@ -210,6 +221,14 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
                             ),
                           ),
                           const SizedBox(height: 14),
+                          if (avisosVigentes.isNotEmpty) ...<Widget>[
+                            Column(
+                              children: avisosVigentes
+                                  .map((aviso) => AvisoBanner(aviso: aviso))
+                                  .toList(),
+                            ),
+                            const SizedBox(height: 2),
+                          ],
                           SizedBox(
                             height: 42,
                             child: ListView.separated(

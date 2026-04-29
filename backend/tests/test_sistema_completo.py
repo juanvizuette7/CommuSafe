@@ -1,4 +1,5 @@
 from io import BytesIO
+from unittest.mock import patch
 
 import pytest
 from django.contrib.auth import get_user_model
@@ -354,3 +355,34 @@ class TestNotificaciones:
         assert vigilante.id in destinatarios
         assert residente_ajeno.id not in destinatarios
         assert reportante.id not in destinatarios
+
+
+class TestAsistente:
+    def test_chat_asistente_responde_dentro_del_dominio(self):
+        residente = crear_usuario("residente-chat-ia@test.com")
+        cliente = cliente_autenticado(residente)
+
+        with (
+            patch("asistente.views._gemini_configurada", return_value=True),
+            patch(
+                "asistente.views._llamar_gemini",
+                return_value=(
+                    "Las areas comunes de Remansos del Norte funcionan de "
+                    "6:00 a. m. a 10:00 p. m."
+                ),
+            ),
+        ):
+            respuesta = cliente.post(
+                "/api/asistente/chat/",
+                {
+                    "mensaje": "Cuáles son los horarios de las áreas comunes?",
+                    "historial": [],
+                },
+                format="json",
+            )
+
+        assert respuesta.status_code == 200
+        assert respuesta.data["respuesta"].strip()
+        assert respuesta.data["modo"] == "ia"
+        assert respuesta.data["proveedor"] == "gemini"
+        assert respuesta.data["modelo_usado"]
