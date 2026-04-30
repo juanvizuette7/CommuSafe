@@ -110,6 +110,7 @@ STATICFILES_STORAGE = (
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+SERVE_MEDIA_FILES = config("SERVE_MEDIA_FILES", default=DEBUG, cast=cast_bool)
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "usuarios.Usuario"

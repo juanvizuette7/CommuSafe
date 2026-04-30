@@ -18,6 +18,8 @@ services:
         value: .onrender.com,commusafe.onrender.com
       - key: CSRF_TRUSTED_ORIGINS
         value: https://*.onrender.com,https://commusafe.onrender.com
+      - key: SERVE_MEDIA_FILES
+        value: "True"
       - key: DATABASE_URL
         fromDatabase:
           name: commusafe-db

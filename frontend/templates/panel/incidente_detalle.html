@@ -46,7 +46,10 @@
                 <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     {% for evidencia in evidencias %}
                     <figure class="overflow-hidden rounded-[24px] border border-slate-200 bg-slate-50">
-                        <img src="{{ evidencia.imagen.url }}" alt="Evidencia {{ forloop.counter }}" class="h-56 w-full object-cover transition duration-300 hover:scale-[1.03]">
+                        <img src="{{ evidencia.imagen.url }}" alt="Evidencia {{ forloop.counter }}" class="h-56 w-full object-cover transition duration-300 hover:scale-[1.03]" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                        <div class="hidden h-56 w-full items-center justify-center bg-slate-100 px-6 text-center text-sm font-bold text-slate-500">
+                            Archivo de evidencia no disponible en el servidor.
+                        </div>
                         <figcaption class="p-4">
                             <p class="text-sm font-semibold text-slate-800">{{ evidencia.descripcion|default:"Sin descripción" }}</p>
                             <p class="mt-1 text-xs text-slate-500">{{ evidencia.fecha_subida|date:"d/m/Y h:i a" }}</p>
@@ -104,7 +107,10 @@
             <h3 class="text-xl font-black text-primary">Reportado por</h3>
             <div class="mt-5 flex items-center gap-4">
                 {% if incidente.reportado_por.foto_perfil %}
-                <img src="{{ incidente.reportado_por.foto_perfil.url }}" alt="Foto del reportante" class="h-16 w-16 rounded-[22px] object-cover">
+                <img src="{{ incidente.reportado_por.foto_perfil.url }}" alt="Foto del reportante" class="h-16 w-16 rounded-[22px] object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                <div class="hidden h-16 w-16 items-center justify-center rounded-[22px] bg-primary text-lg font-black text-white">
+                    {{ incidente.reportado_por.nombre|first }}{{ incidente.reportado_por.apellido|first }}
+                </div>
                 {% else %}
                 <div class="flex h-16 w-16 items-center justify-center rounded-[22px] bg-primary text-lg font-black text-white">
                     {{ incidente.reportado_por.nombre|first }}{{ incidente.reportado_por.apellido|first }}
