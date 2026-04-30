@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework.test import APIClient
 
-from incidentes.models import EvidenciaIncidente, HistorialEstado, Incidente
+from incidentes.models import EvidenciaIncidente, HistorialEstado, Incidente, IncidenteEliminado
 from notificaciones.models import Notificacion
 
 
@@ -193,10 +193,24 @@ class TestControlAcceso:
         respuesta_vigilante = cliente_autenticado(vigilante).delete(
             f"/api/incidentes/{incidente.id}/"
         )
-        respuesta_admin = cliente_autenticado(admin).delete(f"/api/incidentes/{incidente.id}/")
+        respuesta_admin_sin_motivo = cliente_autenticado(admin).delete(
+            f"/api/incidentes/{incidente.id}/"
+        )
+        respuesta_admin = cliente_autenticado(admin).delete(
+            f"/api/incidentes/{incidente.id}/",
+            {"motivo": "Motivo de auditoria suficientemente claro."},
+            format="json",
+        )
 
         assert respuesta_vigilante.status_code == 403
-        assert respuesta_admin.status_code == 204
+        assert respuesta_admin_sin_motivo.status_code == 400
+        assert respuesta_admin.status_code == 200
+        assert not Incidente.objects.filter(id=incidente.id).exists()
+        assert IncidenteEliminado.objects.filter(
+            incidente_id=incidente.id,
+            eliminado_por=admin,
+            titulo="Incidente para eliminar",
+        ).exists()
 
 
 class TestLogicaIncidentes:

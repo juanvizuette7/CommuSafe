@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 
-from .models import EvidenciaIncidente, HistorialEstado, Incidente
+from .models import EvidenciaIncidente, HistorialEstado, Incidente, IncidenteEliminado
 
 
 class EvidenciaIncidenteInline(admin.TabularInline):
@@ -66,3 +66,14 @@ class HistorialEstadoAdmin(admin.ModelAdmin):
     search_fields = ("incidente__titulo", "comentario", "cambiado_por__email")
     autocomplete_fields = ("incidente", "cambiado_por")
     readonly_fields = ("fecha_cambio",)
+
+
+@admin.register(IncidenteEliminado)
+class IncidenteEliminadoAdmin(admin.ModelAdmin):
+    """Auditoria de incidentes eliminados fisicamente."""
+
+    list_display = ("titulo", "incidente_id", "eliminado_por", "fecha_eliminacion")
+    list_filter = ("fecha_eliminacion",)
+    search_fields = ("titulo", "motivo", "eliminado_por__email")
+    autocomplete_fields = ("eliminado_por",)
+    readonly_fields = ("incidente_id", "titulo", "eliminado_por", "fecha_eliminacion", "motivo")

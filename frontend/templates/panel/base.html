@@ -55,6 +55,12 @@
                     <span class="text-lg">&#128680;</span>
                     <span>Incidentes</span>
                 </a>
+                {% if active_nav == 'incidentes' and usuario_panel.es_administrador %}
+                <a href="{% url 'panel_web:incidentes_eliminados' %}" class="ml-7 flex items-center gap-2 rounded-2xl px-4 py-2 text-xs font-bold text-slate-300 transition hover:bg-white/10 hover:text-white">
+                    <span>&#128196;</span>
+                    <span>Eliminados</span>
+                </a>
+                {% endif %}
                 <a href="{% url 'panel_web:avisos' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition {% if active_nav == 'avisos' %}bg-white/15 text-white shadow-soft{% else %}text-slate-300 hover:bg-white/10 hover:text-white{% endif %}">
                     <span class="text-lg">&#128276;</span>
                     <span>Avisos</span>
@@ -142,6 +148,11 @@
             <nav class="mt-8 space-y-2">
                 <a href="{% url 'panel_web:dashboard' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold {% if active_nav == 'dashboard' %}bg-white/15{% else %}text-slate-300{% endif %}">&#128202; <span>Dashboard</span></a>
                 <a href="{% url 'panel_web:incidentes_lista' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold {% if active_nav == 'incidentes' %}bg-white/15{% else %}text-slate-300{% endif %}">&#128680; <span>Incidentes</span></a>
+                {% if active_nav == 'incidentes' and usuario_panel.es_administrador %}
+                <a href="{% url 'panel_web:incidentes_eliminados' %}" class="ml-7 flex items-center gap-2 rounded-2xl px-4 py-2 text-xs font-bold text-slate-300">
+                    &#128196; <span>Eliminados</span>
+                </a>
+                {% endif %}
                 <a href="{% url 'panel_web:avisos' %}" class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold {% if active_nav == 'avisos' %}bg-white/15{% else %}text-slate-300{% endif %}">&#128276; <span>Avisos</span></a>
                 <a href="{% url 'panel_web:panel_notificaciones' %}" class="flex items-center justify-between gap-3 rounded-2xl px-4 py-3 text-sm font-semibold {% if active_nav == 'notificaciones' %}bg-white/15{% else %}text-slate-300{% endif %}">
                     <span>&#128276; <span>Notificaciones</span></span>

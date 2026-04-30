@@ -134,3 +134,26 @@ class HistorialEstado(models.Model):
 
     def __str__(self):
         return f"{self.incidente.titulo}: {self.estado_anterior or 'SIN ESTADO'} -> {self.estado_nuevo}"
+
+
+class IncidenteEliminado(models.Model):
+    """Registro de auditoria para incidentes eliminados fisicamente."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    incidente_id = models.UUIDField(db_index=True)
+    titulo = models.CharField(max_length=150)
+    eliminado_por = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="incidentes_eliminados",
+    )
+    fecha_eliminacion = models.DateTimeField(auto_now_add=True)
+    motivo = models.TextField()
+
+    class Meta:
+        verbose_name = "Incidente eliminado"
+        verbose_name_plural = "Incidentes eliminados"
+        ordering = ("-fecha_eliminacion",)
+
+    def __str__(self):
+        return f"{self.titulo} eliminado por {self.eliminado_por.email}"

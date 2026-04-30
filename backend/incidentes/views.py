@@ -16,11 +16,13 @@ from .serializers import (
     AgregarEvidenciaSerializer,
     EvidenciaIncidenteSerializer,
     CambiarEstadoSerializer,
+    EliminarIncidenteSerializer,
     IncidenteCreateSerializer,
     IncidenteDetailSerializer,
     IncidenteListSerializer,
 )
 from .services import cambiar_estado_incidente
+from .services_eliminacion import eliminar_incidente_con_trazabilidad
 
 
 class IncidenteViewSet(viewsets.ModelViewSet):
@@ -86,6 +88,20 @@ class IncidenteViewSet(viewsets.ModelViewSet):
         notificar_incidente_nuevo(incidente)
         detalle = IncidenteDetailSerializer(incidente, context={"request": request})
         return Response(detalle.data, status=status.HTTP_201_CREATED)
+
+    def destroy(self, request, *args, **kwargs):
+        incidente = self.get_object()
+        serializer = EliminarIncidenteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        eliminar_incidente_con_trazabilidad(
+            incidente=incidente,
+            usuario=request.user,
+            motivo=serializer.validated_data["motivo"],
+        )
+        return Response(
+            {"mensaje": "El incidente fue eliminado y registrado en auditoría."},
+            status=status.HTTP_200_OK,
+        )
 
     @action(detail=True, methods=["post"], url_path="cambiar-estado")
     def cambiar_estado(self, request, pk=None):

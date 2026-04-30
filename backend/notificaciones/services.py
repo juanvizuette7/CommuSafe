@@ -1,5 +1,7 @@
 """Servicios de negocio para notificaciones internas y push."""
 
+import base64
+import json
 import logging
 import os
 
@@ -41,8 +43,23 @@ class AudienciaAviso:
 def _configuracion_push_disponible():
     if firebase_admin is None or credentials is None or messaging is None:
         return False
-    valor = (settings.FIREBASE_CREDENTIALS_PATH or "").strip()
-    return bool(valor and "REEMPLAZAR" not in valor.upper() and os.path.exists(valor))
+    json_base64 = (getattr(settings, "FIREBASE_CREDENTIALS_JSON_BASE64", "") or "").strip()
+    json_directo = (getattr(settings, "FIREBASE_CREDENTIALS_JSON", "") or "").strip()
+    ruta = (settings.FIREBASE_CREDENTIALS_PATH or "").strip()
+    if json_base64 or json_directo:
+        return True
+    return bool(ruta and "REEMPLAZAR" not in ruta.upper() and os.path.exists(ruta))
+
+
+def _crear_credencial_firebase():
+    json_base64 = (getattr(settings, "FIREBASE_CREDENTIALS_JSON_BASE64", "") or "").strip()
+    json_directo = (getattr(settings, "FIREBASE_CREDENTIALS_JSON", "") or "").strip()
+    if json_base64:
+        datos = json.loads(base64.b64decode(json_base64).decode("utf-8"))
+        return credentials.Certificate(datos)
+    if json_directo:
+        return credentials.Certificate(json.loads(json_directo))
+    return credentials.Certificate(settings.FIREBASE_CREDENTIALS_PATH)
 
 
 def _obtener_firebase_app():
@@ -55,7 +72,7 @@ def _obtener_firebase_app():
     try:
         _firebase_app = firebase_admin.get_app()
     except ValueError:
-        credencial = credentials.Certificate(settings.FIREBASE_CREDENTIALS_PATH)
+        credencial = _crear_credencial_firebase()
         _firebase_app = firebase_admin.initialize_app(credencial)
     return _firebase_app
 

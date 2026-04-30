@@ -3,7 +3,7 @@ services:
     name: commusafe
     env: python
     plan: free
-    buildCommand: pip install -r backend/requirements.txt && cd backend && python manage.py migrate && python manage.py collectstatic --noinput
+    buildCommand: pip install -r backend/requirements.txt && cd backend && python manage.py migrate && python manage.py crear_admin_produccion && python manage.py collectstatic --noinput
     startCommand: cd backend && gunicorn commusafe_backend.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: DJANGO_SETTINGS_MODULE
@@ -27,6 +27,24 @@ services:
       - key: GEMINI_API_KEY
         sync: false
       - key: FIREBASE_CREDENTIALS_PATH
+        sync: false
+      - key: FIREBASE_CREDENTIALS_JSON_BASE64
+        sync: false
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: DEFAULT_FROM_EMAIL
+        sync: false
+      - key: PROD_ADMIN_EMAIL
+        sync: false
+      - key: PROD_ADMIN_PASSWORD
+        sync: false
+      - key: PROD_ADMIN_NOMBRE
+        sync: false
+      - key: PROD_ADMIN_APELLIDO
+        sync: false
+      - key: PROD_ADMIN_TELEFONO
         sync: false
 
 databases:

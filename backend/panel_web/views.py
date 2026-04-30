@@ -15,9 +15,11 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from incidentes.models import Incidente
-from incidentes.serializers import CambiarEstadoSerializer
+from incidentes.models import Incidente, IncidenteEliminado
+from incidentes.exporters import exportar_incidentes_excel, exportar_incidentes_pdf
+from incidentes.serializers import CambiarEstadoSerializer, EliminarIncidenteSerializer
 from incidentes.services import cambiar_estado_incidente
+from incidentes.services_eliminacion import eliminar_incidente_con_trazabilidad
 from notificaciones.models import Notificacion
 from notificaciones.serializers import AvisoComunitarioSerializer
 from notificaciones.services import (
@@ -309,6 +311,19 @@ def incidentes_lista(request):
     if busqueda:
         queryset = queryset.filter(Q(titulo__icontains=busqueda) | Q(descripcion__icontains=busqueda))
 
+    filtros_activos = {
+        "categoria": categoria,
+        "estado": estado,
+        "prioridad": prioridad,
+        "q": busqueda,
+    }
+
+    formato_exportacion = request.GET.get("export", "").strip().lower()
+    if formato_exportacion == "xlsx":
+        return exportar_incidentes_excel(queryset)
+    if formato_exportacion == "pdf":
+        return exportar_incidentes_pdf(queryset, filtros_activos)
+
     paginador = Paginator(queryset, 12)
     page_obj = paginador.get_page(request.GET.get("page"))
 
@@ -318,12 +333,7 @@ def incidentes_lista(request):
         page_subtitle="Seguimiento y trazabilidad de reportes",
         active_nav="incidentes",
         page_obj=page_obj,
-        filtros_activos={
-            "categoria": categoria,
-            "estado": estado,
-            "prioridad": prioridad,
-            "q": busqueda,
-        },
+        filtros_activos=filtros_activos,
         categorias=Incidente.Categoria.choices,
         estados=Incidente.Estado.choices,
         prioridades=Incidente.Prioridad.choices,
@@ -386,6 +396,58 @@ def incidente_detalle(request, incidente_id):
         estados_disponibles=_opciones_estado_disponibles(request.user, incidente),
     )
     return render(request, "panel/incidente_detalle.html", contexto)
+
+
+@panel_login_required
+@require_POST
+def incidente_eliminar(request, incidente_id):
+    """Elimina un incidente con registro de auditoria."""
+
+    redireccion = _redirigir_si_no_es_administrador(request)
+    if redireccion:
+        return redireccion
+
+    incidente = get_object_or_404(Incidente, id=incidente_id)
+    serializer = EliminarIncidenteSerializer(data={"motivo": request.POST.get("motivo", "")})
+    if not serializer.is_valid():
+        for errores in serializer.errors.values():
+            if isinstance(errores, (list, tuple)):
+                for error in errores:
+                    messages.error(request, str(error))
+            else:
+                messages.error(request, str(errores))
+        return redirect("panel_web:incidente_detalle", incidente_id=incidente.id)
+
+    titulo = incidente.titulo
+    eliminar_incidente_con_trazabilidad(
+        incidente=incidente,
+        usuario=request.user,
+        motivo=serializer.validated_data["motivo"],
+    )
+    messages.success(request, f"El incidente {titulo} fue eliminado y registrado en auditoría.")
+    return redirect("panel_web:incidentes_lista")
+
+
+@panel_login_required
+@require_GET
+def incidentes_eliminados(request):
+    """Auditoria de incidentes eliminados visible solo para administradores."""
+
+    redireccion = _redirigir_si_no_es_administrador(request)
+    if redireccion:
+        return redireccion
+
+    queryset = IncidenteEliminado.objects.select_related("eliminado_por").order_by("-fecha_eliminacion")
+    paginador = Paginator(queryset, 25)
+    page_obj = paginador.get_page(request.GET.get("page"))
+    contexto = _contexto_base_panel(
+        request,
+        page_title="Incidentes eliminados",
+        page_subtitle="Auditoría de eliminaciones físicas realizadas por administración",
+        active_nav="incidentes",
+        page_obj=page_obj,
+    )
+    return render(request, "panel/incidentes_eliminados.html", contexto)
 
 
 @panel_login_required

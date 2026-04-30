@@ -21,7 +21,7 @@ El archivo `render.yaml` crea:
 El servicio web ejecuta:
 
 ```bash
-pip install -r backend/requirements.txt && cd backend && python manage.py migrate && python manage.py collectstatic --noinput
+pip install -r backend/requirements.txt && cd backend && python manage.py migrate && python manage.py crear_admin_produccion && python manage.py collectstatic --noinput
 ```
 
 Como comando de inicio ejecuta:
@@ -45,8 +45,18 @@ CSRF_TRUSTED_ORIGINS=https://*.onrender.com,https://commusafe.onrender.com
 LLM_PROVIDER=gemini
 GEMINI_MODEL=gemini-2.5-flash-lite
 GEMINI_API_KEY=TU_API_KEY_REAL_DE_GOOGLE_AI_STUDIO
-FIREBASE_CREDENTIALS_PATH=/etc/secrets/firebase-service-account.json
+FIREBASE_CREDENTIALS_JSON_BASE64=JSON_BASE64_DE_FIREBASE_ADMIN
+PROD_ADMIN_EMAIL=correo_real_del_administrador
+PROD_ADMIN_PASSWORD=contrasena_segura_del_administrador
+PROD_ADMIN_NOMBRE=Nombre
+PROD_ADMIN_APELLIDO=Apellido
+PROD_ADMIN_TELEFONO=3000000000
+EMAIL_HOST_USER=correo_smtp_real
+EMAIL_HOST_PASSWORD=app_password_smtp
+DEFAULT_FROM_EMAIL=CommuSafe <correo_smtp_real>
 ```
+
+No se debe ejecutar `cargar_demo` en produccion. El despliegue real arranca con base limpia y crea solo el administrador indicado por las variables `PROD_ADMIN_*`.
 
 ## 4. Configurar IA real
 
@@ -62,11 +72,18 @@ FIREBASE_CREDENTIALS_PATH=/etc/secrets/firebase-service-account.json
 2. Ir a `Configuración del proyecto`.
 3. Entrar a `Cuentas de servicio`.
 4. Generar una nueva clave privada.
-5. En Render, abrir el servicio web `commusafe`.
-6. Entrar a `Environment`.
-7. Crear un Secret File llamado `firebase-service-account.json`.
-8. Pegar el contenido completo del JSON de Firebase.
-9. Configurar `FIREBASE_CREDENTIALS_PATH=/etc/secrets/firebase-service-account.json`.
+5. Convertir el archivo JSON a base64 desde PowerShell:
+
+```powershell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("C:\ruta\firebase-service-account.json"))
+```
+
+6. En Render, abrir el servicio web `commusafe`.
+7. Entrar a `Environment`.
+8. Crear la variable `FIREBASE_CREDENTIALS_JSON_BASE64` y pegar el texto base64 completo.
+9. No subir el archivo JSON al repositorio.
+
+Como alternativa, se puede usar un Secret File y configurar `FIREBASE_CREDENTIALS_PATH=/etc/secrets/firebase-service-account.json`, pero la opcion base64 evita depender de rutas del entorno.
 
 ## 6. Desplegar
 

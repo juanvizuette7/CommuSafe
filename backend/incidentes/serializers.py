@@ -251,6 +251,18 @@ class CambiarEstadoSerializer(serializers.Serializer):
         return attrs
 
 
+class EliminarIncidenteSerializer(serializers.Serializer):
+    """Valida el motivo obligatorio para eliminar un incidente."""
+
+    motivo = serializers.CharField(min_length=10)
+
+    def validate_motivo(self, value):
+        motivo = value.strip()
+        if len(motivo) < 10:
+            raise serializers.ValidationError("El motivo debe tener al menos 10 caracteres.")
+        return motivo
+
+
 class AgregarEvidenciaSerializer(serializers.ModelSerializer):
     """Serializer para agregar una evidencia adicional a un incidente."""
 
