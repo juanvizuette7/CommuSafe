@@ -55,12 +55,8 @@ class _UsuarioPanelFormMixin:
     def clean(self):
         cleaned_data = super().clean()
         rol = cleaned_data.get("rol")
-        unidad = (cleaned_data.get("unidad_residencial") or "").strip()
-        if rol == Usuario.Rol.RESIDENTE and not unidad:
-            self.add_error(
-                "unidad_residencial",
-                "La unidad residencial es obligatoria para residentes.",
-            )
+        if rol in {Usuario.Rol.VIGILANTE, Usuario.Rol.ADMINISTRADOR}:
+            cleaned_data["unidad_residencial"] = ""
         return cleaned_data
 
 
