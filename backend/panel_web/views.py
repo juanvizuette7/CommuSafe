@@ -16,7 +16,6 @@ from django.views.decorators.http import require_GET, require_http_methods, requ
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from incidentes.models import Incidente, IncidenteEliminado
-from incidentes.exporters import exportar_incidentes_excel, exportar_incidentes_pdf
 from incidentes.serializers import CambiarEstadoSerializer, EliminarIncidenteSerializer
 from incidentes.services import cambiar_estado_incidente
 from incidentes.services_eliminacion import eliminar_incidente_con_trazabilidad
@@ -320,8 +319,12 @@ def incidentes_lista(request):
 
     formato_exportacion = request.GET.get("export", "").strip().lower()
     if formato_exportacion == "xlsx":
+        from incidentes.exporters import exportar_incidentes_excel
+
         return exportar_incidentes_excel(queryset)
     if formato_exportacion == "pdf":
+        from incidentes.exporters import exportar_incidentes_pdf
+
         return exportar_incidentes_pdf(queryset, filtros_activos)
 
     paginador = Paginator(queryset, 12)

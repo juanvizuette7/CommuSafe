@@ -8,6 +8,8 @@ services:
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: commusafe_backend.settings_prod
+      - key: PYTHON_VERSION
+        value: 3.11.9
       - key: SECRET_KEY
         generateValue: true
       - key: DEBUG
