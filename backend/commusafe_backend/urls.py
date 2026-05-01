@@ -12,6 +12,15 @@ urlpatterns = [
     path("api/incidentes/", include("incidentes.urls")),
     path("api/notificaciones/", include("notificaciones.urls")),
     path("api/asistente/", include("asistente.urls")),
+    path(
+        "loaderio-20dfbcf3e86f90389ce99fdc75050188.txt",
+        serve_media,
+        {
+            "path": "loaderio-20dfbcf3e86f90389ce99fdc75050188.txt",
+            "document_root": settings.PUBLIC_ROOT,
+            "show_indexes": False,
+        },
+    ),
     path("", include("panel_web.urls")),
 ]
 
