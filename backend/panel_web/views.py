@@ -229,6 +229,51 @@ def dashboard(request):
         Incidente.objects.select_related("reportado_por", "atendido_por")
         .order_by("-fecha_reporte")[:10]
     )
+    conteos_por_categoria = {
+        item["categoria"]: item["total"]
+        for item in Incidente.objects.values("categoria").annotate(total=Count("id"))
+    }
+    total_incidentes = sum(conteos_por_categoria.values())
+    colores_categoria = {
+        Incidente.Categoria.SEGURIDAD: "#E94560",
+        Incidente.Categoria.CONVIVENCIA: "#F59E0B",
+        Incidente.Categoria.INFRAESTRUCTURA: "#3B82F6",
+        Incidente.Categoria.EMERGENCIA: "#10B981",
+    }
+    grafica_incidentes_tipo = []
+    for valor, etiqueta in Incidente.Categoria.choices:
+        total = conteos_por_categoria.get(valor, 0)
+        grafica_incidentes_tipo.append(
+            {
+                "tipo": valor,
+                "etiqueta": etiqueta,
+                "total": total,
+                "porcentaje": round((total / total_incidentes) * 100, 1) if total_incidentes else 0,
+                "color": colores_categoria.get(valor, "#64748B"),
+            }
+        )
+    conteos_por_estado = {
+        item["estado"]: item["total"]
+        for item in Incidente.objects.values("estado").annotate(total=Count("id"))
+    }
+    colores_estado = {
+        Incidente.Estado.REGISTRADO: "#94A3B8",
+        Incidente.Estado.EN_PROCESO: "#3B82F6",
+        Incidente.Estado.RESUELTO: "#10B981",
+        Incidente.Estado.CERRADO: "#111827",
+    }
+    grafica_incidentes_estado = []
+    for valor, etiqueta in Incidente.Estado.choices:
+        total = conteos_por_estado.get(valor, 0)
+        grafica_incidentes_estado.append(
+            {
+                "estado": valor,
+                "etiqueta": etiqueta,
+                "total": total,
+                "porcentaje": round((total / total_incidentes) * 100, 1) if total_incidentes else 0,
+                "color": colores_estado.get(valor, "#64748B"),
+            }
+        )
 
     contexto = _contexto_base_panel(
         request,
@@ -244,6 +289,9 @@ def dashboard(request):
             ).count(),
             "usuarios_activos": Usuario.objects.filter(activo=True).count(),
         },
+        grafica_incidentes_tipo=grafica_incidentes_tipo,
+        grafica_incidentes_estado=grafica_incidentes_estado,
+        total_incidentes=total_incidentes,
         incidentes_recientes=recientes,
     )
     return render(request, "panel/dashboard.html", contexto)

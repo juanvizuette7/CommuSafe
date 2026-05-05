@@ -11,6 +11,7 @@ backend/media/
 backend/htmlcov/
 backend/staticfiles/
 backend/.venv/
+backend/.venv-local/
 backend/venv/
 .venv/
 venv/

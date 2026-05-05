@@ -7,7 +7,7 @@
             <div>
                 <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-300">Activos</p>
                 <p class="mt-4 text-4xl font-black">{{ metricas.incidentes_activos }}</p>
-                <p class="mt-2 text-sm text-slate-200">Incidentes abiertos o en gestión.</p>
+                <p class="mt-2 text-sm text-slate-200">Incidentes abiertos o en gesti&oacute;n.</p>
             </div>
             <span class="text-4xl">&#128194;</span>
         </div>
@@ -17,7 +17,7 @@
             <div>
                 <p class="text-sm font-semibold uppercase tracking-[0.2em] text-white/70">Prioridad alta</p>
                 <p class="mt-4 text-4xl font-black">{{ metricas.incidentes_alta }}</p>
-                <p class="mt-2 text-sm text-white/80">Casos que exigen atención inmediata.</p>
+                <p class="mt-2 text-sm text-white/80">Casos que exigen atenci&oacute;n inmediata.</p>
             </div>
             <span class="text-4xl">&#128680;</span>
         </div>
@@ -47,8 +47,8 @@
 <section class="mt-8 rounded-[30px] border border-slate-200 bg-white p-6 shadow-soft">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h2 class="text-2xl font-black tracking-tight text-primary">Incidentes más recientes</h2>
-            <p class="mt-1 text-sm text-slate-500">Últimos 10 reportes registrados en CommuSafe.</p>
+            <h2 class="text-2xl font-black tracking-tight text-primary">Incidentes m&aacute;s recientes</h2>
+            <p class="mt-1 text-sm text-slate-500">&Uacute;ltimos 10 reportes registrados en CommuSafe.</p>
         </div>
         <a href="{% url 'panel_web:incidentes_lista' %}" class="inline-flex items-center justify-center rounded-2xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-soft transition hover:bg-accent">
             Ver todos los incidentes
@@ -60,13 +60,13 @@
             <table class="min-w-full divide-y divide-slate-200 text-sm">
                 <thead class="bg-slate-50">
                     <tr class="text-left text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
-                        <th class="px-5 py-4">Título</th>
-                        <th class="px-5 py-4">Categoría</th>
+                        <th class="px-5 py-4">T&iacute;tulo</th>
+                        <th class="px-5 py-4">Categor&iacute;a</th>
                         <th class="px-5 py-4">Prioridad</th>
                         <th class="px-5 py-4">Estado</th>
                         <th class="px-5 py-4">Reportado por</th>
                         <th class="px-5 py-4">Fecha</th>
-                        <th class="px-5 py-4 text-right">Acción</th>
+                        <th class="px-5 py-4 text-right">Acci&oacute;n</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100 bg-white">
@@ -92,7 +92,7 @@
                             </span>
                         </td>
                         <td class="px-5 py-4 font-medium text-slate-700">{{ incidente.reportado_por.nombre_completo }}</td>
-                        <td class="px-5 py-4 text-slate-500">{{ incidente.fecha_reporte|timesince }} atrás</td>
+                        <td class="px-5 py-4 text-slate-500">{{ incidente.fecha_reporte|timesince }} atr&aacute;s</td>
                         <td class="px-5 py-4 text-right">
                             <a href="{% url 'panel_web:incidente_detalle' incidente.id %}" class="inline-flex rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-primary transition hover:border-primary hover:bg-primary hover:text-white">
                                 Ver
@@ -101,12 +101,75 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="7" class="px-5 py-10 text-center text-sm font-medium text-slate-500">No hay incidentes registrados todavía.</td>
+                        <td colspan="7" class="px-5 py-10 text-center text-sm font-medium text-slate-500">No hay incidentes registrados todav&iacute;a.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
+    </div>
+</section>
+
+<section class="mt-8 rounded-[30px] border border-slate-200 bg-white p-6 shadow-soft">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+            <h2 class="text-2xl font-black tracking-tight text-primary">Incidentes por estado</h2>
+            <p class="mt-1 text-sm text-slate-500">Distribuci&oacute;n actual seg&uacute;n avance operativo.</p>
+        </div>
+        <div class="rounded-2xl bg-slate-50 px-4 py-3 text-right">
+            <p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Total</p>
+            <p class="text-2xl font-black text-primary">{{ total_incidentes }}</p>
+        </div>
+    </div>
+
+    <div class="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {% for item in grafica_incidentes_estado %}
+        <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+            <div class="flex items-center justify-between gap-4">
+                <div class="flex min-w-0 items-center gap-3">
+                    <span class="h-3 w-3 shrink-0 rounded-full" style="background-color: {{ item.color }}"></span>
+                    <p class="truncate text-sm font-black text-slate-800">{{ item.etiqueta }}</p>
+                </div>
+                <div class="shrink-0 text-right">
+                    <span class="text-lg font-black text-slate-900">{{ item.total }}</span>
+                    <span class="ml-2 text-xs font-bold text-slate-500">{{ item.porcentaje }}%</span>
+                </div>
+            </div>
+            <div class="mt-3 h-3 overflow-hidden rounded-full bg-white">
+                <div class="h-full rounded-full" style="width: {{ item.porcentaje }}%; background-color: {{ item.color }}"></div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="mt-8 rounded-[30px] border border-slate-200 bg-white p-6 shadow-soft">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+            <h2 class="text-2xl font-black tracking-tight text-primary">Lectura r&aacute;pida</h2>
+            <p class="mt-1 text-sm text-slate-500">Resumen de incidentes por tipo debajo del listado principal.</p>
+        </div>
+        <div class="rounded-2xl bg-slate-50 px-4 py-3 text-right">
+            <p class="text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Total</p>
+            <p class="text-2xl font-black text-primary">{{ total_incidentes }}</p>
+        </div>
+    </div>
+
+    <div class="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+        {% for item in grafica_incidentes_tipo %}
+        <div class="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
+            <div class="flex min-w-0 items-center gap-3">
+                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl text-white" style="background-color: {{ item.color }}">
+                    {% if item.tipo == 'SEGURIDAD' %}&#128737;{% elif item.tipo == 'CONVIVENCIA' %}&#128172;{% elif item.tipo == 'INFRAESTRUCTURA' %}&#128736;{% else %}&#9888;{% endif %}
+                </span>
+                <div class="min-w-0">
+                    <p class="truncate text-sm font-bold text-slate-800">{{ item.etiqueta }}</p>
+                    <p class="text-xs font-semibold text-slate-500">{{ item.porcentaje }}% del total</p>
+                </div>
+            </div>
+            <p class="shrink-0 text-xl font-black text-slate-900">{{ item.total }}</p>
+        </div>
+        {% endfor %}
     </div>
 </section>
 {% endblock panel_content %}

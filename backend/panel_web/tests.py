@@ -219,6 +219,11 @@ class PanelWebViewsTests(TestCase):
         contexto = render_mock.call_args[0][2]
         self.assertIn("metricas", contexto)
         self.assertIn("incidentes_recientes", contexto)
+        self.assertIn("grafica_incidentes_tipo", contexto)
+        self.assertIn("total_incidentes", contexto)
+        self.assertEqual(len(contexto["grafica_incidentes_tipo"]), len(Incidente.Categoria.choices))
+        self.assertIn("grafica_incidentes_estado", contexto)
+        self.assertEqual(len(contexto["grafica_incidentes_estado"]), len(Incidente.Estado.choices))
 
     def test_incidentes_lista_filtros(self):
         Incidente.objects.create(
