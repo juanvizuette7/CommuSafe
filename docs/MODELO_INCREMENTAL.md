@@ -1,66 +1,64 @@
 # Modelo de Desarrollo Incremental de CommuSafe
 
-## 1. Enfoque metodologico
+## 1. Enfoque metodológico
 
-CommuSafe se desarrolla bajo el modelo incremental. Esto significa que el sistema no se construye como un unico bloque al final del proyecto, sino mediante incrementos funcionales acumulativos. Cada sprint entrega una parte util, verificable e integrada con lo construido anteriormente.
+CommuSafe se desarrolló bajo el Modelo de Desarrollo Incremental. El sistema no se construyó como una única entrega monolítica, sino mediante entregas parciales, funcionales e integradas. Cada incremento agregó capacidades verificables sobre una base existente: primero autenticación y roles, luego gestión de incidentes, después panel web, notificaciones, aplicación móvil, asistente virtual, pruebas y despliegue.
 
-El proyecto usa este modelo porque permite controlar mejor el riesgo tecnico, validar progresivamente los modulos principales y demostrar avance real en cada etapa del trabajo de grado.
+La planeación técnica se organizó en sprints numerados del Sprint 0 al Sprint 10. La memoria metodológica del proyecto agrupa esos sprints en cinco incrementos académicos. No existe contradicción entre ambos niveles: el sprint es la unidad operativa de construcción y el incremento es la unidad funcional usada para explicar el avance ante el jurado.
 
-## 2. Como se aplica en el proyecto
+## 2. Relación entre incrementos académicos y sprints técnicos
 
-Cada incremento agrega valor funcional concreto:
-
-- Primero se define la arquitectura, el modelo de datos y la vision completa del sistema.
-- Luego se construye la base del backend, autenticacion y usuarios.
-- Despues se implementa el modulo central de incidentes.
-- Mas adelante se agregan notificaciones, asistente virtual y panel web.
-- Finalmente se desarrolla la app movil por capas: estructura, autenticacion, incidentes, notificaciones, asistente y cierre de calidad.
-
-Cada modulo queda integrado con los anteriores antes de avanzar. Por ejemplo, el modulo de incidentes depende del usuario autenticado; las notificaciones dependen de incidentes; la app movil depende de la API; y las pruebas finales dependen de todo el sistema ya conectado.
-
-## 3. Incrementos principales
-
-| Incremento | Sprints | Resultado acumulado |
+| Incremento académico | Sprints técnicos relacionados | Entrega funcional verificable |
 | --- | --- | --- |
-| Base conceptual | Sprint 0 | Arquitectura, datos, diseno y ruta tecnica definidos. |
-| Backend base | Sprint 1 | Django configurado, usuario personalizado y autenticacion JWT. |
-| Nucleo de negocio | Sprint 2 | Gestion completa de incidentes, evidencias e historial. |
-| Servicios inteligentes | Sprint 3 | Notificaciones y asistente virtual con IA. |
-| Gestion web | Sprint 4 | Panel administrativo funcional para administradores y vigilantes. |
-| Base movil | Sprint 5 | App Flutter estructurada, navegacion y servicios base. |
-| Experiencia movil autenticada | Sprint 6 | Login, perfil y sesion segura en Android. |
-| Operacion movil | Sprint 7 | Lista, creacion y detalle de incidentes desde la app. |
-| Comunicacion movil | Sprint 8 | Notificaciones, chat IA y contactos de emergencia. |
-| Consolidacion | Sprint 9 | Pruebas, datos demo y preparacion de sustentacion. |
-| Entrega final | Sprint 10 | Despliegue, README final y checklist de entrega. |
+| Incremento 1: Núcleo del sistema y autenticación | Sprint 0, Sprint 1, Sprint 5, Sprint 6 | Arquitectura documentada, backend Django configurado, usuario personalizado, autenticación JWT, app Flutter base, login móvil y perfil. |
+| Incremento 2: Gestión de incidentes | Sprint 2, Sprint 7 | Modelo de incidentes, evidencias, historial de estados, API REST, listado móvil, creación de incidentes, detalle e historial. |
+| Incremento 3: Panel web y notificaciones | Sprint 3, Sprint 4, parte del Sprint 8 | Notificaciones internas y push, avisos administrativos, panel web con dashboard, filtros, usuarios, detalle de incidentes y gestión por rol. |
+| Incremento 4: Asistente virtual con IA y emergencias | Sprint 3, Sprint 8 | Backend del asistente, integración con Gemini o fallback local, chat móvil, contactos de emergencia y acceso rápido a llamadas. |
+| Incremento 5: Pruebas, despliegue y documentación final | Sprint 9, Sprint 10 y refinamientos posteriores | Suite de pruebas backend, pruebas Flutter, APK, PostgreSQL en producción, Render con HTTPS, README, checklist, guion de demo y documentación técnica. |
 
-## 4. Razones para usar el modelo incremental
+## 3. Justificación del modelo para CommuSafe
 
-- Permite entregar avances funcionales desde etapas tempranas.
-- Reduce el riesgo de descubrir errores importantes solo al final.
-- Facilita la validacion por modulo: backend, panel web y app movil.
-- Permite integrar progresivamente reglas de negocio reales.
-- Hace mas clara la sustentacion, porque se puede explicar como el sistema fue creciendo por incrementos.
-- Se ajusta al contexto academico del trabajo de grado, donde es importante mostrar trazabilidad del proceso.
+El modelo incremental se ajusta al proyecto por cuatro razones principales:
 
-## 5. Evidencia del enfoque incremental
+- Equipo reducido: permite dividir el trabajo en entregas controladas sin una estructura pesada de gestión.
+- Arquitectura modular: Django está separado por apps de dominio y Flutter por features, lo que permite construir módulos independientes e integrarlos progresivamente.
+- Requerimientos ajustables: el contexto real del conjunto residencial permite refinar detalles de operación, avisos, notificaciones y presentación visual durante el desarrollo.
+- Evaluación académica: cada incremento produce evidencia demostrable, como código funcional, pruebas ejecutables, documentación y despliegue.
 
-La evidencia del modelo incremental se observa en:
+## 4. Cierre verificable de cada incremento
 
-- La division del proyecto en sprints secuenciales.
-- La dependencia explicita entre entregables.
-- La construccion por capas: documentacion, backend, panel web, app movil, pruebas y despliegue.
-- La integracion continua entre modulos al terminar cada sprint.
-- La verificacion funcional de cada incremento antes de continuar.
+| Incremento | Criterio de cierre aplicado | Evidencia en el repositorio |
+| --- | --- | --- |
+| 1. Núcleo y autenticación | El sistema permite iniciar sesión por rol y proteger rutas mediante JWT. | `backend/usuarios/`, `mobile/commusafe_app/lib/features/auth/`, pruebas de autenticación en `backend/tests/test_sistema_completo.py`. |
+| 2. Incidentes | El ciclo registrar, consultar, cambiar estado y cerrar incidente funciona con historial. | `backend/incidentes/`, `mobile/commusafe_app/lib/features/incidentes/`, serializers, viewsets y pruebas de lógica de negocio. |
+| 3. Panel y notificaciones | Administrador y vigilante gestionan incidentes y reciben notificaciones o avisos. | `backend/panel_web/`, `frontend/templates/panel/`, `backend/notificaciones/`. |
+| 4. IA y emergencias | El residente puede consultar el asistente y acceder a contactos de emergencia. | `backend/asistente/`, `mobile/commusafe_app/lib/features/asistente/`, `mobile/commusafe_app/lib/features/emergencias/`. |
+| 5. Calidad y despliegue | El sistema está probado, documentado y publicado con base de datos de producción. | `render.yaml`, `backend/commusafe_backend/settings_prod.py`, `docs/`, `README.md`, `backend/tests/`. |
 
-## 6. Relacion con la arquitectura
+## 5. Evidencia del crecimiento incremental
 
-La arquitectura de CommuSafe tambien responde al modelo incremental. Se eligio un monolito modular en Django y una app Flutter organizada por features porque esta estructura permite agregar nuevas capacidades sin romper lo anterior.
+La evolución incremental puede demostrarse con el historial de Git y con la estructura actual del sistema:
 
-Cada app de Django y cada feature de Flutter representa una unidad funcional que puede evolucionar por incrementos. Esta decision mantiene el proyecto ordenado, entendible y facil de presentar ante el jurado.
+- Sprint 0 dejó arquitectura, modelo de datos, diseño visual y plan de desarrollo.
+- Sprint 1 habilitó Django, usuarios, permisos y autenticación JWT.
+- Sprint 2 agregó la regla de negocio central: incidentes, prioridad automática, evidencias e historial.
+- Sprint 3 incorporó notificaciones y asistente virtual.
+- Sprint 4 construyó el panel web administrativo.
+- Sprint 5 preparó la arquitectura móvil.
+- Sprint 6 integró autenticación y perfil en Flutter.
+- Sprint 7 agregó gestión móvil de incidentes.
+- Sprint 8 completó notificaciones, chat IA y emergencias.
+- Sprint 9 consolidó pruebas, datos de verificación y refinamiento.
+- Sprint 10 preparó despliegue, documentación final y checklist.
 
-## 7. Conclusion
+## 6. Cómo defenderlo ante el jurado
 
-CommuSafe no se plantea como un desarrollo lineal de una sola entrega final. El sistema se construye mediante incrementos funcionales, donde cada sprint produce una version mas completa, estable e integrada de la plataforma.
+La explicación recomendada es:
 
-Por esta razon, el modelo incremental es el enfoque metodologico principal de todo el proyecto.
+> CommuSafe se construyó con un enfoque incremental. Para la gestión técnica se usaron sprints pequeños del 0 al 10, pero para la memoria metodológica esos sprints se agrupan en cinco incrementos funcionales: autenticación, incidentes, panel y notificaciones, asistente IA, y cierre de calidad/despliegue. Cada incremento dejó una versión ejecutable y verificable del sistema, integrada con lo construido previamente.
+
+Esta explicación evita presentar los sprints como si fueran una metodología diferente y mantiene coherencia con el capítulo metodológico del trabajo.
+
+## 7. Conclusión
+
+CommuSafe cumple el Modelo de Desarrollo Incremental porque el producto creció mediante entregas funcionales acumulativas, cada módulo se integró con los anteriores y el cierre del proyecto cuenta con evidencia verificable de implementación, pruebas, documentación y despliegue.

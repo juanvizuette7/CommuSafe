@@ -226,7 +226,21 @@ CommuSafe/
     PLAN_DESARROLLO.md     Ruta incremental por sprints
     DISENO.md              Identidad visual
     MODELO_INCREMENTAL.md  Sustento metodológico incremental
+    MATRIZ_CUMPLIMIENTO.md Correspondencia entre objetivos, requerimientos y evidencia
+    PLAN_PRUEBAS_CALIDAD.md Plan de pruebas y atributos ISO/IEC 25010
+    INSTRUMENTO_USABILIDAD.md Instrumento para validación con usuarios
 ```
+
+## Metodología y Cumplimiento
+
+La metodología del proyecto está documentada en `docs/MODELO_INCREMENTAL.md`. La ejecución técnica se dividió en sprints del 0 al 10, y esos sprints se agrupan en cinco incrementos académicos: autenticación, incidentes, panel/notificaciones, asistente IA/emergencias, y calidad/despliegue.
+
+Para sustentar el cumplimiento frente al jurado, el repositorio incluye:
+
+- `docs/MATRIZ_CUMPLIMIENTO.md`: conecta objetivos específicos, requerimientos, módulos y evidencia verificable.
+- `docs/CHECKLIST_ENTREGA.md`: resume los requerimientos funcionales y no funcionales cumplidos.
+- `docs/PLAN_PRUEBAS_CALIDAD.md`: define pruebas automatizadas, pruebas manuales y atributos de calidad.
+- `docs/INSTRUMENTO_USABILIDAD.md`: instrumento listo para evaluar usabilidad con residentes, vigilantes y administrador.
 
 ## Producción
 

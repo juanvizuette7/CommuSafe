@@ -144,7 +144,12 @@ python manage.py probar_asistente "¿Cuáles son los horarios de las áreas comu
 
 ## 6. Puntos Clave para Explicar al Jurado
 
-- El sistema aplica el modelo incremental: cada sprint agrega una capacidad real y verificable.
+- El sistema aplica el modelo incremental: los sprints técnicos del 0 al 10 se agrupan en cinco incrementos académicos verificables.
+- Incremento 1: núcleo del sistema, autenticación, roles y base móvil.
+- Incremento 2: gestión completa de incidentes desde backend y app.
+- Incremento 3: panel web administrativo, notificaciones y avisos.
+- Incremento 4: asistente virtual con IA y contactos de emergencia.
+- Incremento 5: pruebas, despliegue, PostgreSQL, documentación y cierre.
 - La arquitectura es modular: backend por apps Django, panel web separado en `frontend/`, app Flutter por features.
 - La seguridad usa JWT, roles y permisos por endpoint.
 - Los residentes solo ven sus propios incidentes; vigilantes y administradores ven todos.
@@ -168,6 +173,7 @@ python manage.py probar_asistente "¿Cuáles son los horarios de las áreas comu
 ## 8. Cierre de la Presentación
 
 1. Mostrar el APK generado en `mobile/commusafe_app/build/app/outputs/flutter-apk/app-release.apk`.
-2. Mostrar la suite de pruebas ejecutada con `pytest` y `flutter test`.
-3. Mostrar `docs/CHECKLIST_ENTREGA.md`.
-4. Concluir que CommuSafe está listo para uso piloto en Remansos del Norte.
+2. Mostrar la suite de pruebas ejecutada con `pytest`, `flutter analyze`, `flutter test` y build APK.
+3. Mostrar `docs/MODELO_INCREMENTAL.md` para explicar la relación entre sprints e incrementos.
+4. Mostrar `docs/MATRIZ_CUMPLIMIENTO.md` y `docs/CHECKLIST_ENTREGA.md`.
+5. Concluir que CommuSafe está listo para sustentación y uso piloto controlado en Remansos del Norte.
