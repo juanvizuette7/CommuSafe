@@ -464,10 +464,11 @@ Reglas generales:
 - Desarrollo:
   - SQLite para rapidez de arranque.
 - Producción:
-  - PostgreSQL por robustez, concurrencia y soporte de índices más sólidos.
+  - PostgreSQL administrado por Render mediante `DATABASE_URL`.
+  - Configuración Django en `backend/commusafe_backend/settings_prod.py`.
 - Archivos de evidencia:
   - Durante desarrollo pueden almacenarse localmente.
-  - En producción se dejará preparado el backend para migrar a almacenamiento externo compatible con Django.
+  - En producción Render sirve `/media/` para la sustentación; para operación permanente se recomienda almacenamiento externo compatible con Django.
 
 ## 15. Observabilidad y calidad
 

@@ -230,30 +230,53 @@ CommuSafe/
 
 ## Producción
 
+El backend de producción está desplegado en Render con HTTPS automático:
+
+```text
+https://commusafe.onrender.com
+```
+
 La configuración de producción está en:
 
 ```text
 backend/commusafe_backend/settings_prod.py
 ```
 
-Variables requeridas para producción:
+La base de datos de producción es PostgreSQL administrada por Render. El servicio toma la conexión desde `DATABASE_URL`, que Render inyecta automáticamente desde la base `commusafe-db` definida en `render.yaml`.
+
+Variables principales de producción:
 
 ```text
+DJANGO_SETTINGS_MODULE=commusafe_backend.settings_prod
 SECRET_KEY
+DEBUG=False
 ALLOWED_HOSTS
-DB_HOST
-DB_PORT
-DB_NAME
-DB_USER
-DB_PASSWORD
-FIREBASE_CREDENTIALS_PATH
-LLM_API_KEY
+CSRF_TRUSTED_ORIGINS
+DATABASE_URL
+LLM_PROVIDER
+GEMINI_MODEL
+GEMINI_API_KEY
+FIREBASE_CREDENTIALS_JSON_BASE64
+EMAIL_HOST_USER
+EMAIL_HOST_PASSWORD
+DEFAULT_FROM_EMAIL
+PROD_ADMIN_EMAIL
+PROD_ADMIN_PASSWORD
+PROD_ADMIN_NOMBRE
+PROD_ADMIN_APELLIDO
+PROD_ADMIN_TELEFONO
 ```
 
-Comando de despliegue sugerido:
+Comando de inicio usado en Render:
 
 ```bash
-gunicorn commusafe_backend.wsgi:application --log-file -
+cd backend && gunicorn commusafe_backend.wsgi:application --bind 0.0.0.0:$PORT --worker-class gthread --workers 1 --threads 4 --timeout 120 --access-logfile - --error-logfile -
+```
+
+Verificación rápida:
+
+```text
+GET https://commusafe.onrender.com/health/
 ```
 
 ## Datos del Proyecto

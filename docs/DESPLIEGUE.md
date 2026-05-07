@@ -27,7 +27,7 @@ pip install -r backend/requirements.txt && cd backend && python manage.py migrat
 Como comando de inicio ejecuta:
 
 ```bash
-cd backend && gunicorn commusafe_backend.wsgi:application --bind 0.0.0.0:$PORT
+cd backend && gunicorn commusafe_backend.wsgi:application --bind 0.0.0.0:$PORT --worker-class gthread --workers 1 --threads 4 --timeout 120 --access-logfile - --error-logfile -
 ```
 
 ## 3. Variables de entorno requeridas
@@ -42,6 +42,7 @@ SECRET_KEY=valor_seguro_generado_por_render
 DEBUG=False
 ALLOWED_HOSTS=.onrender.com,commusafe.onrender.com
 CSRF_TRUSTED_ORIGINS=https://*.onrender.com,https://commusafe.onrender.com
+SERVE_MEDIA_FILES=True
 LLM_PROVIDER=gemini
 GEMINI_MODEL=gemini-2.5-flash-lite
 GEMINI_API_KEY=TU_API_KEY_REAL_DE_GOOGLE_AI_STUDIO
@@ -93,6 +94,14 @@ Como alternativa, se puede usar un Secret File y configurar `FIREBASE_CREDENTIAL
 4. Abrir la URL HTTPS asignada por Render.
 
 ## 7. Verificación HTTPS
+
+La verificación liviana del servicio es:
+
+```powershell
+curl.exe -i https://commusafe.onrender.com/health/
+```
+
+La respuesta esperada es `HTTP/2 200` con `{"status":"ok","servicio":"CommuSafe"}`.
 
 Cuando el servicio este publicado, validar desde consola:
 
