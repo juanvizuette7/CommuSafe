@@ -4,7 +4,8 @@ services:
     env: python
     plan: free
     buildCommand: pip install -r backend/requirements.txt && cd backend && python manage.py migrate && python manage.py crear_admin_produccion && python manage.py collectstatic --noinput
-    startCommand: cd backend && gunicorn commusafe_backend.wsgi:application --bind 0.0.0.0:$PORT
+    startCommand: cd backend && gunicorn commusafe_backend.wsgi:application --bind 0.0.0.0:$PORT --worker-class gthread --workers 1 --threads 4 --timeout 120 --access-logfile - --error-logfile -
+    healthCheckPath: /health/
     envVars:
       - key: DJANGO_SETTINGS_MODULE
         value: commusafe_backend.settings_prod

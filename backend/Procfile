@@ -1,2 +1,2 @@
-web: gunicorn commusafe_backend.wsgi --log-file -
+web: gunicorn commusafe_backend.wsgi:application --bind 0.0.0.0:$PORT --worker-class gthread --workers 1 --threads 4 --timeout 120 --access-logfile - --error-logfile -
 release: python manage.py migrate
