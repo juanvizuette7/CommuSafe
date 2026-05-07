@@ -46,12 +46,12 @@
                         <td class="px-5 py-4">
                             <div class="flex items-center gap-3">
                                 {% if usuario.foto_perfil %}
-                                <img src="{{ usuario.foto_perfil.url }}" alt="Foto de perfil" class="h-12 w-12 rounded-2xl object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
-                                <div class="hidden h-12 w-12 items-center justify-center rounded-2xl bg-primary text-sm font-black text-white">
+                                <img src="{{ usuario.foto_perfil.url }}" alt="Foto de perfil" class="h-12 w-12 shrink-0 rounded-2xl object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                                <div class="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-sm font-black text-white flex">
                                     {{ usuario.nombre|first }}{{ usuario.apellido|first }}
                                 </div>
                                 {% else %}
-                                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-sm font-black text-white">
+                                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-sm font-black text-white">
                                     {{ usuario.nombre|first }}{{ usuario.apellido|first }}
                                 </div>
                                 {% endif %}

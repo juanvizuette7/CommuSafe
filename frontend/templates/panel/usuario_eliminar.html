@@ -19,12 +19,12 @@
         <div class="mt-8 rounded-[24px] border border-slate-200 bg-slate-50 p-5">
             <div class="flex items-center gap-4">
                 {% if usuario_objetivo.foto_perfil %}
-                <img src="{{ usuario_objetivo.foto_perfil.url }}" alt="Foto de perfil" class="h-16 w-16 rounded-2xl object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
-                <div class="hidden h-16 w-16 items-center justify-center rounded-2xl bg-primary text-lg font-black text-white">
+                <img src="{{ usuario_objetivo.foto_perfil.url }}" alt="Foto de perfil" class="h-16 w-16 shrink-0 rounded-2xl object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                <div class="hidden h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary text-lg font-black text-white flex">
                     {{ usuario_objetivo.nombre|first }}{{ usuario_objetivo.apellido|first }}
                 </div>
                 {% else %}
-                <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-lg font-black text-white">
+                <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary text-lg font-black text-white">
                     {{ usuario_objetivo.nombre|first }}{{ usuario_objetivo.apellido|first }}
                 </div>
                 {% endif %}

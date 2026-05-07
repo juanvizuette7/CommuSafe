@@ -87,12 +87,12 @@
             <div class="mt-auto rounded-[24px] border border-white/10 bg-white/10 p-4 backdrop-blur-md">
                 <div class="flex items-center gap-3">
                     {% if usuario_panel.foto_perfil %}
-                    <img src="{{ usuario_panel.foto_perfil.url }}" alt="Foto de perfil" class="h-12 w-12 rounded-2xl object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
-                    <div class="hidden h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-sm font-extrabold">
+                    <img src="{{ usuario_panel.foto_perfil.url }}" alt="Foto de perfil" class="h-12 w-12 shrink-0 rounded-2xl object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                    <div class="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-sm font-extrabold flex">
                         {{ usuario_panel.nombre|first }}{{ usuario_panel.apellido|first }}
                     </div>
                     {% else %}
-                    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-sm font-extrabold">
+                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-sm font-extrabold">
                         {{ usuario_panel.nombre|first }}{{ usuario_panel.apellido|first }}
                     </div>
                     {% endif %}
