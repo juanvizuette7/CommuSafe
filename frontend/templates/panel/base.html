@@ -8,6 +8,23 @@
     x-data="{
         mobileSidebar: false,
         notificacionesNoLeidas: {{ notificaciones_no_leidas|default:0 }},
+        visorImagen: {
+            abierto: false,
+            url: '',
+            titulo: '',
+        },
+        abrirImagen(url, titulo) {
+            this.visorImagen = {
+                abierto: true,
+                url,
+                titulo,
+            };
+        },
+        cerrarImagen() {
+            this.visorImagen.abierto = false;
+            this.visorImagen.url = '';
+            this.visorImagen.titulo = '';
+        },
         tokenPanel() {
             const cookie = document.cookie.split('; ').find((item) => item.startsWith('commusafe_panel_access='));
             return cookie ? decodeURIComponent(cookie.split('=')[1]) : '';
@@ -87,7 +104,9 @@
             <div class="mt-auto rounded-[24px] border border-white/10 bg-white/10 p-4 backdrop-blur-md">
                 <div class="flex items-center gap-3">
                     {% if usuario_panel.foto_perfil %}
-                    <img src="{{ usuario_panel.foto_perfil.url }}" alt="Foto de perfil" class="h-12 w-12 shrink-0 rounded-2xl object-cover" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+                    <button type="button" @click="abrirImagen('{{ usuario_panel.foto_perfil.url }}', 'Foto de perfil de {{ usuario_panel.nombre_completo|escapejs }}')" class="shrink-0 rounded-2xl focus:outline-none focus:ring-4 focus:ring-white/20" aria-label="Ver foto de perfil de {{ usuario_panel.nombre_completo }}">
+                        <img src="{{ usuario_panel.foto_perfil.url }}" alt="Foto de perfil" class="h-12 w-12 rounded-2xl object-cover transition hover:brightness-110" onerror="this.parentElement.classList.add('hidden'); this.parentElement.nextElementSibling.classList.remove('hidden');">
+                    </button>
                     <div class="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-sm font-extrabold flex">
                         {{ usuario_panel.nombre|first }}{{ usuario_panel.apellido|first }}
                     </div>
@@ -185,5 +204,26 @@
 
         {% block panel_content %}{% endblock panel_content %}
     </main>
+
+    <div
+        x-cloak
+        x-show="visorImagen.abierto"
+        x-transition.opacity
+        @keydown.escape.window="cerrarImagen()"
+        class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/85 px-4 py-6"
+        style="display: none;"
+    >
+        <div @click.away="cerrarImagen()" class="flex max-h-full w-full max-w-5xl flex-col overflow-hidden rounded-[28px] bg-white shadow-glass">
+            <div class="flex items-center justify-between gap-4 border-b border-slate-100 px-5 py-4">
+                <p class="truncate text-sm font-black text-primary" x-text="visorImagen.titulo"></p>
+                <button type="button" @click="cerrarImagen()" class="rounded-2xl bg-slate-100 px-3 py-2 text-sm font-black text-slate-500 transition hover:bg-slate-200" aria-label="Cerrar imagen">
+                    &#10005;
+                </button>
+            </div>
+            <div class="flex min-h-0 items-center justify-center bg-slate-950 p-3">
+                <img :src="visorImagen.url" :alt="visorImagen.titulo" class="max-h-[78vh] max-w-full rounded-2xl object-contain">
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock body %}
