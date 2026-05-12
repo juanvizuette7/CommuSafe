@@ -46,9 +46,9 @@
                         <td class="px-5 py-4">
                             <div class="flex items-center gap-3">
                                 {% if usuario.foto_perfil %}
-                                <button type="button" @click="abrirImagen('{{ usuario.foto_perfil.url }}', 'Foto de perfil de {{ usuario.nombre_completo|escapejs }}')" class="shrink-0 rounded-2xl focus:outline-none focus:ring-4 focus:ring-accent/20" aria-label="Ver foto de perfil de {{ usuario.nombre_completo }}">
+                                <a href="{{ usuario.foto_perfil.url }}" target="_blank" rel="noopener" @click.prevent="abrirImagen('{{ usuario.foto_perfil.url }}', 'Foto de perfil de {{ usuario.nombre_completo|escapejs }}')" class="shrink-0 rounded-2xl focus:outline-none focus:ring-4 focus:ring-accent/20" aria-label="Ver foto de perfil de {{ usuario.nombre_completo }}">
                                     <img src="{{ usuario.foto_perfil.url }}" alt="Foto de perfil" class="h-12 w-12 rounded-2xl object-cover transition hover:brightness-105" onerror="this.parentElement.classList.add('hidden'); this.parentElement.nextElementSibling.classList.remove('hidden');">
-                                </button>
+                                </a>
                                 <div class="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-primary text-sm font-black text-white flex">
                                     {{ usuario.nombre|first }}{{ usuario.apellido|first }}
                                 </div>

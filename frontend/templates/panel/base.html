@@ -104,9 +104,9 @@
             <div class="mt-auto rounded-[24px] border border-white/10 bg-white/10 p-4 backdrop-blur-md">
                 <div class="flex items-center gap-3">
                     {% if usuario_panel.foto_perfil %}
-                    <button type="button" @click="abrirImagen('{{ usuario_panel.foto_perfil.url }}', 'Foto de perfil de {{ usuario_panel.nombre_completo|escapejs }}')" class="shrink-0 rounded-2xl focus:outline-none focus:ring-4 focus:ring-white/20" aria-label="Ver foto de perfil de {{ usuario_panel.nombre_completo }}">
+                    <a href="{{ usuario_panel.foto_perfil.url }}" target="_blank" rel="noopener" @click.prevent="abrirImagen('{{ usuario_panel.foto_perfil.url }}', 'Foto de perfil de {{ usuario_panel.nombre_completo|escapejs }}')" class="shrink-0 rounded-2xl focus:outline-none focus:ring-4 focus:ring-white/20" aria-label="Ver foto de perfil de {{ usuario_panel.nombre_completo }}">
                         <img src="{{ usuario_panel.foto_perfil.url }}" alt="Foto de perfil" class="h-12 w-12 rounded-2xl object-cover transition hover:brightness-110" onerror="this.parentElement.classList.add('hidden'); this.parentElement.nextElementSibling.classList.remove('hidden');">
-                    </button>
+                    </a>
                     <div class="hidden h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-sm font-extrabold flex">
                         {{ usuario_panel.nombre|first }}{{ usuario_panel.apellido|first }}
                     </div>
