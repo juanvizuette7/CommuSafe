@@ -74,6 +74,8 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     telefono = models.CharField(max_length=30, blank=True)
     fcm_token = models.TextField(blank=True)
     foto_perfil = models.ImageField(upload_to="usuarios/fotos/", blank=True, null=True)
+    politica_privacidad_aceptada = models.BooleanField(default=False)
+    politica_privacidad_aceptada_en = models.DateTimeField(blank=True, null=True)
     activo = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     fecha_registro = models.DateTimeField(auto_now_add=True)

@@ -11,6 +11,8 @@ class UsuarioModel {
     this.unidadResidencial,
     this.telefono,
     this.fotoPerfilUrl,
+    this.politicaPrivacidadAceptada = false,
+    this.politicaPrivacidadAceptadaEn,
     this.activo = true,
   });
 
@@ -23,6 +25,8 @@ class UsuarioModel {
   final String rol;
   final String? telefono;
   final String? fotoPerfilUrl;
+  final bool politicaPrivacidadAceptada;
+  final String? politicaPrivacidadAceptadaEn;
   final bool activo;
 
   bool get esAdmin => rol.toUpperCase() == 'ADMINISTRADOR';
@@ -66,6 +70,10 @@ class UsuarioModel {
       rol: json['rol']?.toString() ?? '',
       telefono: json['telefono']?.toString(),
       fotoPerfilUrl: _resolvePhotoUrl(json['foto_perfil']?.toString()),
+      politicaPrivacidadAceptada:
+          json['politica_privacidad_aceptada'] as bool? ?? false,
+      politicaPrivacidadAceptadaEn: json['politica_privacidad_aceptada_en']
+          ?.toString(),
       activo: json['activo'] as bool? ?? true,
     );
   }
@@ -81,6 +89,8 @@ class UsuarioModel {
       'rol': rol,
       'telefono': telefono,
       'foto_perfil': fotoPerfilUrl,
+      'politica_privacidad_aceptada': politicaPrivacidadAceptada,
+      'politica_privacidad_aceptada_en': politicaPrivacidadAceptadaEn,
       'activo': activo,
     };
   }

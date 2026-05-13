@@ -84,6 +84,7 @@ class PanelWebViewsTests(TestCase):
             rol=Usuario.Rol.ADMINISTRADOR,
             is_staff=True,
             unidad_residencial="Oficina",
+            politica_privacidad_aceptada=True,
         )
         self.vigilante = Usuario.objects.create_user(
             email="vigilante-panel@test.com",
@@ -92,6 +93,7 @@ class PanelWebViewsTests(TestCase):
             apellido="Guardia",
             rol=Usuario.Rol.VIGILANTE,
             unidad_residencial="Porteria",
+            politica_privacidad_aceptada=True,
         )
         self.residente = Usuario.objects.create_user(
             email="residente-panel@test.com",
@@ -168,13 +170,36 @@ class PanelWebViewsTests(TestCase):
         request = self._request(
             "post",
             "/login/",
-            data={"email": self.admin.email, "password": "Admin2026*"},
+            data={
+                "email": self.admin.email,
+                "password": "Admin2026*",
+                "acepta_politica_privacidad": "on",
+            },
         )
 
         response = login_view(request)
 
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "/dashboard/")
+
+    def test_login_post_admin_sin_confirmar_terminos_bloqueado(self):
+        self.admin.politica_privacidad_aceptada = False
+        self.admin.save(update_fields=["politica_privacidad_aceptada"])
+
+        request = self._request(
+            "post",
+            "/login/",
+            data={
+                "email": self.admin.email,
+                "password": "Admin2026*",
+            },
+        )
+
+        with patch("panel_web.views.render", return_value=HttpResponse("ok")):
+            response = login_view(request)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn("_auth_user_id", request.session)
 
     def test_inicio_redireccion(self):
         anonimo = self._request("get", "/", user=AnonymousUser())

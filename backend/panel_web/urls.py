@@ -14,6 +14,7 @@ from .views import (
     logout_view,
     panel_notificacion_leer,
     panel_notificaciones,
+    politica_privacidad,
     reset_confirmar,
     reset_solicitar,
     usuario_cambiar_rol,
@@ -30,6 +31,7 @@ app_name = "panel_web"
 urlpatterns = [
     path("", inicio, name="inicio"),
     path("login/", login_view, name="login"),
+    path("politica-privacidad/", politica_privacidad, name="politica_privacidad"),
     path("logout/", logout_view, name="logout"),
     path("reset/", reset_solicitar, name="reset_solicitar"),
     path("reset/<str:token>/", reset_confirmar, name="reset_confirmar"),

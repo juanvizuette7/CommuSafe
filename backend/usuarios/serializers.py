@@ -1,6 +1,7 @@
 """Serializers de la app de usuarios."""
 
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -25,10 +26,20 @@ class UsuarioSerializer(serializers.ModelSerializer):
             "rol",
             "telefono",
             "foto_perfil",
+            "politica_privacidad_aceptada",
+            "politica_privacidad_aceptada_en",
             "activo",
             "fecha_registro",
         ]
-        read_only_fields = ["id", "email", "rol", "activo", "fecha_registro"]
+        read_only_fields = [
+            "id",
+            "email",
+            "rol",
+            "politica_privacidad_aceptada",
+            "politica_privacidad_aceptada_en",
+            "activo",
+            "fecha_registro",
+        ]
 
 
 class UsuarioCreateSerializer(serializers.ModelSerializer):
@@ -188,6 +199,28 @@ class CommuSafeTokenObtainPairSerializer(TokenObtainPairSerializer):
 
     def validate(self, attrs):
         data = super().validate(attrs)
+        acepta_politica = self.initial_data.get("acepta_politica_privacidad")
+        acepto_politica = acepta_politica in (True, "true", "True", "1", 1, "on", "yes", "si", "sí")
+
+        if not self.user.politica_privacidad_aceptada and not acepto_politica:
+            raise serializers.ValidationError(
+                {
+                    "acepta_politica_privacidad": [
+                        "Debes confirmar los términos, condiciones y la política de tratamiento de datos antes de iniciar sesión."
+                    ]
+                }
+            )
+
+        if not self.user.politica_privacidad_aceptada:
+            self.user.politica_privacidad_aceptada = True
+            self.user.politica_privacidad_aceptada_en = timezone.now()
+            self.user.save(
+                update_fields=[
+                    "politica_privacidad_aceptada",
+                    "politica_privacidad_aceptada_en",
+                ]
+            )
+
         data["usuario"] = {
             "id": str(self.user.id),
             "email": self.user.email,
@@ -196,5 +229,7 @@ class CommuSafeTokenObtainPairSerializer(TokenObtainPairSerializer):
             "nombre_completo": self.user.nombre_completo,
             "rol": self.user.rol,
             "unidad_residencial": self.user.unidad_residencial,
+            "politica_privacidad_aceptada": self.user.politica_privacidad_aceptada,
+            "politica_privacidad_aceptada_en": self.user.politica_privacidad_aceptada_en,
         }
         return data

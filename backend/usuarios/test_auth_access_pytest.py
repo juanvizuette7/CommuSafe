@@ -42,6 +42,7 @@ class Incremento1AutenticacionTests(APITestCase):
             "apellido": extra.pop("apellido", rol.title()),
             "rol": rol,
             "unidad_residencial": extra.pop("unidad_residencial", "Torre A 101"),
+            "politica_privacidad_aceptada": extra.pop("politica_privacidad_aceptada", True),
         }
         if rol == Usuario.Rol.ADMINISTRADOR:
             datos["is_staff"] = True
@@ -64,7 +65,10 @@ class Incremento1AutenticacionTests(APITestCase):
     def test_login_devuelve_tokens_y_datos_del_usuario(self):
         response = self.client.post(
             reverse("usuarios:login"),
-            {"email": self.admin.email, "password": self.password},
+            {
+                "email": self.admin.email,
+                "password": self.password,
+            },
             format="json",
         )
 
@@ -73,6 +77,41 @@ class Incremento1AutenticacionTests(APITestCase):
         self.assertIn("refresh", response.data)
         self.assertEqual(response.data["usuario"]["email"], self.admin.email)
         self.assertEqual(response.data["usuario"]["rol"], Usuario.Rol.ADMINISTRADOR)
+
+    def test_login_marca_politica_como_aceptada_en_primer_ingreso(self):
+        self.admin.politica_privacidad_aceptada = False
+        self.admin.save(update_fields=["politica_privacidad_aceptada"])
+
+        response = self.client.post(
+            reverse("usuarios:login"),
+            {
+                "email": self.admin.email,
+                "password": self.password,
+                "acepta_politica_privacidad": True,
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.admin.refresh_from_db()
+        self.assertTrue(self.admin.politica_privacidad_aceptada)
+        self.assertIsNotNone(self.admin.politica_privacidad_aceptada_en)
+
+    def test_login_rechaza_usuario_sin_politica_confirmada(self):
+        self.admin.politica_privacidad_aceptada = False
+        self.admin.save(update_fields=["politica_privacidad_aceptada"])
+
+        response = self.client.post(
+            reverse("usuarios:login"),
+            {
+                "email": self.admin.email,
+                "password": self.password,
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("acepta_politica_privacidad", response.data)
 
     def test_login_rechaza_credenciales_invalidas(self):
         response = self.client.post(
@@ -163,11 +202,17 @@ class Incremento1AutenticacionTests(APITestCase):
                     format="json",
                 )
                 self.assertEqual(registro.status_code, status.HTTP_201_CREATED)
+                usuario = Usuario.objects.get(email=email)
+                usuario.politica_privacidad_aceptada = True
+                usuario.save(update_fields=["politica_privacidad_aceptada"])
 
                 self.client.force_authenticate(user=None)
                 login = self.client.post(
                     reverse("usuarios:login"),
-                    {"email": email, "password": self.password},
+                    {
+                        "email": email,
+                        "password": self.password,
+                    },
                     format="json",
                 )
 

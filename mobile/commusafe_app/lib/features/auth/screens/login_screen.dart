@@ -26,6 +26,7 @@ class _LoginScreenState extends State<LoginScreen>
   late final Animation<Offset> _slideAnimation;
 
   bool _obscurePassword = true;
+  bool _aceptaPoliticaPrivacidad = false;
 
   @override
   void initState() {
@@ -69,6 +70,7 @@ class _LoginScreenState extends State<LoginScreen>
     final success = await authProvider.login(
       email: _emailController.text,
       password: _passwordController.text,
+      aceptaPoliticaPrivacidad: _aceptaPoliticaPrivacidad,
     );
 
     if (!mounted) {
@@ -333,6 +335,18 @@ class _LoginScreenState extends State<LoginScreen>
                                         ),
                                       ),
                                     ],
+                                    const SizedBox(height: 18),
+                                    _PrivacyPolicyAcceptance(
+                                      value: _aceptaPoliticaPrivacidad,
+                                      enabled: !isLoading,
+                                      onChanged: (bool? value) {
+                                        setState(() {
+                                          _aceptaPoliticaPrivacidad =
+                                              value ?? false;
+                                        });
+                                        authProvider.clearError();
+                                      },
+                                    ),
                                     const SizedBox(height: 24),
                                     DecoratedBox(
                                       decoration: BoxDecoration(
@@ -435,6 +449,118 @@ class _LoginScreenState extends State<LoginScreen>
     );
   }
 }
+
+class _PrivacyPolicyAcceptance extends StatelessWidget {
+  const _PrivacyPolicyAcceptance({
+    required this.value,
+    required this.enabled,
+    required this.onChanged,
+  });
+
+  final bool value;
+  final bool enabled;
+  final ValueChanged<bool?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.10)),
+      ),
+      child: CheckboxListTile(
+        value: value,
+        onChanged: enabled ? onChanged : null,
+        controlAffinity: ListTileControlAffinity.leading,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        activeColor: AppColors.primary,
+        title: Wrap(
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: <Widget>[
+            Text(
+              'Confirmo que he leído y acepto la ',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.35,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            InkWell(
+              onTap: () => _showPrivacyPolicy(context),
+              child: Text(
+                'política de recolección y tratamiento de datos personales',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.accent,
+                  height: 1.35,
+                  fontWeight: FontWeight.w900,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
+            ),
+            Text(
+              '.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.textSecondary,
+                height: 1.35,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Future<void> _showPrivacyPolicy(BuildContext context) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Política de datos personales'),
+          content: const SizedBox(
+            width: double.maxFinite,
+            child: SingleChildScrollView(
+              child: Text(_privacyPolicyText, style: TextStyle(height: 1.45)),
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('Cerrar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+const String _privacyPolicyText = '''
+Fecha de entrada en vigencia: 12 de mayo de 2026
+
+CommuSafe fortalece la seguridad comunitaria mediante herramientas de comunicación, reporte de incidentes, alertas y gestión de información dentro de conjuntos residenciales o comunidades. Para funcionar correctamente recopila ciertos datos personales de los usuarios.
+
+Responsables del tratamiento:
+Anderson David Ojeda Zambrano, anderson.ojeda@campusucc.edu.co.
+Juan Manuel Vizuette Fajardo, juan.vizuette@campusucc.edu.co.
+Ubicación: Pasto, Nariño, Colombia.
+
+Información recopilada:
+Nombre completo o alias, correo electrónico, número telefónico, ubicación cuando sea necesaria para reportes o emergencias, información ingresada en formularios, fotografías o evidencias relacionadas con incidentes y datos técnicos básicos del dispositivo.
+
+Finalidades:
+Crear y administrar cuentas, permitir reportes de incidentes, facilitar alertas comunitarias, mejorar la seguridad y estabilidad de la aplicación, atender solicitudes, prevenir accesos no autorizados y cumplir obligaciones legales cuando sea requerido por autoridades competentes.
+
+Compartición:
+CommuSafe no venderá ni comercializará datos personales. La información podrá compartirse con proveedores tecnológicos necesarios, autoridades competentes, situaciones necesarias para proteger la seguridad de usuarios o casos autorizados por el titular.
+
+Derechos del titular:
+Conocer, actualizar y rectificar datos personales, solicitar prueba de autorización, ser informado sobre el uso de la información, revocar la autorización y solicitar eliminación cuando sea procedente, presentar quejas ante la Superintendencia de Industria y Comercio y acceder gratuitamente a sus datos.
+
+Contacto:
+Las solicitudes pueden enviarse a anderson.ojeda@campusucc.edu.co o juan.vizuette@campusucc.edu.co, indicando nombre del titular, petición, medio de contacto e información para validar identidad.
+''';
 
 class _LoginSignalHeader extends StatelessWidget {
   const _LoginSignalHeader({required this.animation});

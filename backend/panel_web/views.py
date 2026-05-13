@@ -39,7 +39,11 @@ from .forms import (
 
 
 def _es_usuario_panel(usuario):
-    return usuario.is_authenticated and not usuario.es_residente
+    return (
+        usuario.is_authenticated
+        and not usuario.es_residente
+        and usuario.politica_privacidad_aceptada
+    )
 
 
 def panel_login_required(view_func):
@@ -53,6 +57,13 @@ def panel_login_required(view_func):
             messages.error(
                 request,
                 "Los residentes no tienen acceso al panel web. Deben usar la aplicación móvil.",
+            )
+            return redirect("panel_web:login")
+        if not request.user.politica_privacidad_aceptada:
+            logout(request)
+            messages.error(
+                request,
+                "Debes confirmar los términos, condiciones y la política de tratamiento de datos antes de iniciar sesión.",
             )
             return redirect("panel_web:login")
         return view_func(request, *args, **kwargs)
@@ -103,6 +114,19 @@ def _respuesta_con_cookie_jwt_panel(request, usuario, destino):
     return response
 
 
+def _marcar_politica_privacidad_aceptada(usuario):
+    if usuario.politica_privacidad_aceptada:
+        return
+    usuario.politica_privacidad_aceptada = True
+    usuario.politica_privacidad_aceptada_en = timezone.now()
+    usuario.save(
+        update_fields=[
+            "politica_privacidad_aceptada",
+            "politica_privacidad_aceptada_en",
+        ]
+    )
+
+
 @require_http_methods(["GET", "POST"])
 def login_view(request):
     """Autentica al usuario y permite acceso solo a administradores y vigilantes."""
@@ -110,11 +134,18 @@ def login_view(request):
     if request.user.is_authenticated:
         if _es_usuario_panel(request.user):
             return _respuesta_con_cookie_jwt_panel(request, request.user, "panel_web:dashboard")
+        es_residente = request.user.es_residente
         logout(request)
-        messages.error(
-            request,
-            "Los residentes no tienen acceso al panel web. Deben ingresar desde la app móvil.",
-        )
+        if es_residente:
+            messages.error(
+                request,
+                "Los residentes no tienen acceso al panel web. Deben ingresar desde la app móvil.",
+            )
+        else:
+            messages.error(
+                request,
+                "Debes confirmar los términos, condiciones y la política de tratamiento de datos antes de iniciar sesión.",
+            )
 
     if request.method == "POST":
         email = request.POST.get("email", "").strip().lower()
@@ -128,7 +159,13 @@ def login_view(request):
                 request,
                 "Tu cuenta corresponde a un residente. Este acceso está reservado para administración y vigilancia.",
             )
+        elif not usuario.politica_privacidad_aceptada and request.POST.get("acepta_politica_privacidad") != "on":
+            messages.error(
+                request,
+                "Debes confirmar los términos, condiciones y la política de tratamiento de datos antes de iniciar sesión.",
+            )
         else:
+            _marcar_politica_privacidad_aceptada(usuario)
             login(request, usuario)
             messages.success(request, f"Bienvenido al panel, {usuario.nombre}.")
             return _respuesta_con_cookie_jwt_panel(request, usuario, "panel_web:dashboard")
@@ -216,6 +253,20 @@ def logout_view(request):
     response = redirect("panel_web:login")
     response.delete_cookie("commusafe_panel_access")
     return response
+
+
+@require_GET
+def politica_privacidad(request):
+    """Muestra la politica de recoleccion y tratamiento de datos personales."""
+
+    return render(
+        request,
+        "panel/politica_privacidad.html",
+        {
+            "page_title": "Política de datos personales",
+            "page_subtitle": "Recolección y tratamiento de datos personales de CommuSafe",
+        },
+    )
 
 
 @panel_login_required

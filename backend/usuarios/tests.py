@@ -121,13 +121,17 @@ class LoginJWTTests(APITestCase):
             rol=Usuario.Rol.ADMINISTRADOR,
             is_staff=True,
             unidad_residencial="Oficina",
+            politica_privacidad_aceptada=True,
         )
 
     def test_login_devuelve_tokens_y_usuario(self):
         url = reverse("usuarios:login")
         response = self.client.post(
             url,
-            {"email": self.usuario.email, "password": "Admin2026*"},
+            {
+                "email": self.usuario.email,
+                "password": "Admin2026*",
+            },
             format="json",
         )
 
@@ -136,6 +140,41 @@ class LoginJWTTests(APITestCase):
         self.assertIn("refresh", response.data)
         self.assertEqual(response.data["usuario"]["email"], self.usuario.email)
         self.assertEqual(response.data["usuario"]["rol"], Usuario.Rol.ADMINISTRADOR)
+
+    def test_login_marca_politica_como_aceptada_en_primer_ingreso(self):
+        self.usuario.politica_privacidad_aceptada = False
+        self.usuario.save(update_fields=["politica_privacidad_aceptada"])
+
+        response = self.client.post(
+            reverse("usuarios:login"),
+            {
+                "email": self.usuario.email,
+                "password": "Admin2026*",
+                "acepta_politica_privacidad": True,
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.usuario.refresh_from_db()
+        self.assertTrue(self.usuario.politica_privacidad_aceptada)
+        self.assertIsNotNone(self.usuario.politica_privacidad_aceptada_en)
+
+    def test_login_falla_si_no_ha_confirmado_politica(self):
+        self.usuario.politica_privacidad_aceptada = False
+        self.usuario.save(update_fields=["politica_privacidad_aceptada"])
+
+        response = self.client.post(
+            reverse("usuarios:login"),
+            {
+                "email": self.usuario.email,
+                "password": "Admin2026*",
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("acepta_politica_privacidad", response.data)
 
     def test_login_falla_si_usuario_esta_inactivo(self):
         self.usuario.activo = False
