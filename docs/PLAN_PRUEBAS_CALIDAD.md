@@ -1,124 +1,47 @@
-# Plan de Pruebas y Evaluación de Calidad
+# Plan de pruebas de CommuSafe
 
-Este plan organiza las pruebas de CommuSafe con base en los atributos relevantes del estándar ISO/IEC 25010: funcionalidad, usabilidad, confiabilidad, seguridad, eficiencia y mantenibilidad.
+## Objetivo
 
-## 1. Alcance
+Documentar las pruebas aplicadas al proyecto CommuSafe para validar la calidad, estabilidad, seguridad, disponibilidad y correcto funcionamiento del sistema.
 
-El plan cubre:
+## Alcance
 
-- Backend Django REST API.
-- Panel web administrativo.
-- Aplicación móvil Flutter Android.
-- Base de datos PostgreSQL en producción.
-- Integración con IA y notificaciones.
-- Flujos completos por rol: residente, vigilante y administrador.
+El plan de pruebas contempla los componentes principales del sistema: backend, panel web administrativo, aplicación móvil, integraciones, despliegue y documentación metodológica.
 
-## 2. Pruebas automatizadas backend
+## Tipos de pruebas consideradas
 
-Archivo principal:
+- Pruebas funcionales
+- Pruebas exploratorias
+- Validación W3C
+- Pruebas de accesibilidad
+- Pruebas de disponibilidad
+- Pruebas de latencia y tiempos de respuesta
+- Pruebas de conectividad mediante tracert
+- Pruebas de rendimiento
+- Pruebas de carga
+- Pruebas de usabilidad
+- Pruebas de compatibilidad entre navegadores y dispositivos
+- Pruebas de seguridad básicas
+- Pruebas de despliegue
 
-```text
-backend/tests/test_sistema_completo.py
-```
+## Estructura de casos de prueba
 
-Cobertura funcional:
+Cada caso de prueba debe contener:
 
-- Login correcto e incorrecto.
-- Refresh token.
-- Rechazo de endpoints protegidos sin token.
-- Control de acceso por rol.
-- Visibilidad de incidentes según usuario.
-- Eliminación restringida a administrador.
-- Cálculo automático de prioridad.
-- Creación de historial al cambiar estado.
-- Límite de tres evidencias.
-- Notificaciones por prioridad.
-- Respuesta del asistente dentro del dominio.
+- Identificador y nombre de la prueba
+- Objetivo de la prueba
+- Precondiciones
+- Datos de entrada
+- Pasos de ejecución
+- Resultado esperado
+- Resultado obtenido
+- Estado de la prueba
+- Evidencia mediante pantallazos, capturas o video demostrativo
 
-Comando:
+## Gestión de incidencias
 
-```powershell
-cd backend
-.\.venv\Scripts\python.exe -m pytest -q
-```
+Cuando una prueba no sea superada, se debe registrar el fallo como incidencia dentro del tablero de GitHub Projects. La actividad debe retornar al estado To Do, Product Backlog o Sprint Backlog para que el desarrollador responsable pueda corregir el error y posteriormente realizar una nueva validación.
 
-Con cobertura:
+## Relación con GitHub Projects
 
-```powershell
-cd backend
-.\.venv\Scripts\python.exe -m coverage run -m pytest -q
-.\.venv\Scripts\python.exe -m coverage report
-```
-
-## 3. Pruebas Flutter
-
-Pruebas disponibles:
-
-- `mobile/commusafe_app/test/widget_test.dart`: renderizado base del login.
-- `mobile/commusafe_app/integration_test/auth_flow_test.dart`: flujo de login, perfil y logout.
-- `mobile/commusafe_app/integration_test/incidentes_flow_test.dart`: creación de incidente y cambio de estado.
-
-Comandos:
-
-```powershell
-cd mobile\commusafe_app
-C:\Users\juanv\flutter\bin\flutter.bat analyze
-C:\Users\juanv\flutter\bin\flutter.bat test
-C:\Users\juanv\flutter\bin\flutter.bat build apk --debug
-```
-
-Para pruebas de integración con emulador o celular conectado:
-
-```powershell
-cd mobile\commusafe_app
-C:\Users\juanv\flutter\bin\flutter.bat test integration_test
-```
-
-## 4. Pruebas manuales por rol
-
-| Rol | Flujo | Resultado esperado |
-| --- | --- | --- |
-| Residente | Login, ver incidentes propios, crear incidente con evidencia. | El incidente queda registrado con prioridad automática y aparece en su lista. |
-| Vigilante | Login, ver todos los incidentes, cambiar estado. | Se actualiza el estado, se crea historial y se notifica al residente. |
-| Administrador | Login panel web, gestionar usuarios, filtrar incidentes y exportar historial. | El panel permite operación completa con mensajes de éxito. |
-
-## 5. Atributos de calidad evaluados
-
-| Atributo | Criterio de validación | Instrumento |
-| --- | --- | --- |
-| Funcionalidad | Los flujos principales ejecutan sin errores críticos. | Pytest, pruebas Flutter y guion manual. |
-| Seguridad | Cada rol accede únicamente a datos y acciones autorizadas. | Pruebas de control de acceso y revisión de permisos. |
-| Confiabilidad | Los cambios de estado y eliminaciones quedan trazados. | Revisión de tablas `HistorialEstado` e `IncidenteEliminado`. |
-| Usabilidad | Usuarios representativos completan tareas básicas sin asistencia excesiva. | Instrumento de usabilidad en `docs/INSTRUMENTO_USABILIDAD.md`. |
-| Eficiencia | Endpoints frecuentes responden en tiempos aceptables para el contexto académico. | Medición con navegador, consola o herramientas de carga básica. |
-| Mantenibilidad | Código separado por capas y módulos. | Revisión de estructura del repositorio y documentación técnica. |
-
-## 6. Checklist de regresión antes de sustentar
-
-1. `python manage.py check` no reporta errores.
-2. `pytest -q` pasa sin fallos.
-3. `flutter analyze` no reporta errores.
-4. `flutter test` pasa.
-5. `flutter build apk --debug` genera APK.
-6. Render responde en `/health/`.
-7. Panel web permite login de administrador.
-8. App móvil permite login de residente.
-9. Se puede crear un incidente desde la app.
-10. Se puede cambiar estado desde panel o app vigilante.
-11. Se genera notificación.
-12. CommuBot responde con IA real o fallback controlado.
-
-## 7. Registro de evidencia recomendado
-
-Para la entrega final se recomienda guardar capturas o resultados de consola de:
-
-- Salida de `pytest -q`.
-- Salida de `flutter analyze`.
-- Salida de `flutter test`.
-- APK generado.
-- Panel web en producción.
-- App móvil ejecutándose en celular.
-- Tabla de incidentes en PostgreSQL.
-- Respuesta de `/api/asistente/health/`.
-
-Esto permite demostrar ante el jurado que la evaluación de calidad no fue solo declarativa, sino verificable.
+Los casos de prueba se gestionan en GitHub Projects dentro del Sprint 5 — QA, pruebas, despliegue y documentación, permitiendo mantener trazabilidad entre pruebas, resultados, responsables, evidencias y estado de avance.
