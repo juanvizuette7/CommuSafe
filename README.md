@@ -304,3 +304,27 @@ GET https://commusafe.onrender.com/health/
 | Sistema | CommuSafe |
 | Comunidad objetivo | Conjunto residencial Remansos del Norte |
 | Metodología | Modelo incremental |
+
+## Metodología de desarrollo
+
+El proyecto CommuSafe fue desarrollado bajo un modelo incremental, organizado en 5 sprints funcionales. Cada sprint agrupó actividades relacionadas con un componente principal del sistema, permitiendo avanzar de manera progresiva desde la configuración del backend hasta las pruebas, despliegue y documentación final.
+
+### Sprint 1 — Backend y entorno
+
+Configuración inicial del backend Django, autenticación JWT, roles, permisos, PostgreSQL y API REST inicial.
+
+### Sprint 2 — Panel web administrativo
+
+Desarrollo del dashboard administrativo, historial de incidentes, gestión de usuarios, visualización de imágenes y correcciones de interfaz.
+
+### Sprint 3 — Aplicación móvil
+
+Construcción de la aplicación móvil Flutter, incluyendo login, reporte de incidentes, avisos comunitarios y notificaciones móviles.
+
+### Sprint 4 — Integraciones
+
+Integración de Firebase Cloud Messaging, Gemini API, variables de entorno, configuración de API móvil por entorno y comunicación entre backend, web y móvil.
+
+### Sprint 5 — QA, pruebas, despliegue y documentación
+
+Ejecución de pruebas unitarias, pruebas funcionales, validación de rendimiento con Loader.io, despliegue en Render y documentación de evidencias.
