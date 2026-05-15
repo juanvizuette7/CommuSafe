@@ -166,6 +166,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
             child: Column(
               children: <Widget>[
+                _ProfileStatusPanel(usuario: usuario),
+                const SizedBox(height: 14),
+                _ProfileQuickActions(usuario: usuario),
+                const SizedBox(height: 18),
                 _ProfileInfoCard(
                   icon: Icons.alternate_email_rounded,
                   title: 'Correo electrónico',
@@ -194,6 +198,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   value: 'Contraste, color, letra e idioma',
                   onTap: () => context.push('/ajustes'),
                 ),
+                const SizedBox(height: 14),
+                _RoleCapabilitiesCard(usuario: usuario),
                 const SizedBox(height: 28),
                 SizedBox(
                   width: double.infinity,
@@ -350,6 +356,420 @@ class _ProfileHeader extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileStatusPanel extends StatelessWidget {
+  const _ProfileStatusPanel({required this.usuario});
+
+  final UsuarioModel usuario;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
+    final unidad = usuario.unidadResidencial?.trim().isNotEmpty == true
+        ? usuario.unidadResidencial!
+        : 'Sin unidad registrada';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: theme.surface,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: theme.primary.withValues(alpha: 0.10)),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: theme.primary.withValues(alpha: 0.08),
+            blurRadius: 22,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Container(
+                height: 46,
+                width: 46,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: <Color>[theme.primary, theme.accent],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(
+                  Icons.verified_user_rounded,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      'Cuenta protegida',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Sesion segura con JWT y acceso por rol.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: theme.textSecondary,
+                        height: 1.35,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 7,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.success.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: const Text(
+                  'Activo',
+                  style: TextStyle(
+                    color: AppColors.success,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: _MiniProfileMetric(
+                  label: 'Rol',
+                  value: usuario.rolLegible,
+                  icon: Icons.badge_rounded,
+                  color: theme.primary,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _MiniProfileMetric(
+                  label: 'Unidad',
+                  value: unidad,
+                  icon: Icons.home_work_rounded,
+                  color: theme.accent,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniProfileMetric extends StatelessWidget {
+  const _MiniProfileMetric({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(18),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w900),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ProfileQuickActions extends StatelessWidget {
+  const _ProfileQuickActions({required this.usuario});
+
+  final UsuarioModel usuario;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
+    final actions = <_ProfileAction>[
+      _ProfileAction(
+        title: 'Ajustes',
+        subtitle: 'Color y letra',
+        icon: Icons.tune_rounded,
+        route: '/ajustes',
+        color: theme.primary,
+      ),
+      _ProfileAction(
+        title: 'Alertas',
+        subtitle: 'Notificaciones',
+        icon: Icons.notifications_active_rounded,
+        route: '/notificaciones',
+        color: AppColors.danger,
+      ),
+      _ProfileAction(
+        title: 'Emergencias',
+        subtitle: 'Llamadas rapidas',
+        icon: Icons.local_police_rounded,
+        route: '/emergencias',
+        color: const Color(0xFFEA580C),
+      ),
+      _ProfileAction(
+        title: usuario.esResidente ? 'Mis reportes' : 'Incidentes',
+        subtitle: usuario.esResidente ? 'Seguimiento' : 'Operacion',
+        icon: Icons.assignment_rounded,
+        route: '/incidentes',
+        color: theme.accent,
+      ),
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            Text(
+              'Accesos rapidos',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
+            ),
+            const Spacer(),
+            Text(
+              'Perfil',
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: theme.textSecondary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: actions.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 1.55,
+          ),
+          itemBuilder: (BuildContext context, int index) {
+            final action = actions[index];
+            return _ProfileActionCard(action: action);
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _ProfileAction {
+  const _ProfileAction({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.route,
+    required this.color,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final String route;
+  final Color color;
+}
+
+class _ProfileActionCard extends StatelessWidget {
+  const _ProfileActionCard({required this.action});
+
+  final _ProfileAction action;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: action.color.withValues(alpha: 0.09),
+      borderRadius: BorderRadius.circular(22),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(22),
+        onTap: () => context.push(action.route),
+        child: Padding(
+          padding: const EdgeInsets.all(14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Container(
+                height: 36,
+                width: 36,
+                decoration: BoxDecoration(
+                  color: action.color.withValues(alpha: 0.16),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(action.icon, color: action.color, size: 20),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    action.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    action.subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RoleCapabilitiesCard extends StatelessWidget {
+  const _RoleCapabilitiesCard({required this.usuario});
+
+  final UsuarioModel usuario;
+
+  List<String> get _capabilities {
+    if (usuario.esAdmin) {
+      return const <String>[
+        'Gestionar usuarios y roles',
+        'Cerrar o eliminar incidentes con trazabilidad',
+        'Enviar avisos comunitarios segmentados',
+      ];
+    }
+    if (usuario.esVigilante) {
+      return const <String>[
+        'Ver incidentes de toda la comunidad',
+        'Actualizar estados con comentario',
+        'Enviar avisos operativos a residentes',
+      ];
+    }
+    return const <String>[
+      'Reportar incidentes con evidencia',
+      'Consultar el avance de tus reportes',
+      'Recibir avisos y alertas importantes',
+    ];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: <Color>[
+            theme.primary.withValues(alpha: 0.10),
+            theme.accent.withValues(alpha: 0.08),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: theme.primary.withValues(alpha: 0.10)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              Icon(Icons.auto_awesome_rounded, color: theme.primary),
+              const SizedBox(width: 8),
+              Text(
+                'Tu acceso en CommuSafe',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          ..._capabilities.map(
+            (item) => Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Icon(
+                    Icons.check_circle_rounded,
+                    color: theme.accent,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      item,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w700,
+                        height: 1.35,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),

@@ -112,6 +112,7 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
     final provider = context.watch<IncidenteProvider>();
     final notificacionProvider = context.watch<NotificacionProvider>();
     final authProvider = context.watch<AuthProvider>();
+    final theme = CommuSafeThemeExtension.of(context);
     final usuario = authProvider.usuarioActual;
     final avisosVigentes = notificacionProvider.avisosVigentes;
     final canCreate =
@@ -252,10 +253,12 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
                                           busqueda: _searchController.text,
                                         );
                                   },
-                                  selectedColor: AppColors.primary,
+                                  selectedColor: theme.primary,
                                   backgroundColor: Colors.white,
-                                  side: const BorderSide(
-                                    color: Color(0xFFE2E8F0),
+                                  side: BorderSide(
+                                    color: isActive
+                                        ? theme.primary
+                                        : const Color(0xFFE2E8F0),
                                   ),
                                   labelStyle: TextStyle(
                                     color: isActive
@@ -390,7 +393,7 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
                 bottom: 20,
                 child: FloatingActionButton.extended(
                   onPressed: _goToCreate,
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: theme.primary,
                   foregroundColor: Colors.white,
                   icon: const Icon(Icons.add_rounded),
                   label: const Text('Nuevo'),
@@ -418,13 +421,15 @@ class _IncidentCommandPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
+
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(26),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.22),
+            color: theme.primary.withValues(alpha: 0.22),
             blurRadius: 28,
             offset: const Offset(0, 18),
           ),
@@ -432,22 +437,22 @@ class _IncidentCommandPanel extends StatelessWidget {
       ),
       child: Stack(
         children: <Widget>[
-          const Positioned.fill(
+          Positioned.fill(
             child: DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
-                  colors: <Color>[
-                    AppColors.primary,
-                    AppColors.accent,
-                    Color(0xFF3B0A1E),
-                  ],
+                  colors: <Color>[theme.primary, theme.secondary, theme.accent],
                 ),
               ),
             ),
           ),
-          Positioned.fill(child: CustomPaint(painter: _CommandPanelPainter())),
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _CommandPanelPainter(accent: theme.accent),
+            ),
+          ),
           Padding(
             padding: const EdgeInsets.all(20),
             child: Column(
@@ -587,6 +592,10 @@ class _MetricPill extends StatelessWidget {
 }
 
 class _CommandPanelPainter extends CustomPainter {
+  const _CommandPanelPainter({required this.accent});
+
+  final Color accent;
+
   @override
   void paint(Canvas canvas, Size size) {
     final linePaint = Paint()
@@ -597,7 +606,7 @@ class _CommandPanelPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.8
       ..strokeCap = StrokeCap.round
-      ..color = AppColors.danger.withValues(alpha: 0.20);
+      ..color = accent.withValues(alpha: 0.24);
 
     for (var i = 0; i < 7; i++) {
       final y = size.height * (i / 6);
@@ -622,7 +631,9 @@ class _CommandPanelPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _CommandPanelPainter oldDelegate) {
+    return oldDelegate.accent != accent;
+  }
 }
 
 class _IncidentCardSkeleton extends StatelessWidget {

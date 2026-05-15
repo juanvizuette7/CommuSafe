@@ -335,6 +335,10 @@ class IncidenteProvider extends ChangeNotifier {
   }
 
   String _extractErrorMessage(DioException error) {
+    if (_isAuthError(error)) {
+      return 'Tu sesion expiro o no es valida. Inicia sesion nuevamente.';
+    }
+
     if (_isNetworkError(error)) {
       return 'No se pudo conectar con el backend. Verifica que Django esté ejecutándose en http://10.0.2.2:8000.';
     }
@@ -344,7 +348,7 @@ class IncidenteProvider extends ChangeNotifier {
     if (data is Map<String, dynamic>) {
       final detail = data['detail'];
       if (detail is String && detail.trim().isNotEmpty) {
-        return detail;
+        return _normalizeBackendMessage(detail);
       }
 
       final mensaje = data['mensaje'];
@@ -363,10 +367,28 @@ class IncidenteProvider extends ChangeNotifier {
     }
 
     if (data is String && data.trim().isNotEmpty) {
-      return data;
+      return _normalizeBackendMessage(data);
     }
 
     return 'No fue posible completar la operación con incidentes.';
+  }
+
+  String _normalizeBackendMessage(String message) {
+    final normalized = message.toLowerCase();
+    if (normalized.contains('authentication credentials') ||
+        normalized.contains('credenciales de autenticacion') ||
+        normalized.contains('credenciales de autenticaci')) {
+      return 'Tu sesion expiro o no es valida. Inicia sesion nuevamente.';
+    }
+    if (normalized.contains('token') && normalized.contains('valid')) {
+      return 'Tu sesion expiro. Inicia sesion nuevamente.';
+    }
+    return message;
+  }
+
+  bool _isAuthError(DioException error) {
+    final statusCode = error.response?.statusCode;
+    return statusCode == 401 || statusCode == 403;
   }
 
   bool _isNetworkError(DioException error) {
