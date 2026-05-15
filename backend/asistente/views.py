@@ -28,6 +28,7 @@ Procedimiento de incidentes en CommuSafe: el residente reporta, vigilancia atien
 Emergencias: contactar porteria de inmediato y, si la situacion es critica, llamar a la linea 123.
 Cuotas de administracion: se consultan y gestionan con administracion; si el usuario requiere valores exactos o estado de cartera, debe contactar directamente a la administracion.
 Uso de CommuSafe: permite iniciar sesion, reportar incidentes, ver notificaciones, consultar estados y recibir orientacion basica del asistente.
+Reporte de incidentes en la app movil: el usuario ya esta dentro de CommuSafe. Para reportar debe ir a la pestaña Incidentes, tocar el boton Nuevo, escribir un titulo claro, elegir categoria, describir lo ocurrido, agregar ubicacion de referencia, adjuntar hasta 3 fotos si las tiene y tocar Reportar incidente. Luego puede abrir el detalle para revisar estado, historial y notificaciones.
 Si una pregunta sale de este alcance, el asistente debe decirlo claramente y sugerir contactar a la administracion.
 """.strip()
 
@@ -40,6 +41,8 @@ Solo puedes responder con base en esta informacion autorizada:
 No inventes politicas, valores, nombres de personas, multas ni decisiones administrativas.
 Si la informacion no esta disponible o requiere confirmacion humana, indica que el usuario debe contactar a la administracion o a porteria.
 Evita respuestas largas y manten el foco en ayudar al residente dentro del contexto del conjunto y la app.
+Cuando el usuario pregunte como reportar un incidente, no respondas de forma generica ni digas solamente "desde la app". Explica pasos concretos dentro de CommuSafe, como si el usuario ya estuviera usando la aplicacion.
+Para preguntas de uso de la app, responde con pasos numerados breves y accionables.
 """.strip()
 
 
@@ -129,9 +132,35 @@ def _respuesta_fallback(mensaje):
             "Las normas basicas de convivencia incluyen respetar el horario de descanso entre 10:00 p. m. y 6:00 a. m., "
             "usar correa para las mascotas en zonas comunes, recoger sus residuos y no obstruir pasillos o escaleras."
         )
+    if any(
+        frase in texto
+        for frase in [
+            "como reporto",
+            "como puedo reportar",
+            "reportar un incidente",
+            "crear incidente",
+            "nuevo incidente",
+            "hacer un reporte",
+        ]
+    ):
+        return (
+            "Para reportar un incidente en CommuSafe sigue estos pasos:\n"
+            "1. Entra a la pestaña Incidentes.\n"
+            "2. Toca el boton Nuevo.\n"
+            "3. Escribe un titulo corto y selecciona la categoria: Seguridad, Convivencia, Infraestructura o Emergencia.\n"
+            "4. Describe que paso, donde ocurrio y agrega la ubicacion de referencia.\n"
+            "5. Si tienes evidencia, adjunta hasta 3 fotos desde camara o galeria.\n"
+            "6. Toca Reportar incidente. Despues puedes abrir el detalle para ver el estado, historial y respuestas de vigilancia."
+        )
+    if any(palabra in texto for palabra in ["estado", "seguimiento", "historial", "avance"]):
+        return (
+            "Para revisar el avance de un incidente, entra a Incidentes y toca el reporte que quieres consultar. "
+            "En el detalle veras el estado actual, la descripcion, evidencias y el historial de cambios con comentarios."
+        )
     if any(palabra in texto for palabra in ["app", "commusafe", "incidente", "reporte", "notificacion"]):
         return (
-            "Con CommuSafe puedes reportar incidentes, consultar su estado, recibir notificaciones y comunicarte mejor con vigilancia y administracion."
+            "En CommuSafe puedes reportar incidentes, consultar el estado de tus casos, revisar notificaciones y recibir orientacion del asistente. "
+            "Si quieres reportar, usa Incidentes > Nuevo y completa el formulario con categoria, descripcion, ubicacion y evidencias."
         )
 
     return (

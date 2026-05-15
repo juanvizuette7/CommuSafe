@@ -188,8 +188,22 @@ class _ChatScreenState extends State<ChatScreen> {
         texto.contains('ambulancia')) {
       return 'Si hay una emergencia inminente, llama directamente a los servicios de emergencia y avisa a portería.';
     }
+    if (texto.contains('como reporto') ||
+        texto.contains('como puedo reportar') ||
+        texto.contains('reportar un incidente') ||
+        texto.contains('crear incidente') ||
+        texto.contains('nuevo incidente') ||
+        texto.contains('hacer un reporte')) {
+      return 'Para reportar un incidente: 1. Entra a la pestaña Incidentes. 2. Toca Nuevo. 3. Escribe un titulo claro y elige la categoria. 4. Describe que paso y agrega la ubicacion. 5. Adjunta hasta 3 fotos si tienes evidencia. 6. Toca Reportar incidente. Luego puedes abrir el detalle para ver el estado y el historial.';
+    }
+    if (texto.contains('estado') ||
+        texto.contains('seguimiento') ||
+        texto.contains('historial') ||
+        texto.contains('avance')) {
+      return 'Para revisar el avance, entra a Incidentes y toca el reporte. Alli veras el estado actual, las evidencias y el historial de cambios con comentarios de vigilancia o administracion.';
+    }
     if (texto.contains('incidente') || texto.contains('reporte')) {
-      return 'Para reportar un incidente entra a Incidentes, pulsa Nuevo, completa el formulario y adjunta evidencia si la tienes.';
+      return 'En Incidentes puedes crear reportes y consultar su seguimiento. Para reportar, toca Nuevo, completa categoria, descripcion, ubicacion y evidencias, y luego envia el caso.';
     }
     if (texto.contains('convivencia') ||
         texto.contains('norma') ||
