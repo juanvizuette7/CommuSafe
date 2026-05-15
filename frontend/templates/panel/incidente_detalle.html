@@ -46,8 +46,11 @@
                 <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     {% for evidencia in evidencias %}
                     <figure class="overflow-hidden rounded-[24px] border border-slate-200 bg-slate-50">
-                        <a href="{{ evidencia.imagen.url }}" target="_blank" rel="noopener" @click.prevent="abrirImagen('{{ evidencia.imagen.url }}', 'Evidencia {{ forloop.counter }} - {{ incidente.titulo|escapejs }}')" class="block w-full overflow-hidden text-left focus:outline-none focus:ring-4 focus:ring-accent/20" aria-label="Ver evidencia {{ forloop.counter }}">
+                        <a href="{{ evidencia.imagen.url }}" target="_blank" rel="noopener" @click.prevent="abrirImagen('{{ evidencia.imagen.url }}', 'Evidencia {{ forloop.counter }} - {{ incidente.titulo|escapejs }}')" class="group relative block w-full overflow-hidden text-left focus:outline-none focus:ring-4 focus:ring-accent/20" aria-label="Ver evidencia {{ forloop.counter }}">
                             <img src="{{ evidencia.imagen.url }}" alt="Evidencia {{ forloop.counter }}" class="h-56 w-full object-cover transition duration-300 hover:scale-[1.03]" onerror="this.parentElement.classList.add('hidden'); this.parentElement.nextElementSibling.classList.remove('hidden');">
+                            <span class="absolute inset-0 flex items-center justify-center bg-slate-950/55 text-sm font-black uppercase tracking-[0.18em] text-white opacity-0 transition group-hover:opacity-100">
+                                Ver evidencia
+                            </span>
                         </a>
                         <div class="hidden h-56 w-full items-center justify-center bg-slate-100 px-6 text-center text-sm font-bold text-slate-500 flex">
                             Archivo de evidencia no disponible en el servidor.
@@ -109,8 +112,11 @@
             <h3 class="text-xl font-black text-primary">Reportado por</h3>
             <div class="mt-5 flex items-center gap-4">
                 {% if incidente.reportado_por.foto_perfil %}
-                <a href="{{ incidente.reportado_por.foto_perfil.url }}" target="_blank" rel="noopener" @click.prevent="abrirImagen('{{ incidente.reportado_por.foto_perfil.url }}', 'Foto de perfil de {{ incidente.reportado_por.nombre_completo|escapejs }}')" class="shrink-0 rounded-[22px] focus:outline-none focus:ring-4 focus:ring-accent/20" aria-label="Ver foto de perfil de {{ incidente.reportado_por.nombre_completo }}">
+                <a href="{{ incidente.reportado_por.foto_perfil.url }}" target="_blank" rel="noopener" @click.prevent="abrirImagen('{{ incidente.reportado_por.foto_perfil.url }}', 'Foto de perfil de {{ incidente.reportado_por.nombre_completo|escapejs }}')" class="group relative shrink-0 overflow-hidden rounded-[22px] focus:outline-none focus:ring-4 focus:ring-accent/20" aria-label="Ver foto de perfil de {{ incidente.reportado_por.nombre_completo }}">
                     <img src="{{ incidente.reportado_por.foto_perfil.url }}" alt="Foto del reportante" class="h-16 w-16 rounded-[22px] object-cover transition hover:brightness-105" onerror="this.parentElement.classList.add('hidden'); this.parentElement.nextElementSibling.classList.remove('hidden');">
+                    <span class="absolute inset-0 flex items-center justify-center rounded-[22px] bg-primary/70 text-[10px] font-black uppercase tracking-wide text-white opacity-0 transition group-hover:opacity-100">
+                        Ver
+                    </span>
                 </a>
                 <div class="hidden h-16 w-16 shrink-0 items-center justify-center rounded-[22px] bg-primary text-lg font-black text-white flex">
                     {{ incidente.reportado_por.nombre|first }}{{ incidente.reportado_por.apellido|first }}

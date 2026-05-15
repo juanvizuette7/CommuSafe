@@ -21,6 +21,24 @@
         <form method="post" class="space-y-7 px-6 py-8 sm:px-8" x-data="{ rol: '{{ form.rol.value|default:'RESIDENTE' }}' }">
             {% csrf_token %}
 
+            {% if modo_formulario == "editar" and usuario_objetivo.foto_perfil %}
+            <div class="flex flex-col gap-4 rounded-[24px] border border-slate-200 bg-slate-50 p-5 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex items-center gap-4">
+                    <a href="{{ usuario_objetivo.foto_perfil.url }}" target="_blank" rel="noopener" @click.prevent="abrirImagen('{{ usuario_objetivo.foto_perfil.url }}', 'Foto de perfil de {{ usuario_objetivo.nombre_completo|escapejs }}')" class="group relative shrink-0 overflow-hidden rounded-[22px] focus:outline-none focus:ring-4 focus:ring-accent/20" aria-label="Ver foto de perfil de {{ usuario_objetivo.nombre_completo }}">
+                        <img src="{{ usuario_objetivo.foto_perfil.url }}" alt="Foto de perfil de {{ usuario_objetivo.nombre_completo }}" class="h-20 w-20 rounded-[22px] object-cover transition hover:brightness-105" onerror="this.parentElement.classList.add('hidden');">
+                        <span class="absolute inset-0 flex items-center justify-center rounded-[22px] bg-primary/70 text-xs font-black uppercase tracking-wide text-white opacity-0 transition group-hover:opacity-100">
+                            Ver foto
+                        </span>
+                    </a>
+                    <div>
+                        <p class="text-sm font-black uppercase tracking-[0.18em] text-slate-400">Foto actual</p>
+                        <p class="mt-1 text-base font-black text-primary">{{ usuario_objetivo.nombre_completo }}</p>
+                        <p class="mt-1 text-sm font-semibold text-slate-500">Haz clic sobre la imagen para verla ampliada.</p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             {% if form.non_field_errors %}
             <div class="rounded-2xl border border-danger/20 bg-danger/10 px-4 py-3 text-sm font-semibold text-danger">
                 {% for error in form.non_field_errors %}
