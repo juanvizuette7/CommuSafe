@@ -531,8 +531,8 @@ class _LanguageOptionTile extends StatelessWidget {
                     const SizedBox(height: 3),
                     Text(
                       preset == LanguagePreset.esCo
-                          ? 'Formato recomendado para Colombia.'
-                          : 'Variante general en español.',
+                          ? 'Formato y fechas para Colombia.'
+                          : 'English regional format.',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: theme.textSecondary,
                         fontWeight: FontWeight.w600,

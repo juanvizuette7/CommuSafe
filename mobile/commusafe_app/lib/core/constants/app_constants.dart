@@ -3,6 +3,7 @@ class AppConstants {
 
   static const String appName = 'CommuSafe';
   static const String residentialComplexName = 'Remansos del Norte';
+  static const String appLogoAsset = 'assets/images/commusafe_logo.png';
   static const String baseUrlProduccion = 'https://commusafe.onrender.com';
   static const bool kIsProduction = bool.fromEnvironment(
     'PROD',

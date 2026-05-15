@@ -20,7 +20,8 @@ class _IncidenteCardState extends State<IncidenteCard> {
   @override
   Widget build(BuildContext context) {
     final incidente = widget.incidente;
-    final categoryStyle = _categoryVisuals(incidente.categoria);
+    final theme = CommuSafeThemeExtension.of(context);
+    final categoryStyle = _categoryVisuals(context, incidente.categoria);
     final priorityColor = incidente.prioridadColor;
 
     return AnimatedScale(
@@ -38,7 +39,7 @@ class _IncidenteCardState extends State<IncidenteCard> {
           onTapUp: (_) => setState(() => _pressed = false),
           child: Ink(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: theme.surface,
               borderRadius: BorderRadius.circular(24),
               border: Border.all(color: priorityColor.withValues(alpha: 0.11)),
               boxShadow: <BoxShadow>[
@@ -190,12 +191,13 @@ class _IncidenteCardState extends State<IncidenteCard> {
     );
   }
 
-  _CategoryVisual _categoryVisuals(String categoria) {
+  _CategoryVisual _categoryVisuals(BuildContext context, String categoria) {
+    final theme = CommuSafeThemeExtension.of(context);
     switch (categoria.toUpperCase()) {
       case 'SEGURIDAD':
         return const _CategoryVisual(Icons.lock_rounded, AppColors.danger);
       case 'CONVIVENCIA':
-        return const _CategoryVisual(Icons.groups_rounded, Color(0xFF2563EB));
+        return _CategoryVisual(Icons.groups_rounded, theme.accent);
       case 'INFRAESTRUCTURA':
         return const _CategoryVisual(
           Icons.settings_suggest_rounded,
@@ -207,10 +209,7 @@ class _IncidenteCardState extends State<IncidenteCard> {
           AppColors.warning,
         );
       default:
-        return const _CategoryVisual(
-          Icons.info_outline_rounded,
-          AppColors.primary,
-        );
+        return _CategoryVisual(Icons.info_outline_rounded, theme.primary);
     }
   }
 }
@@ -285,25 +284,23 @@ class _EvidenceChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
-        color: AppColors.accent.withValues(alpha: 0.08),
+        color: theme.accent.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          const Icon(
-            Icons.photo_library_outlined,
-            size: 15,
-            color: AppColors.accent,
-          ),
+          Icon(Icons.photo_library_outlined, size: 15, color: theme.accent),
           const SizedBox(width: 6),
           Text(
             '$count fotos',
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: AppColors.accent,
+              color: theme.accent,
               fontWeight: FontWeight.w800,
             ),
           ),

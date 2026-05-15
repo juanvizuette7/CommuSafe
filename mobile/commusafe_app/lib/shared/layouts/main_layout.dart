@@ -102,6 +102,11 @@ class _MainLayoutState extends State<MainLayout> {
     final currentIndex = _currentIndexForLocation(currentLocation);
     final unreadCount = notificationsProvider.noLeidasCount;
     final theme = CommuSafeThemeExtension.of(context);
+    final roleIcon = usuario?.esAdmin == true
+        ? Icons.admin_panel_settings_rounded
+        : usuario?.esVigilante == true
+        ? Icons.security_rounded
+        : Icons.home_rounded;
 
     return Scaffold(
       appBar: _showTopAppBar(currentLocation)
@@ -155,10 +160,32 @@ class _MainLayoutState extends State<MainLayout> {
                             ),
                       ),
                       const SizedBox(height: 4),
-                      Text(
-                        usuario?.rolLegible ?? 'Sesión no disponible',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.78),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 7,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.14),
+                          borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.18),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            Icon(roleIcon, color: Colors.white, size: 16),
+                            const SizedBox(width: 6),
+                            Text(
+                              usuario?.rolLegible ?? 'Sesion no disponible',
+                              style: Theme.of(context).textTheme.labelMedium
+                                  ?.copyWith(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                            ),
+                          ],
                         ),
                       ),
                       if (usuario?.email != null) ...<Widget>[

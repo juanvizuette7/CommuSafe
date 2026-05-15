@@ -46,6 +46,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
       ),
       builder: (BuildContext context) {
+        final theme = CommuSafeThemeExtension.of(context);
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(18, 4, 18, 18),
@@ -53,10 +54,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 ListTile(
-                  leading: const CircleAvatar(
-                    backgroundColor: AppColors.primary,
+                  leading: CircleAvatar(
+                    backgroundColor: theme.primary,
                     foregroundColor: Colors.white,
-                    child: Icon(Icons.photo_camera_rounded),
+                    child: const Icon(Icons.photo_camera_rounded),
                   ),
                   title: const Text(
                     'Tomar foto',
@@ -65,10 +66,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   onTap: () => Navigator.of(context).pop(ImageSource.camera),
                 ),
                 ListTile(
-                  leading: const CircleAvatar(
-                    backgroundColor: AppColors.accent,
+                  leading: CircleAvatar(
+                    backgroundColor: theme.accent,
                     foregroundColor: Colors.white,
-                    child: Icon(Icons.photo_library_rounded),
+                    child: const Icon(Icons.photo_library_rounded),
                   ),
                   title: const Text(
                     'Elegir de galería',
@@ -130,6 +131,29 @@ class _PerfilScreenState extends State<PerfilScreen> {
     }
   }
 
+  Future<void> _abrirEditorPerfil(UsuarioModel usuario) async {
+    final actualizado = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return _EditProfileSheet(usuario: usuario);
+      },
+    );
+
+    if (!mounted || actualizado != true) {
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Perfil actualizado correctamente'),
+        backgroundColor: AppColors.success,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
@@ -167,6 +191,11 @@ class _PerfilScreenState extends State<PerfilScreen> {
             child: Column(
               children: <Widget>[
                 _ProfileStatusPanel(usuario: usuario),
+                const SizedBox(height: 14),
+                _EditProfileCta(
+                  onTap: () => _abrirEditorPerfil(usuario),
+                  usuario: usuario,
+                ),
                 const SizedBox(height: 14),
                 _ProfileQuickActions(usuario: usuario),
                 const SizedBox(height: 18),
@@ -237,12 +266,12 @@ class _ProfileHeader extends StatelessWidget {
   final bool subiendoFoto;
   final VoidCallback onAvatarTap;
 
-  Color _badgeColor() {
+  Color _badgeColor(CommuSafeThemeExtension theme) {
     if (usuario.esAdmin) {
-      return const Color(0xFF1D4ED8);
+      return theme.primary;
     }
     if (usuario.esVigilante) {
-      return const Color(0xFF2563EB);
+      return theme.accent;
     }
     return AppColors.success;
   }
@@ -347,7 +376,7 @@ class _ProfileHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: _badgeColor().withValues(alpha: 0.22),
+              color: _badgeColor(theme).withValues(alpha: 0.22),
               borderRadius: BorderRadius.circular(999),
               border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
             ),
@@ -360,6 +389,330 @@ class _ProfileHeader extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _EditProfileCta extends StatelessWidget {
+  const _EditProfileCta({required this.usuario, required this.onTap});
+
+  final UsuarioModel usuario;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
+    final phoneReady = usuario.telefono?.trim().isNotEmpty == true;
+
+    return Material(
+      color: theme.primary.withValues(alpha: 0.08),
+      borderRadius: BorderRadius.circular(22),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(22),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: <Widget>[
+              Container(
+                height: 48,
+                width: 48,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: <Color>[theme.primary, theme.accent],
+                  ),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: const Icon(Icons.edit_rounded, color: Colors.white),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      'Editar datos personales',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      phoneReady
+                          ? 'Nombre y celular disponibles para contacto.'
+                          : 'Agrega tu celular para mejorar la atencion.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: theme.textSecondary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded, color: theme.primary),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _EditProfileSheet extends StatefulWidget {
+  const _EditProfileSheet({required this.usuario});
+
+  final UsuarioModel usuario;
+
+  @override
+  State<_EditProfileSheet> createState() => _EditProfileSheetState();
+}
+
+class _EditProfileSheetState extends State<_EditProfileSheet> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  late final TextEditingController _nombreController;
+  late final TextEditingController _apellidoController;
+  late final TextEditingController _telefonoController;
+  late final TextEditingController _unidadController;
+
+  @override
+  void initState() {
+    super.initState();
+    _nombreController = TextEditingController(text: widget.usuario.nombre);
+    _apellidoController = TextEditingController(text: widget.usuario.apellido);
+    _telefonoController = TextEditingController(
+      text: widget.usuario.telefono ?? '',
+    );
+    _unidadController = TextEditingController(
+      text: widget.usuario.unidadResidencial ?? '',
+    );
+  }
+
+  @override
+  void dispose() {
+    _nombreController.dispose();
+    _apellidoController.dispose();
+    _telefonoController.dispose();
+    _unidadController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _guardar() async {
+    final form = _formKey.currentState;
+    if (form == null || !form.validate()) {
+      return;
+    }
+
+    final ok = await context.read<AuthProvider>().actualizarPerfil(
+      nombre: _nombreController.text,
+      apellido: _apellidoController.text,
+      telefono: _telefonoController.text,
+      unidadResidencial: _unidadController.text,
+    );
+
+    if (!mounted) {
+      return;
+    }
+
+    if (ok) {
+      Navigator.of(context).pop(true);
+      return;
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          context.read<AuthProvider>().errorMessage ??
+              'No se pudo actualizar el perfil.',
+        ),
+        backgroundColor: AppColors.danger,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
+    final isLoading = context.watch<AuthProvider>().isLoading;
+
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 14,
+          right: 14,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 14,
+          top: 14,
+        ),
+        child: Container(
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+          decoration: BoxDecoration(
+            color: theme.surface,
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: <BoxShadow>[
+              BoxShadow(
+                color: theme.primary.withValues(alpha: 0.18),
+                blurRadius: 28,
+                offset: const Offset(0, 14),
+              ),
+            ],
+          ),
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Center(
+                    child: Container(
+                      width: 46,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: AppColors.muted,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: <Widget>[
+                      Container(
+                        height: 48,
+                        width: 48,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: <Color>[theme.primary, theme.accent],
+                          ),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: const Icon(
+                          Icons.manage_accounts_rounded,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            Text(
+                              'Actualizar perfil',
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(fontWeight: FontWeight.w900),
+                            ),
+                            Text(
+                              'Estos datos ayudan a contactarte rapido.',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(
+                                    color: theme.textSecondary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  TextFormField(
+                    controller: _nombreController,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(
+                      labelText: 'Nombre',
+                      prefixIcon: Icon(Icons.person_outline_rounded),
+                    ),
+                    validator: (String? value) {
+                      if ((value ?? '').trim().length < 2) {
+                        return 'Escribe un nombre valido.';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _apellidoController,
+                    textCapitalization: TextCapitalization.words,
+                    decoration: const InputDecoration(
+                      labelText: 'Apellido',
+                      prefixIcon: Icon(Icons.badge_outlined),
+                    ),
+                    validator: (String? value) {
+                      if ((value ?? '').trim().length < 2) {
+                        return 'Escribe un apellido valido.';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _telefonoController,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(
+                      labelText: 'Celular colombiano',
+                      hintText: 'Ej. 3001234567',
+                      prefixIcon: Icon(Icons.phone_iphone_rounded),
+                    ),
+                    validator: (String? value) {
+                      final text = (value ?? '').replaceAll(RegExp(r'\s+'), '');
+                      if (text.isEmpty) {
+                        return null;
+                      }
+                      if (!RegExp(r'^(\+57)?3\d{9}$').hasMatch(text)) {
+                        return 'Usa un celular colombiano valido.';
+                      }
+                      return null;
+                    },
+                  ),
+                  if (widget.usuario.esResidente) ...<Widget>[
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _unidadController,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: const InputDecoration(
+                        labelText: 'Unidad residencial',
+                        hintText: 'Ej. Apto 301 Torre A',
+                        prefixIcon: Icon(Icons.home_work_outlined),
+                      ),
+                      validator: (String? value) {
+                        if ((value ?? '').trim().isEmpty) {
+                          return 'La unidad es obligatoria para residentes.';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
+                  const SizedBox(height: 18),
+                  SizedBox(
+                    width: double.infinity,
+                    child: FilledButton.icon(
+                      onPressed: isLoading ? null : _guardar,
+                      icon: isLoading
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Icon(Icons.save_rounded),
+                      label: Text(isLoading ? 'Guardando...' : 'Guardar datos'),
+                      style: FilledButton.styleFrom(
+                        backgroundColor: theme.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

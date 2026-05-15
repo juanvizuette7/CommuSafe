@@ -197,6 +197,15 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
                               ),
                             ],
                           ),
+                          if (usuario != null) ...<Widget>[
+                            const SizedBox(height: 14),
+                            _RoleContextBanner(
+                              roleLabel: usuario.rolLegible,
+                              isAdmin: usuario.esAdmin,
+                              isVigilante: usuario.esVigilante,
+                              isResidente: usuario.esResidente,
+                            ),
+                          ],
                           const SizedBox(height: 18),
                           _IncidentCommandPanel(
                             visibleCount: provider.incidentes.length,
@@ -527,6 +536,85 @@ class _IncidentCommandPanel extends StatelessWidget {
                       color: AppColors.danger,
                     ),
                   ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RoleContextBanner extends StatelessWidget {
+  const _RoleContextBanner({
+    required this.roleLabel,
+    required this.isAdmin,
+    required this.isVigilante,
+    required this.isResidente,
+  });
+
+  final String roleLabel;
+  final bool isAdmin;
+  final bool isVigilante;
+  final bool isResidente;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
+    final color = isAdmin
+        ? theme.primary
+        : isVigilante
+        ? theme.accent
+        : AppColors.success;
+    final icon = isAdmin
+        ? Icons.admin_panel_settings_rounded
+        : isVigilante
+        ? Icons.security_rounded
+        : Icons.home_rounded;
+    final message = isAdmin
+        ? 'Modo administrador: supervision total, control y auditoria.'
+        : isVigilante
+        ? 'Modo vigilancia: atencion operativa y cambio de estados.'
+        : 'Modo residente: tus reportes, evidencias y seguimiento personal.';
+
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.09),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.18)),
+      ),
+      child: Row(
+        children: <Widget>[
+          Container(
+            height: 42,
+            width: 42,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.16),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(icon, color: color),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  roleLabel,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  message,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ],
             ),

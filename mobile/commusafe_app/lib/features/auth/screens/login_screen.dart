@@ -87,6 +87,7 @@ class _LoginScreenState extends State<LoginScreen>
     final authProvider = context.watch<AuthProvider>();
     final isLoading = authProvider.isLoading;
     final errorMessage = authProvider.errorMessage;
+    final theme = CommuSafeThemeExtension.of(context);
 
     return Scaffold(
       body: CommuSafeAnimatedBackground(
@@ -140,9 +141,9 @@ class _LoginScreenState extends State<LoginScreen>
                                             borderRadius: BorderRadius.circular(
                                               20,
                                             ),
-                                            gradient: const LinearGradient(
+                                            gradient: LinearGradient(
                                               colors: <Color>[
-                                                AppColors.primary,
+                                                theme.primary,
                                                 AppColors.danger,
                                               ],
                                             ),
@@ -155,10 +156,12 @@ class _LoginScreenState extends State<LoginScreen>
                                               ),
                                             ],
                                           ),
-                                          child: const Icon(
-                                            Icons.shield_rounded,
-                                            color: Colors.white,
-                                            size: 30,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(7),
+                                            child: Image.asset(
+                                              AppConstants.appLogoAsset,
+                                              fit: BoxFit.contain,
+                                            ),
                                           ),
                                         ),
                                         const SizedBox(width: 14),
@@ -173,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen>
                                                     .textTheme
                                                     .headlineSmall
                                                     ?.copyWith(
-                                                      color: AppColors.primary,
+                                                      color: theme.primary,
                                                       fontWeight:
                                                           FontWeight.w900,
                                                     ),
@@ -199,18 +202,18 @@ class _LoginScreenState extends State<LoginScreen>
                                     ),
                                     const SizedBox(height: 22),
                                     Row(
-                                      children: const <Widget>[
+                                      children: <Widget>[
                                         _SignalBadge(
                                           icon: Icons.lock_outline_rounded,
                                           label: 'Acceso seguro',
-                                          color: AppColors.primary,
+                                          color: theme.primary,
                                         ),
-                                        SizedBox(width: 10),
+                                        const SizedBox(width: 10),
                                         _SignalBadge(
                                           icon: Icons
                                               .notifications_active_outlined,
                                           label: 'Alertas',
-                                          color: AppColors.danger,
+                                          color: theme.accent,
                                         ),
                                       ],
                                     ),
@@ -351,16 +354,16 @@ class _LoginScreenState extends State<LoginScreen>
                                     DecoratedBox(
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(16),
-                                        gradient: const LinearGradient(
+                                        gradient: LinearGradient(
                                           colors: <Color>[
-                                            AppColors.primary,
-                                            AppColors.accent,
+                                            theme.primary,
+                                            theme.accent,
                                             AppColors.danger,
                                           ],
                                         ),
                                         boxShadow: <BoxShadow>[
                                           BoxShadow(
-                                            color: AppColors.primary.withValues(
+                                            color: theme.primary.withValues(
                                               alpha: 0.30,
                                             ),
                                             blurRadius: 22,
@@ -463,18 +466,20 @@ class _PrivacyPolicyAcceptance extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
+
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.04),
+        color: theme.primary.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.10)),
+        border: Border.all(color: theme.primary.withValues(alpha: 0.10)),
       ),
       child: CheckboxListTile(
         value: value,
         onChanged: enabled ? onChanged : null,
         controlAffinity: ListTileControlAffinity.leading,
         contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        activeColor: AppColors.primary,
+        activeColor: theme.primary,
         title: Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
           children: <Widget>[
@@ -491,7 +496,7 @@ class _PrivacyPolicyAcceptance extends StatelessWidget {
               child: Text(
                 'política de recolección y tratamiento de datos personales',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.accent,
+                  color: theme.accent,
                   height: 1.35,
                   fontWeight: FontWeight.w900,
                   decoration: TextDecoration.underline,

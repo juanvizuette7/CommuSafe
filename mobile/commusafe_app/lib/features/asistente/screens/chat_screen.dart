@@ -209,6 +209,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
     final showSuggestions = _mensajes
         .where((mensaje) => mensaje.esDelUsuario)
         .isEmpty;
@@ -218,7 +219,7 @@ class _ChatScreenState extends State<ChatScreen> {
         .modo;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.background,
       appBar: AppBar(
         titleSpacing: 12,
         title: Row(
@@ -345,6 +346,7 @@ class _ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isUser = mensaje.esDelUsuario;
+    final theme = CommuSafeThemeExtension.of(context);
     final time = DateFormat('hh:mm a', 'es_CO').format(mensaje.timestamp);
 
     return Row(
@@ -354,10 +356,14 @@ class _ChatBubble extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.end,
       children: <Widget>[
         if (!isUser) ...<Widget>[
-          const CircleAvatar(
+          CircleAvatar(
             radius: 16,
-            backgroundColor: AppColors.accent,
-            child: Icon(Icons.smart_toy_rounded, color: Colors.white, size: 17),
+            backgroundColor: theme.accent,
+            child: const Icon(
+              Icons.smart_toy_rounded,
+              color: Colors.white,
+              size: 17,
+            ),
           ),
           const SizedBox(width: 8),
         ],
@@ -374,7 +380,7 @@ class _ChatBubble extends StatelessWidget {
                   vertical: 13,
                 ),
                 decoration: BoxDecoration(
-                  color: isUser ? AppColors.primary : const Color(0xFFF1F5F9),
+                  color: isUser ? theme.primary : const Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.only(
                     topLeft: const Radius.circular(18),
                     topRight: const Radius.circular(18),
@@ -447,13 +453,19 @@ class _BotTypingBubbleState extends State<_BotTypingBubble> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: <Widget>[
-        const CircleAvatar(
+        CircleAvatar(
           radius: 16,
-          backgroundColor: AppColors.accent,
-          child: Icon(Icons.smart_toy_rounded, color: Colors.white, size: 17),
+          backgroundColor: theme.accent,
+          child: const Icon(
+            Icons.smart_toy_rounded,
+            color: Colors.white,
+            size: 17,
+          ),
         ),
         const SizedBox(width: 8),
         Container(
@@ -470,7 +482,7 @@ class _BotTypingBubbleState extends State<_BotTypingBubble> {
               '.' * _dots,
               key: ValueKey<int>(_dots),
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: AppColors.primary,
+                color: theme.primary,
                 fontWeight: FontWeight.w900,
               ),
             ),
@@ -489,6 +501,8 @@ class _SuggestionChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
+
     return Wrap(
       spacing: 8,
       runSpacing: 8,
@@ -496,11 +510,14 @@ class _SuggestionChips extends StatelessWidget {
           .map(
             (suggestion) => ActionChip(
               label: Text(suggestion),
-              avatar: const Icon(Icons.bolt_rounded, size: 16),
+              avatar: Icon(Icons.bolt_rounded, size: 16, color: theme.accent),
               onPressed: () => onSelected(suggestion),
               backgroundColor: Colors.white,
-              side: const BorderSide(color: Color(0xFFE2E8F0)),
-              labelStyle: const TextStyle(fontWeight: FontWeight.w700),
+              side: BorderSide(color: theme.primary.withValues(alpha: 0.14)),
+              labelStyle: TextStyle(
+                color: theme.primary,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           )
           .toList(),
@@ -558,6 +575,7 @@ class _MessageInputState extends State<_MessageInput> {
   @override
   Widget build(BuildContext context) {
     final canSend = widget.enabled && _hasText;
+    final theme = CommuSafeThemeExtension.of(context);
 
     return SafeArea(
       top: false,
@@ -600,7 +618,7 @@ class _MessageInputState extends State<_MessageInput> {
               width: 52,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: canSend ? AppColors.primary : AppColors.muted,
+                color: canSend ? theme.primary : AppColors.muted,
               ),
               child: IconButton(
                 onPressed: canSend ? widget.onSend : null,

@@ -49,7 +49,11 @@ class _CommuSafeAppState extends State<CommuSafeApp> {
       title: 'CommuSafe',
       theme: settings.theme,
       locale: settings.locale,
-      supportedLocales: const <Locale>[Locale('es', 'CO'), Locale('es')],
+      supportedLocales: const <Locale>[
+        Locale('es', 'CO'),
+        Locale('es'),
+        Locale('en'),
+      ],
       localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
         GlobalMaterialLocalizations.delegate,
         GlobalWidgetsLocalizations.delegate,
@@ -254,13 +258,15 @@ class _StartupLoadingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
+
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: <Color>[AppColors.primary, AppColors.accent],
+            colors: <Color>[theme.primary, theme.accent],
           ),
         ),
         child: const Center(

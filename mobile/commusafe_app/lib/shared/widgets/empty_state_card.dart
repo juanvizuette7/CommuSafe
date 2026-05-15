@@ -22,13 +22,14 @@ class EmptyStateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = toneColor ?? AppColors.primary;
+    final theme = CommuSafeThemeExtension.of(context);
+    final color = toneColor ?? theme.primary;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8FAFC),
+        color: Color.lerp(theme.surface, theme.primary, 0.035) ?? theme.surface,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(

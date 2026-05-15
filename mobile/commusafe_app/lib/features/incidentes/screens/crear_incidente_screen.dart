@@ -142,10 +142,13 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
     }
   }
 
-  void _showSnack(String message, {Color color = AppColors.primary}) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: color));
+  void _showSnack(String message, {Color? color}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color ?? CommuSafeThemeExtension.of(context).primary,
+      ),
+    );
   }
 
   Future<void> _callEmergencyLine() async {
@@ -186,6 +189,7 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<IncidenteProvider>();
+    final theme = CommuSafeThemeExtension.of(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -250,11 +254,11 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                                     categoria['value'] ?? 'SEGURIDAD';
                               });
                             },
-                            selectedColor: AppColors.primary,
+                            selectedColor: theme.primary,
                             backgroundColor: const Color(0xFFF1F5F9),
                             side: BorderSide(
                               color: isSelected
-                                  ? AppColors.primary
+                                  ? theme.primary
                                   : const Color(0xFFE2E8F0),
                             ),
                             labelStyle: TextStyle(
@@ -395,9 +399,7 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                                   borderRadius: BorderRadius.circular(18),
                                   border: Border.all(
                                     color: canAdd
-                                        ? AppColors.primary.withValues(
-                                            alpha: 0.2,
-                                          )
+                                        ? theme.primary.withValues(alpha: 0.2)
                                         : const Color(0xFFE2E8F0),
                                   ),
                                 ),
@@ -407,7 +409,7 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                                     Icon(
                                       Icons.add_a_photo_outlined,
                                       color: canAdd
-                                          ? AppColors.primary
+                                          ? theme.primary
                                           : AppColors.textSecondary,
                                     ),
                                     const SizedBox(height: 10),
@@ -418,7 +420,7 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                                           .bodySmall
                                           ?.copyWith(
                                             color: canAdd
-                                                ? AppColors.primary
+                                                ? theme.primary
                                                 : AppColors.textSecondary,
                                             fontWeight: FontWeight.w700,
                                           ),
@@ -525,14 +527,17 @@ class _FormCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.surface,
         borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: theme.primary.withValues(alpha: 0.08)),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: theme.primary.withValues(alpha: 0.07),
             blurRadius: 22,
             offset: const Offset(0, 10),
           ),

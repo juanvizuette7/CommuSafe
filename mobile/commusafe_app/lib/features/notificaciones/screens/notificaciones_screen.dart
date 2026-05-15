@@ -50,7 +50,8 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
   }
 
   Future<void> _showNotificationDetail(NotificacionModel item) async {
-    final color = _notificationColor(item);
+    final color = _notificationColor(context, item);
+    final theme = CommuSafeThemeExtension.of(context);
 
     await showModalBottomSheet<void>(
       context: context,
@@ -66,7 +67,7 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
               borderRadius: BorderRadius.circular(28),
               boxShadow: <BoxShadow>[
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.18),
+                  color: theme.primary.withValues(alpha: 0.18),
                   blurRadius: 26,
                   offset: const Offset(0, 14),
                 ),
@@ -169,7 +170,7 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
                     icon: const Icon(Icons.check_rounded),
                     label: const Text('Entendido'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
+                      backgroundColor: theme.primary,
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
@@ -198,12 +199,13 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<NotificacionProvider>();
     final usuario = context.watch<AuthProvider>().usuarioActual;
+    final theme = CommuSafeThemeExtension.of(context);
     final canCreateNotice =
         usuario?.esAdmin == true || usuario?.esVigilante == true;
     final items = provider.notificaciones;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: theme.background,
       appBar: AppBar(
         title: const Text('Notificaciones'),
         actions: <Widget>[
@@ -227,7 +229,7 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
       floatingActionButton: canCreateNotice
           ? FloatingActionButton.extended(
               onPressed: _goToCreateNotice,
-              backgroundColor: AppColors.primary,
+              backgroundColor: theme.primary,
               foregroundColor: Colors.white,
               icon: const Icon(Icons.campaign_rounded),
               label: const Text('Crear aviso'),
@@ -291,18 +293,19 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
   }
 }
 
-Color _notificationColor(NotificacionModel item) {
+Color _notificationColor(BuildContext context, NotificacionModel item) {
+  final theme = CommuSafeThemeExtension.of(context);
   switch (item.tipo.toUpperCase()) {
     case 'EMERGENCIA':
       return AppColors.danger;
     case 'INCIDENTE_NUEVO':
-      return AppColors.inProgress;
+      return theme.primary;
     case 'CAMBIO_ESTADO':
       return AppColors.success;
     case 'AVISO_ADMIN':
-      return AppColors.warning;
+      return theme.accent;
     default:
-      return AppColors.primary;
+      return theme.primary;
   }
 }
 
@@ -312,18 +315,13 @@ class _NotificationTile extends StatelessWidget {
   final NotificacionModel item;
   final VoidCallback onTap;
 
-  Color _typeColor() {
-    return _notificationColor(item);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final color = _typeColor();
+    final color = _notificationColor(context, item);
+    final theme = CommuSafeThemeExtension.of(context);
 
     return Material(
-      color: item.leida
-          ? Colors.white
-          : AppColors.inProgress.withValues(alpha: 0.08),
+      color: item.leida ? Colors.white : theme.primary.withValues(alpha: 0.08),
       borderRadius: BorderRadius.circular(20),
       child: InkWell(
         onTap: onTap,

@@ -214,6 +214,45 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> actualizarPerfil({
+    required String nombre,
+    required String apellido,
+    String? telefono,
+    String? unidadResidencial,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await ApiService.put<Map<String, dynamic>>(
+        AppConstants.profileEndpoint,
+        data: <String, dynamic>{
+          'nombre': nombre.trim(),
+          'apellido': apellido.trim(),
+          'telefono': telefono?.trim() ?? '',
+          if (_usuarioActual?.esResidente == true)
+            'unidad_residencial': unidadResidencial?.trim() ?? '',
+        },
+      );
+      final payload = response.data ?? <String, dynamic>{};
+      final usuario = UsuarioModel.fromJson(payload);
+      _usuarioActual = usuario;
+      await StorageService.saveUserData(usuario.toJson());
+      _errorMessage = null;
+      return true;
+    } on DioException catch (error) {
+      _errorMessage = _extractErrorMessage(error);
+      return false;
+    } catch (_) {
+      _errorMessage = 'No se pudo actualizar el perfil.';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> logout() async {
     await StorageService.clearSession();
     _usuarioActual = null;

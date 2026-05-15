@@ -114,16 +114,16 @@ enum TextSizePreset {
 
 enum LanguagePreset {
   esCo,
-  esNeutral;
+  en;
 
   String get storageValue => name;
 
   String get label {
     switch (this) {
       case LanguagePreset.esCo:
-        return 'Español Colombia';
-      case LanguagePreset.esNeutral:
-        return 'Español internacional';
+        return 'Español';
+      case LanguagePreset.en:
+        return 'English';
     }
   }
 
@@ -131,8 +131,8 @@ enum LanguagePreset {
     switch (this) {
       case LanguagePreset.esCo:
         return const Locale('es', 'CO');
-      case LanguagePreset.esNeutral:
-        return const Locale('es');
+      case LanguagePreset.en:
+        return const Locale('en');
     }
   }
 }
