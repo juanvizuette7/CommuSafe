@@ -1,0 +1,41 @@
+{% extends "panel/base.html" %}
+
+{% block panel_content %}
+<section class="mx-auto max-w-4xl space-y-6">
+    <div class="rounded-[30px] bg-[linear-gradient(135deg,_#1A1A2E,_#0F3460)] p-7 text-white shadow-glass">
+        <div class="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
+            <div class="flex items-start gap-4">
+                <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-[24px] bg-white/15 text-3xl">
+                    {% if notificacion.tipo == 'EMERGENCIA' %}&#128680;{% elif notificacion.tipo == 'AVISO_ADMIN' %}&#128226;{% else %}&#128276;{% endif %}
+                </div>
+                <div>
+                    <p class="text-sm font-black uppercase tracking-[0.22em] text-slate-300">{{ notificacion.get_tipo_display }}</p>
+                    <h2 class="mt-2 text-3xl font-black leading-tight tracking-tight">{{ notificacion.titulo }}</h2>
+                    <p class="mt-2 text-sm font-semibold text-slate-300">Hace {{ notificacion.fecha_envio|timesince }}</p>
+                </div>
+            </div>
+            <span class="inline-flex w-fit rounded-full px-4 py-2 text-xs font-black {% if notificacion.leida %}bg-white/15 text-white{% else %}bg-danger text-white{% endif %}">
+                {% if notificacion.leida %}Le&iacute;da{% else %}Sin leer{% endif %}
+            </span>
+        </div>
+    </div>
+
+    <article class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-soft">
+        <p class="text-xs font-black uppercase tracking-[0.2em] text-slate-400">Contenido de la notificaci&oacute;n</p>
+        <div class="mt-5 whitespace-pre-line rounded-[24px] border border-slate-200 bg-slate-50 p-6 text-base font-semibold leading-8 text-slate-700">
+            {{ notificacion.cuerpo }}
+        </div>
+    </article>
+
+    <div class="flex flex-wrap gap-3">
+        <a href="{% url 'panel_web:panel_notificaciones' %}" class="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-600 shadow-soft transition hover:-translate-y-0.5 hover:bg-slate-50">
+            Volver a notificaciones
+        </a>
+        {% if notificacion.incidente_relacionado %}
+        <a href="{% url 'panel_web:incidente_detalle' notificacion.incidente_relacionado.id %}" class="rounded-2xl bg-primary px-5 py-3 text-sm font-black text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-accent">
+            Abrir incidente relacionado
+        </a>
+        {% endif %}
+    </div>
+</section>
+{% endblock panel_content %}

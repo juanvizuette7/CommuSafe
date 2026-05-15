@@ -390,6 +390,36 @@ def panel_notificacion_leer(request, id):
 
 @panel_login_required
 @require_GET
+def panel_notificacion_abrir(request, id):
+    """Abre una notificacion y redirige al recurso relacionado cuando exista."""
+
+    notificacion = get_object_or_404(
+        Notificacion.objects.select_related("incidente_relacionado"),
+        id=id,
+        destinatario=request.user,
+    )
+    if not notificacion.leida:
+        notificacion.leida = True
+        notificacion.save(update_fields=["leida"])
+
+    if notificacion.incidente_relacionado_id:
+        return redirect(
+            "panel_web:incidente_detalle",
+            incidente_id=notificacion.incidente_relacionado_id,
+        )
+
+    contexto = _contexto_base_panel(
+        request,
+        page_title=notificacion.titulo,
+        page_subtitle="Detalle completo de la notificacion",
+        active_nav="notificaciones",
+        notificacion=notificacion,
+    )
+    return render(request, "panel/notificacion_detalle.html", contexto)
+
+
+@panel_login_required
+@require_GET
 def incidentes_lista(request):
     """Lista completa de incidentes con filtros y búsqueda."""
 
