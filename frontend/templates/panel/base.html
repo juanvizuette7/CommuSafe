@@ -7,6 +7,7 @@
 <div
     x-data="{
         mobileSidebar: false,
+        modalEliminarIncidente: false,
         notificacionesNoLeidas: {{ notificaciones_no_leidas|default:0 }},
         visorImagen: {
             abierto: false,
@@ -213,10 +214,10 @@
         x-show="visorImagen.abierto"
         x-transition.opacity
         @keydown.escape.window="cerrarImagen()"
-        class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/85 px-4 py-6"
+        class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/90 p-2 sm:p-6"
         style="display: none;"
     >
-        <div @click.away="cerrarImagen()" class="flex max-h-full w-full max-w-5xl flex-col overflow-hidden rounded-[28px] bg-white shadow-glass">
+        <div @click.away="cerrarImagen()" class="flex h-[94vh] w-full max-w-[min(96vw,1200px)] flex-col overflow-hidden rounded-[28px] bg-white shadow-glass">
             <div class="flex items-center justify-between gap-4 border-b border-slate-100 px-5 py-4">
                 <div class="min-w-0">
                     <p class="truncate text-sm font-black text-primary" x-text="visorImagen.titulo"></p>
@@ -231,8 +232,8 @@
                     </button>
                 </div>
             </div>
-            <div class="flex min-h-0 items-center justify-center bg-slate-950 p-3">
-                <img :src="visorImagen.url" :alt="visorImagen.titulo" class="max-h-[78vh] max-w-full rounded-2xl object-contain shadow-glass">
+            <div class="flex min-h-0 flex-1 items-center justify-center bg-slate-950 p-3 sm:p-5">
+                <img :src="visorImagen.url" :alt="visorImagen.titulo" class="h-full w-full rounded-2xl object-contain shadow-glass">
             </div>
         </div>
     </div>

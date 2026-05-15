@@ -1,7 +1,7 @@
 {% extends "panel/base.html" %}
 
 {% block panel_content %}
-<section class="grid gap-6 xl:grid-cols-[1.5fr_1fr]" x-data="{ modalEliminarIncidente: false }">
+<section class="grid gap-6 xl:grid-cols-[1.5fr_1fr]">
     <div class="space-y-6">
         <article class="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-soft">
             <div class="px-6 py-6 {% if incidente.categoria == 'EMERGENCIA' %}bg-[linear-gradient(135deg,_#E94560_0%,_#B91C1C_100%)] text-white{% else %}bg-[linear-gradient(135deg,_#1A1A2E_0%,_#0F3460_100%)] text-white{% endif %}">

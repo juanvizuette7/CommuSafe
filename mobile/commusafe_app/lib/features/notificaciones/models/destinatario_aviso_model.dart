@@ -1,3 +1,5 @@
+import '../../../core/constants/app_constants.dart';
+
 class DestinatarioAvisoModel {
   const DestinatarioAvisoModel({
     required this.id,
@@ -14,6 +16,10 @@ class DestinatarioAvisoModel {
   final String rol;
   final String telefono;
   final String unidadResidencial;
+
+  bool get esResidente => rol.toUpperCase() == 'RESIDENTE';
+  bool get esVigilante => rol.toUpperCase() == 'VIGILANTE';
+  bool get esAdministrador => rol.toUpperCase() == 'ADMINISTRADOR';
 
   factory DestinatarioAvisoModel.fromJson(Map<String, dynamic> json) {
     final nombre = json['nombre_completo']?.toString().trim();
@@ -33,8 +39,15 @@ class DestinatarioAvisoModel {
   }
 
   String get descripcion {
+    final referencia = esResidente
+        ? unidadResidencial
+        : esAdministrador
+        ? 'Administracion - ${AppConstants.residentialComplexName}'
+        : esVigilante
+        ? 'Vigilancia - ${AppConstants.residentialComplexName}'
+        : AppConstants.residentialComplexName;
     final partes = <String>[
-      if (unidadResidencial.isNotEmpty) unidadResidencial,
+      if (referencia.trim().isNotEmpty) referencia,
       if (telefono.isNotEmpty) telefono,
     ];
     return partes.isEmpty ? email : partes.join(' · ');

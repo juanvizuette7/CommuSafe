@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/constants/app_constants.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../incidentes/providers/incidente_provider.dart';
@@ -231,10 +232,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 const SizedBox(height: 14),
                 _ProfileInfoCard(
                   icon: Icons.home_work_outlined,
-                  title: l10n.tr('Unidad residencial', 'Residential unit'),
-                  value: usuario.unidadResidencial?.trim().isNotEmpty == true
-                      ? usuario.unidadResidencial!
-                      : l10n.tr('No registrada', 'Not registered'),
+                  title: _referenciaTitulo(usuario, l10n),
+                  value: _referenciaValor(usuario, l10n),
                 ),
                 const SizedBox(height: 14),
                 _ProfileInfoCard(
@@ -424,6 +423,44 @@ class _ProfileHeader extends StatelessWidget {
   }
 }
 
+String _referenciaTitulo(UsuarioModel usuario, AppLocalizations l10n) {
+  if (usuario.esResidente) {
+    return l10n.tr('Unidad residencial', 'Residential unit');
+  }
+  return l10n.tr('Referencia del conjunto', 'Community reference');
+}
+
+String _referenciaMetricaTitulo(UsuarioModel usuario, AppLocalizations l10n) {
+  if (usuario.esResidente) {
+    return l10n.tr('Unidad', 'Unit');
+  }
+  return l10n.tr('Conjunto', 'Community');
+}
+
+String _referenciaValor(UsuarioModel usuario, AppLocalizations l10n) {
+  if (usuario.esResidente) {
+    return usuario.unidadResidencial?.trim().isNotEmpty == true
+        ? usuario.unidadResidencial!
+        : l10n.tr('No registrada', 'Not registered');
+  }
+
+  if (usuario.esAdmin) {
+    return l10n.tr(
+      'Administracion - ${AppConstants.residentialComplexName}',
+      'Administration - ${AppConstants.residentialComplexName}',
+    );
+  }
+
+  if (usuario.esVigilante) {
+    return l10n.tr(
+      'Vigilancia - ${AppConstants.residentialComplexName}',
+      'Security team - ${AppConstants.residentialComplexName}',
+    );
+  }
+
+  return AppConstants.residentialComplexName;
+}
+
 class _EditProfileCta extends StatelessWidget {
   const _EditProfileCta({required this.usuario, required this.onTap});
 
@@ -544,7 +581,9 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
       nombre: _nombreController.text,
       apellido: _apellidoController.text,
       telefono: _telefonoController.text,
-      unidadResidencial: _unidadController.text,
+      unidadResidencial: widget.usuario.esResidente
+          ? _unidadController.text
+          : null,
     );
 
     if (!mounted) {
@@ -796,9 +835,7 @@ class _ProfileStatusPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = CommuSafeThemeExtension.of(context);
     final l10n = AppLocalizations.of(context);
-    final unidad = usuario.unidadResidencial?.trim().isNotEmpty == true
-        ? usuario.unidadResidencial!
-        : l10n.tr('Sin unidad registrada', 'No unit registered');
+    final referencia = _referenciaValor(usuario, l10n);
 
     return Container(
       width: double.infinity,
@@ -893,8 +930,8 @@ class _ProfileStatusPanel extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _MiniProfileMetric(
-                  label: l10n.tr('Unidad', 'Unit'),
-                  value: unidad,
+                  label: _referenciaMetricaTitulo(usuario, l10n),
+                  value: referencia,
                   icon: Icons.home_work_rounded,
                   color: theme.accent,
                 ),

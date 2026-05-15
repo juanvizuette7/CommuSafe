@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/localization/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
+import '../../features/auth/models/usuario_model.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/incidentes/providers/incidente_provider.dart';
 import '../../features/notificaciones/providers/notificacion_provider.dart';
@@ -94,6 +95,9 @@ class _MainLayoutState extends State<MainLayout> {
     final unreadCount = notificationsProvider.noLeidasCount;
     final theme = CommuSafeThemeExtension.of(context);
     final l10n = AppLocalizations.of(context);
+    final referenciaUsuario = usuario == null
+        ? null
+        : _referenciaDrawerUsuario(usuario, l10n);
     final roleIcon = usuario?.esAdmin == true
         ? Icons.admin_panel_settings_rounded
         : usuario?.esVigilante == true
@@ -200,13 +204,11 @@ class _MainLayoutState extends State<MainLayout> {
                               ),
                         ),
                       ],
-                      if (usuario?.unidadResidencial != null &&
-                          usuario!.unidadResidencial!
-                              .trim()
-                              .isNotEmpty) ...<Widget>[
+                      if (referenciaUsuario != null &&
+                          referenciaUsuario.trim().isNotEmpty) ...<Widget>[
                         const SizedBox(height: 4),
                         Text(
-                          usuario.unidadResidencial!,
+                          referenciaUsuario,
                           style: Theme.of(context).textTheme.bodySmall
                               ?.copyWith(
                                 color: Colors.white.withValues(alpha: 0.74),
@@ -324,4 +326,25 @@ class _MainLayoutState extends State<MainLayout> {
       ),
     );
   }
+}
+
+String _referenciaDrawerUsuario(UsuarioModel usuario, AppLocalizations l10n) {
+  if (usuario.esResidente == true) {
+    return usuario.unidadResidencial?.trim().isNotEmpty == true
+        ? usuario.unidadResidencial!
+        : l10n.tr('Unidad no registrada', 'Unit not registered');
+  }
+  if (usuario.esAdmin == true) {
+    return l10n.tr(
+      'Administracion - ${AppConstants.residentialComplexName}',
+      'Administration - ${AppConstants.residentialComplexName}',
+    );
+  }
+  if (usuario.esVigilante == true) {
+    return l10n.tr(
+      'Vigilancia - ${AppConstants.residentialComplexName}',
+      'Security team - ${AppConstants.residentialComplexName}',
+    );
+  }
+  return AppConstants.residentialComplexName;
 }
