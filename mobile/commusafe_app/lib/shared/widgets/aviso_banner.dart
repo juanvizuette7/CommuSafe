@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../core/localization/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
 import '../../features/notificaciones/models/aviso_destacado_model.dart';
 import '../../features/notificaciones/providers/notificacion_provider.dart';
@@ -90,7 +91,9 @@ class AvisoBanner extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               IconButton(
-                tooltip: 'Descartar aviso',
+                tooltip: AppLocalizations.of(
+                  context,
+                ).tr('Descartar aviso', 'Dismiss notice'),
                 onPressed: () {
                   context.read<NotificacionProvider>().marcarLeida(aviso.id);
                 },

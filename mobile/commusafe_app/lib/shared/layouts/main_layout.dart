@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/localization/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/incidentes/providers/incidente_provider.dart';
@@ -45,16 +46,6 @@ class _MainLayoutState extends State<MainLayout> {
       return 3;
     }
     return 0;
-  }
-
-  String _titleForLocation(String location) {
-    if (location.startsWith('/ajustes')) {
-      return 'Ajustes';
-    }
-    if (location.startsWith('/perfil')) {
-      return 'Perfil';
-    }
-    return 'CommuSafe';
   }
 
   bool _showTopAppBar(String location) {
@@ -102,6 +93,7 @@ class _MainLayoutState extends State<MainLayout> {
     final currentIndex = _currentIndexForLocation(currentLocation);
     final unreadCount = notificationsProvider.noLeidasCount;
     final theme = CommuSafeThemeExtension.of(context);
+    final l10n = AppLocalizations.of(context);
     final roleIcon = usuario?.esAdmin == true
         ? Icons.admin_panel_settings_rounded
         : usuario?.esVigilante == true
@@ -110,7 +102,13 @@ class _MainLayoutState extends State<MainLayout> {
 
     return Scaffold(
       appBar: _showTopAppBar(currentLocation)
-          ? AppBar(title: Text(_titleForLocation(currentLocation)))
+          ? AppBar(
+              title: Text(
+                currentLocation.startsWith('/ajustes')
+                    ? l10n.tr('Ajustes', 'Settings')
+                    : l10n.tr('Perfil', 'Profile'),
+              ),
+            )
           : null,
       drawer: Drawer(
         child: SafeArea(
@@ -178,7 +176,11 @@ class _MainLayoutState extends State<MainLayout> {
                             Icon(roleIcon, color: Colors.white, size: 16),
                             const SizedBox(width: 6),
                             Text(
-                              usuario?.rolLegible ?? 'Sesion no disponible',
+                              usuario?.rolLegible ??
+                                  l10n.tr(
+                                    'Sesion no disponible',
+                                    'Session unavailable',
+                                  ),
                               style: Theme.of(context).textTheme.labelMedium
                                   ?.copyWith(
                                     color: Colors.white,
@@ -218,8 +220,15 @@ class _MainLayoutState extends State<MainLayout> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.tune_rounded),
-                  title: const Text('Ajustes de experiencia'),
-                  subtitle: const Text('Contraste, color, letra e idioma'),
+                  title: Text(
+                    l10n.tr('Ajustes de experiencia', 'Experience settings'),
+                  ),
+                  subtitle: Text(
+                    l10n.tr(
+                      'Contraste, color, letra e idioma',
+                      'Contrast, color, text and language',
+                    ),
+                  ),
                   onTap: () {
                     Navigator.of(context).pop();
                     context.push('/ajustes');
@@ -228,8 +237,15 @@ class _MainLayoutState extends State<MainLayout> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.contact_phone_rounded),
-                  title: const Text('Contactos de emergencia'),
-                  subtitle: const Text('Accesos rápidos del conjunto'),
+                  title: Text(
+                    l10n.tr('Contactos de emergencia', 'Emergency contacts'),
+                  ),
+                  subtitle: Text(
+                    l10n.tr(
+                      'Accesos rapidos del conjunto',
+                      'Community quick access',
+                    ),
+                  ),
                   onTap: () {
                     Navigator.of(context).pop();
                     context.push('/emergencias');
@@ -240,8 +256,13 @@ class _MainLayoutState extends State<MainLayout> {
                   ListTile(
                     contentPadding: EdgeInsets.zero,
                     leading: const Icon(Icons.campaign_rounded),
-                    title: const Text('Crear aviso'),
-                    subtitle: const Text('Enviar alertas a residentes'),
+                    title: Text(l10n.tr('Crear aviso', 'Create notice')),
+                    subtitle: Text(
+                      l10n.tr(
+                        'Enviar alertas a residentes',
+                        'Send alerts to residents',
+                      ),
+                    ),
                     onTap: () {
                       Navigator.of(context).pop();
                       context.push('/notificaciones/crear');
@@ -255,8 +276,13 @@ class _MainLayoutState extends State<MainLayout> {
                     Icons.logout_rounded,
                     color: AppColors.danger,
                   ),
-                  title: const Text('Cerrar sesión'),
-                  subtitle: const Text('Borra credenciales guardadas'),
+                  title: Text(l10n.tr('Cerrar sesion', 'Log out')),
+                  subtitle: Text(
+                    l10n.tr(
+                      'Borra credenciales guardadas',
+                      'Clear saved credentials',
+                    ),
+                  ),
                   onTap: () async {
                     Navigator.of(context).pop();
                     await _logout(context);
@@ -273,9 +299,9 @@ class _MainLayoutState extends State<MainLayout> {
         type: BottomNavigationBarType.fixed,
         onTap: (int index) => _onNavigationTap(context, index),
         items: <BottomNavigationBarItem>[
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.warning_amber_rounded),
-            label: 'Incidentes',
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.warning_amber_rounded),
+            label: l10n.tr('Incidentes', 'Incidents'),
           ),
           BottomNavigationBarItem(
             icon: Badge(
@@ -284,15 +310,15 @@ class _MainLayoutState extends State<MainLayout> {
               label: Text(unreadCount > 99 ? '99+' : unreadCount.toString()),
               child: const Icon(Icons.notifications_outlined),
             ),
-            label: 'Alertas',
+            label: l10n.tr('Alertas', 'Alerts'),
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.smart_toy_outlined),
-            label: 'Asistente',
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.smart_toy_outlined),
+            label: l10n.tr('Asistente', 'Assistant'),
           ),
-          const BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline_rounded),
-            label: 'Perfil',
+          BottomNavigationBarItem(
+            icon: const Icon(Icons.person_outline_rounded),
+            label: l10n.tr('Perfil', 'Profile'),
           ),
         ],
       ),

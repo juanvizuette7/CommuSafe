@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/empty_state_card.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -76,6 +77,7 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
     final provider = context.watch<NotificacionProvider>();
     final usuario = context.watch<AuthProvider>().usuarioActual;
     final theme = CommuSafeThemeExtension.of(context);
+    final l10n = AppLocalizations.of(context);
     final canCreateNotice =
         usuario?.esAdmin == true || usuario?.esVigilante == true;
     final items = provider.notificaciones;
@@ -83,21 +85,21 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
     return Scaffold(
       backgroundColor: theme.background,
       appBar: AppBar(
-        title: const Text('Notificaciones'),
+        title: Text(l10n.tr('Notificaciones', 'Notifications')),
         actions: <Widget>[
           if (canCreateNotice)
             IconButton(
               onPressed: _goToCreateNotice,
               icon: const Icon(Icons.add_alert_rounded),
-              tooltip: 'Crear aviso',
+              tooltip: l10n.tr('Crear aviso', 'Create notice'),
             ),
           TextButton(
             onPressed: provider.noLeidasCount == 0
                 ? null
                 : () => provider.marcarTodasLeidas(),
-            child: const Text(
-              'Marcar todas leídas',
-              style: TextStyle(color: Colors.white),
+            child: Text(
+              l10n.tr('Marcar todas leidas', 'Mark all read'),
+              style: const TextStyle(color: Colors.white),
             ),
           ),
         ],
@@ -108,7 +110,7 @@ class _NotificacionesScreenState extends State<NotificacionesScreen> {
               backgroundColor: theme.primary,
               foregroundColor: Colors.white,
               icon: const Icon(Icons.campaign_rounded),
-              label: const Text('Crear aviso'),
+              label: Text(l10n.tr('Crear aviso', 'Create notice')),
             )
           : null,
       body: RefreshIndicator(
@@ -336,7 +338,10 @@ class _NotificationDetailSheet extends StatelessWidget {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'Arrastra hacia abajo para cerrar o hacia arriba para leer completo.',
+                          AppLocalizations.of(context).tr(
+                            'Arrastra hacia abajo para cerrar o hacia arriba para leer completo.',
+                            'Drag down to close or up to read the full message.',
+                          ),
                           style: Theme.of(context).textTheme.labelMedium
                               ?.copyWith(
                                 color: AppColors.textSecondary,
@@ -358,7 +363,11 @@ class _NotificationDetailSheet extends StatelessWidget {
                         child: ElevatedButton.icon(
                           onPressed: () => Navigator.of(context).pop(),
                           icon: const Icon(Icons.check_rounded),
-                          label: const Text('Entendido'),
+                          label: Text(
+                            AppLocalizations.of(
+                              context,
+                            ).tr('Entendido', 'Understood'),
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: theme.primary,
                             foregroundColor: Colors.white,
@@ -506,16 +515,22 @@ class _EmptyNotifications extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(20),
       children: <Widget>[
         const SizedBox(height: 120),
-        const EmptyStateCard(
+        EmptyStateCard(
           icon: Icons.notifications_none_rounded,
-          title: 'Sin notificaciones por ahora',
-          message:
-              'Cuando cambie el estado de un incidente o llegue un aviso, aparecerá aquí.',
+          title: l10n.tr(
+            'Sin notificaciones por ahora',
+            'No notifications yet',
+          ),
+          message: l10n.tr(
+            'Cuando cambie el estado de un incidente o llegue un aviso, aparecera aqui.',
+            'When an incident changes status or a notice arrives, it will appear here.',
+          ),
         ),
       ],
     );
@@ -530,6 +545,7 @@ class _NotificationsError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(20),
@@ -537,9 +553,12 @@ class _NotificationsError extends StatelessWidget {
         const SizedBox(height: 120),
         EmptyStateCard(
           icon: Icons.cloud_off_rounded,
-          title: 'No se pudieron cargar las alertas',
+          title: l10n.tr(
+            'No se pudieron cargar las alertas',
+            'Alerts could not be loaded',
+          ),
           message: message,
-          actionLabel: 'Reintentar',
+          actionLabel: l10n.tr('Reintentar', 'Try again'),
           onAction: onRetry,
           toneColor: AppColors.danger,
         ),

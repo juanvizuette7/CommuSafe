@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/services/api_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../models/mensaje_model.dart';
@@ -31,12 +32,35 @@ class _ChatScreenState extends State<ChatScreen> {
 
   bool _enviando = false;
 
-  static const List<String> _sugerencias = <String>[
-    'Horarios de áreas comunes',
-    '¿Cómo reporto un incidente?',
-    'Normas de convivencia',
-    'Contactos de la administración',
-  ];
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final l10n = AppLocalizations.of(context);
+    if (_mensajes.length == 1 && !_mensajes.first.esDelUsuario) {
+      _mensajes[0] = MensajeModel(
+        contenido: _welcomeText(l10n),
+        esDelUsuario: false,
+        timestamp: _mensajes.first.timestamp,
+        modo: _mensajes.first.modo,
+      );
+    }
+  }
+
+  String _welcomeText(AppLocalizations l10n) {
+    return l10n.tr(
+      'Hola, soy CommuBot, el asistente virtual de Remansos del Norte. ¿En qué puedo ayudarte?',
+      'Hi, I am CommuBot, the virtual assistant for Remansos del Norte. How can I help you?',
+    );
+  }
+
+  List<String> _suggestions(AppLocalizations l10n) {
+    return <String>[
+      l10n.tr('Horarios de areas comunes', 'Common area schedules'),
+      l10n.tr('¿Cómo reporto un incidente?', 'How do I report an incident?'),
+      l10n.tr('Normas de convivencia', 'Community rules'),
+      l10n.tr('Contactos de la administración', 'Administration contacts'),
+    ];
+  }
 
   @override
   void dispose() {
@@ -76,6 +100,7 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _sendMessage([String? forcedText]) async {
+    final l10n = AppLocalizations.of(context);
     final text = (forcedText ?? _controller.text).trim();
     if (text.isEmpty || _enviando) {
       return;
@@ -107,7 +132,10 @@ class _ChatScreenState extends State<ChatScreen> {
           MensajeModel(
             contenido: respuesta?.isNotEmpty == true
                 ? respuesta!
-                : 'No pude generar una respuesta en este momento.',
+                : l10n.tr(
+                    'No pude generar una respuesta en este momento.',
+                    'I could not generate an answer right now.',
+                  ),
             esDelUsuario: false,
             timestamp: DateTime.now(),
             modo: modo,
@@ -119,7 +147,7 @@ class _ChatScreenState extends State<ChatScreen> {
         _mensajes.add(
           MensajeModel(
             contenido:
-                'El asistente tardó demasiado en responder. ${_respuestaLocal(text)}',
+                '${l10n.tr('El asistente tardo demasiado en responder.', 'The assistant took too long to respond.')} ${_respuestaLocal(text, l10n)}',
             esDelUsuario: false,
             timestamp: DateTime.now(),
             modo: 'fallback',
@@ -135,10 +163,13 @@ class _ChatScreenState extends State<ChatScreen> {
         _mensajes.add(
           MensajeModel(
             contenido: networkError
-                ? 'No pude conectarme con el backend. ${_respuestaLocal(text)}'
+                ? '${l10n.tr('No pude conectarme con el backend.', 'I could not connect to the backend.')} ${_respuestaLocal(text, l10n)}'
                 : detail?.trim().isNotEmpty == true
                 ? detail!
-                : 'No pude conectarme con el asistente. Intenta nuevamente en unos segundos.',
+                : l10n.tr(
+                    'No pude conectarme con el asistente. Intenta nuevamente en unos segundos.',
+                    'I could not connect to the assistant. Try again in a few seconds.',
+                  ),
             esDelUsuario: false,
             timestamp: DateTime.now(),
             modo: 'fallback',
@@ -149,8 +180,10 @@ class _ChatScreenState extends State<ChatScreen> {
       setState(() {
         _mensajes.add(
           MensajeModel(
-            contenido:
-                'No pude procesar tu consulta. Verifica la conexión e intenta otra vez.',
+            contenido: l10n.tr(
+              'No pude procesar tu consulta. Verifica la conexion e intenta otra vez.',
+              'I could not process your question. Check the connection and try again.',
+            ),
             esDelUsuario: false,
             timestamp: DateTime.now(),
             modo: 'fallback',
@@ -173,20 +206,26 @@ class _ChatScreenState extends State<ChatScreen> {
         error.type == DioExceptionType.connectionError;
   }
 
-  String _respuestaLocal(String mensaje) {
+  String _respuestaLocal(String mensaje, AppLocalizations l10n) {
     final texto = mensaje.toLowerCase();
 
     if (texto.contains('horario') ||
         texto.contains('área') ||
         texto.contains('area') ||
         texto.contains('zonas comunes')) {
-      return 'Recuerda que las áreas comunes funcionan de 6:00 a. m. a 10:00 p. m.';
+      return l10n.tr(
+        'Recuerda que las areas comunes funcionan de 6:00 a. m. a 10:00 p. m.',
+        'Common areas are usually available from 6:00 a.m. to 10:00 p.m.',
+      );
     }
     if (texto.contains('emergencia') ||
         texto.contains('urgencia') ||
         texto.contains('incendio') ||
         texto.contains('ambulancia')) {
-      return 'Si hay una emergencia inminente, llama directamente a los servicios de emergencia y avisa a portería.';
+      return l10n.tr(
+        'Si hay una emergencia inminente, llama directamente a los servicios de emergencia y avisa a porteria.',
+        'If there is an immediate emergency, call emergency services directly and notify the gatehouse.',
+      );
     }
     if (texto.contains('como reporto') ||
         texto.contains('como puedo reportar') ||
@@ -194,36 +233,55 @@ class _ChatScreenState extends State<ChatScreen> {
         texto.contains('crear incidente') ||
         texto.contains('nuevo incidente') ||
         texto.contains('hacer un reporte')) {
-      return 'Para reportar un incidente: 1. Entra a la pestaña Incidentes. 2. Toca Nuevo. 3. Escribe un titulo claro y elige la categoria. 4. Describe que paso y agrega la ubicacion. 5. Adjunta hasta 3 fotos si tienes evidencia. 6. Toca Reportar incidente. Luego puedes abrir el detalle para ver el estado y el historial.';
+      return l10n.tr(
+        'Para reportar un incidente dentro de esta app: 1. Abre la pestaña Incidentes. 2. Toca Nuevo. 3. Escribe un titulo claro y elige la categoria. 4. Describe que paso y agrega la ubicacion. 5. Adjunta hasta 3 fotos si tienes evidencia. 6. Toca Reportar incidente. Luego abre el detalle para ver estado, evidencias e historial.',
+        'To report an incident in this app: 1. Open the Incidents tab. 2. Tap New. 3. Enter a clear title and choose the category. 4. Describe what happened and add the location. 5. Attach up to 3 photos if you have evidence. 6. Tap Report incident. Then open the detail view to track status, evidence and history.',
+      );
     }
     if (texto.contains('estado') ||
         texto.contains('seguimiento') ||
         texto.contains('historial') ||
         texto.contains('avance')) {
-      return 'Para revisar el avance, entra a Incidentes y toca el reporte. Alli veras el estado actual, las evidencias y el historial de cambios con comentarios de vigilancia o administracion.';
+      return l10n.tr(
+        'Para revisar el avance, entra a Incidentes y toca el reporte. Alli veras el estado actual, las evidencias y el historial de cambios con comentarios de vigilancia o administracion.',
+        'To review progress, open Incidents and tap the report. You will see the current status, evidence and change history with comments from security or administration.',
+      );
     }
     if (texto.contains('incidente') || texto.contains('reporte')) {
-      return 'En Incidentes puedes crear reportes y consultar su seguimiento. Para reportar, toca Nuevo, completa categoria, descripcion, ubicacion y evidencias, y luego envia el caso.';
+      return l10n.tr(
+        'En Incidentes puedes crear reportes y consultar su seguimiento. Para reportar, toca Nuevo, completa categoria, descripcion, ubicacion y evidencias, y luego envia el caso.',
+        'In Incidents you can create reports and track them. To report, tap New, complete category, description, location and evidence, then submit the case.',
+      );
     }
     if (texto.contains('convivencia') ||
         texto.contains('norma') ||
         texto.contains('ruido') ||
         texto.contains('mascota')) {
-      return 'Las normas básicas incluyen respetar horarios de descanso, cuidar zonas comunes y reportar situaciones de convivencia desde CommuSafe.';
+      return l10n.tr(
+        'Las normas basicas incluyen respetar horarios de descanso, cuidar zonas comunes y reportar situaciones de convivencia desde CommuSafe.',
+        'Basic rules include respecting quiet hours, taking care of common areas and reporting coexistence issues from CommuSafe.',
+      );
     }
     if (texto.contains('administración') ||
         texto.contains('administracion') ||
         texto.contains('cuota') ||
         texto.contains('pago')) {
-      return 'Para valores de cuotas, cartera o trámites específicos debes contactar a la administración del conjunto.';
+      return l10n.tr(
+        'Para valores de cuotas, cartera o tramites especificos debes contactar a la administracion del conjunto.',
+        'For fees, balances or specific procedures, contact the residential administration.',
+      );
     }
 
-    return 'Verifica que el backend esté encendido y vuelve a intentarlo.';
+    return l10n.tr(
+      'Verifica que el backend este encendido y vuelve a intentarlo.',
+      'Check that the backend is running and try again.',
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = CommuSafeThemeExtension.of(context);
+    final l10n = AppLocalizations.of(context);
     final showSuggestions = _mensajes
         .where((mensaje) => mensaje.esDelUsuario)
         .isEmpty;
@@ -259,7 +317,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                 ),
                 Text(
-                  'Asistente Virtual',
+                  l10n.tr('Asistente Virtual', 'Virtual Assistant'),
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                     color: Colors.white.withValues(alpha: 0.76),
                     fontWeight: FontWeight.w600,
@@ -292,7 +350,7 @@ class _ChatScreenState extends State<ChatScreen> {
                     if (index == 0 && showSuggestions) ...<Widget>[
                       const SizedBox(height: 12),
                       _SuggestionChips(
-                        suggestions: _sugerencias,
+                        suggestions: _suggestions(l10n),
                         onSelected: _sendMessage,
                       ),
                     ],
@@ -321,6 +379,7 @@ class _AiModeIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final iaReal = modo == 'ia';
+    final l10n = AppLocalizations.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
@@ -340,7 +399,9 @@ class _AiModeIndicator extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            iaReal ? 'Modo IA real' : 'Modo respuesta local',
+            iaReal
+                ? l10n.tr('Modo IA real', 'Real AI mode')
+                : l10n.tr('Modo respuesta local', 'Local answer mode'),
             style: Theme.of(context).textTheme.labelSmall?.copyWith(
               color: iaReal ? AppColors.success : AppColors.textSecondary,
               fontWeight: FontWeight.w800,
@@ -361,7 +422,11 @@ class _ChatBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final isUser = mensaje.esDelUsuario;
     final theme = CommuSafeThemeExtension.of(context);
-    final time = DateFormat('hh:mm a', 'es_CO').format(mensaje.timestamp);
+    final l10n = AppLocalizations.of(context);
+    final time = DateFormat(
+      'hh:mm a',
+      l10n.isEnglish ? 'en_US' : 'es_CO',
+    ).format(mensaje.timestamp);
 
     return Row(
       mainAxisAlignment: isUser
@@ -590,6 +655,7 @@ class _MessageInputState extends State<_MessageInput> {
   Widget build(BuildContext context) {
     final canSend = widget.enabled && _hasText;
     final theme = CommuSafeThemeExtension.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return SafeArea(
       top: false,
@@ -619,9 +685,12 @@ class _MessageInputState extends State<_MessageInput> {
                     widget.onSend();
                   }
                 },
-                decoration: const InputDecoration(
-                  hintText: 'Escribe tu consulta...',
-                  prefixIcon: Icon(Icons.chat_bubble_outline_rounded),
+                decoration: InputDecoration(
+                  hintText: l10n.tr(
+                    'Escribe tu consulta...',
+                    'Write your question...',
+                  ),
+                  prefixIcon: const Icon(Icons.chat_bubble_outline_rounded),
                 ),
               ),
             ),

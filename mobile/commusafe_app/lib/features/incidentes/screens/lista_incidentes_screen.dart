@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/aviso_banner.dart';
 import '../../../shared/widgets/commusafe_animated_background.dart';
@@ -113,6 +114,7 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
     final notificacionProvider = context.watch<NotificacionProvider>();
     final authProvider = context.watch<AuthProvider>();
     final theme = CommuSafeThemeExtension.of(context);
+    final l10n = AppLocalizations.of(context);
     final usuario = authProvider.usuarioActual;
     final avisosVigentes = notificacionProvider.avisosVigentes;
     final canCreate =
@@ -171,7 +173,10 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: <Widget>[
                                     Text(
-                                      'Centro de incidentes',
+                                      l10n.tr(
+                                        'Centro de incidentes',
+                                        'Incident center',
+                                      ),
                                       style: Theme.of(context)
                                           .textTheme
                                           .headlineSmall
@@ -182,8 +187,14 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
                                     const SizedBox(height: 4),
                                     Text(
                                       usuario?.esResidente == true
-                                          ? 'Consulta tus reportes y registra casos con evidencia.'
-                                          : 'Monitorea y atiende incidentes de Remansos del Norte.',
+                                          ? l10n.tr(
+                                              'Consulta tus reportes y registra casos con evidencia.',
+                                              'Review your reports and submit cases with evidence.',
+                                            )
+                                          : l10n.tr(
+                                              'Monitorea y atiende incidentes de Remansos del Norte.',
+                                              'Monitor and handle Remansos del Norte incidents.',
+                                            ),
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyMedium
@@ -220,7 +231,10 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
                             onSubmitted: _onSearchChanged,
                             textInputAction: TextInputAction.search,
                             decoration: InputDecoration(
-                              hintText: 'Buscar por título o descripción',
+                              hintText: l10n.tr(
+                                'Buscar por titulo o descripcion',
+                                'Search by title or description',
+                              ),
                               prefixIcon: const Icon(Icons.search_rounded),
                               suffixIcon: _searchController.text.trim().isEmpty
                                   ? null
@@ -252,7 +266,7 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
                                     provider.categoriaActiva ==
                                     category['value'];
                                 return ChoiceChip(
-                                  label: Text(category['label'] ?? ''),
+                                  label: Text(_categoryLabel(category, l10n)),
                                   selected: isActive,
                                   onSelected: (_) {
                                     context
@@ -311,17 +325,32 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
                                   ? Icons.filter_alt_off_rounded
                                   : Icons.inbox_rounded,
                               title: provider.errorMessage != null
-                                  ? 'No se pudieron cargar los incidentes'
+                                  ? l10n.tr(
+                                      'No se pudieron cargar los incidentes',
+                                      'Incidents could not be loaded',
+                                    )
                                   : provider.tieneFiltrosActivos
-                                  ? 'No hay resultados con esos filtros'
-                                  : 'Aún no hay incidentes reportados',
+                                  ? l10n.tr(
+                                      'No hay resultados con esos filtros',
+                                      'No results for those filters',
+                                    )
+                                  : l10n.tr(
+                                      'Aun no hay incidentes reportados',
+                                      'No incidents reported yet',
+                                    ),
                               message:
                                   provider.errorMessage ??
                                   (provider.tieneFiltrosActivos
-                                      ? 'Prueba ajustando la categoría o la búsqueda para encontrar incidentes.'
-                                      : 'Cuando se registre un nuevo incidente aparecerá aquí con su estado y prioridad.'),
+                                      ? l10n.tr(
+                                          'Prueba ajustando la categoria o la busqueda para encontrar incidentes.',
+                                          'Try changing the category or search text.',
+                                        )
+                                      : l10n.tr(
+                                          'Cuando se registre un nuevo incidente aparecera aqui con su estado y prioridad.',
+                                          'New incidents will appear here with status and priority.',
+                                        )),
                               actionLabel: provider.errorMessage != null
-                                  ? 'Reintentar'
+                                  ? l10n.tr('Reintentar', 'Try again')
                                   : null,
                               onAction: provider.errorMessage != null
                                   ? () => context
@@ -337,7 +366,9 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
                               OutlinedButton.icon(
                                 onPressed: _clearFilters,
                                 icon: const Icon(Icons.restart_alt_rounded),
-                                label: const Text('Limpiar filtros'),
+                                label: Text(
+                                  l10n.tr('Limpiar filtros', 'Clear filters'),
+                                ),
                               ),
                             ],
                           ],
@@ -405,7 +436,7 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
                   backgroundColor: theme.primary,
                   foregroundColor: Colors.white,
                   icon: const Icon(Icons.add_rounded),
-                  label: const Text('Nuevo'),
+                  label: Text(l10n.tr('Nuevo', 'New')),
                 ),
               ),
           ],
@@ -431,6 +462,7 @@ class _IncidentCommandPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = CommuSafeThemeExtension.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       clipBehavior: Clip.antiAlias,
@@ -491,8 +523,11 @@ class _IncidentCommandPanel extends StatelessWidget {
                         children: <Widget>[
                           Text(
                             filtered
-                                ? 'Vista filtrada'
-                                : 'Monitoreo comunitario activo',
+                                ? l10n.tr('Vista filtrada', 'Filtered view')
+                                : l10n.tr(
+                                    'Monitoreo comunitario activo',
+                                    'Active community monitoring',
+                                  ),
                             style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(
                                   color: Colors.white,
@@ -502,8 +537,14 @@ class _IncidentCommandPanel extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             filtered
-                                ? 'La lista responde a tus criterios actuales.'
-                                : 'Seguimiento en tiempo real para Remansos del Norte.',
+                                ? l10n.tr(
+                                    'La lista responde a tus criterios actuales.',
+                                    'The list follows your current criteria.',
+                                  )
+                                : l10n.tr(
+                                    'Seguimiento en tiempo real para Remansos del Norte.',
+                                    'Real-time tracking for Remansos del Norte.',
+                                  ),
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
                                   color: Colors.white.withValues(alpha: 0.82),
@@ -520,19 +561,19 @@ class _IncidentCommandPanel extends StatelessWidget {
                   children: <Widget>[
                     _MetricPill(
                       value: visibleCount,
-                      label: 'visibles',
+                      label: l10n.tr('visibles', 'visible'),
                       color: Colors.white,
                     ),
                     const SizedBox(width: 10),
                     _MetricPill(
                       value: activeCount,
-                      label: 'activos',
+                      label: l10n.tr('activos', 'active'),
                       color: AppColors.success,
                     ),
                     const SizedBox(width: 10),
                     _MetricPill(
                       value: highPriorityCount,
-                      label: 'alta',
+                      label: l10n.tr('alta', 'high'),
                       color: AppColors.danger,
                     ),
                   ],
@@ -543,6 +584,21 @@ class _IncidentCommandPanel extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+String _categoryLabel(Map<String, String?> category, AppLocalizations l10n) {
+  switch (category['value']) {
+    case 'SEGURIDAD':
+      return l10n.tr('Seguridad', 'Security');
+    case 'CONVIVENCIA':
+      return l10n.tr('Convivencia', 'Community');
+    case 'INFRAESTRUCTURA':
+      return l10n.tr('Infraestructura', 'Infrastructure');
+    case 'EMERGENCIA':
+      return l10n.tr('Emergencia', 'Emergency');
+    default:
+      return l10n.tr('Todos', 'All');
   }
 }
 
@@ -562,6 +618,7 @@ class _RoleContextBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = CommuSafeThemeExtension.of(context);
+    final l10n = AppLocalizations.of(context);
     final color = isAdmin
         ? theme.primary
         : isVigilante
@@ -573,10 +630,19 @@ class _RoleContextBanner extends StatelessWidget {
         ? Icons.security_rounded
         : Icons.home_rounded;
     final message = isAdmin
-        ? 'Modo administrador: supervision total, control y auditoria.'
+        ? l10n.tr(
+            'Modo administrador: supervision total, control y auditoria.',
+            'Administrator mode: full supervision, control and audit.',
+          )
         : isVigilante
-        ? 'Modo vigilancia: atencion operativa y cambio de estados.'
-        : 'Modo residente: tus reportes, evidencias y seguimiento personal.';
+        ? l10n.tr(
+            'Modo vigilancia: atencion operativa y cambio de estados.',
+            'Security mode: operational response and status updates.',
+          )
+        : l10n.tr(
+            'Modo residente: tus reportes, evidencias y seguimiento personal.',
+            'Resident mode: your reports, evidence and personal tracking.',
+          );
 
     return Container(
       padding: const EdgeInsets.all(14),

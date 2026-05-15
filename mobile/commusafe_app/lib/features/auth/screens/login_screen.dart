@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/commusafe_animated_background.dart';
 import '../providers/auth_provider.dart';
@@ -88,6 +89,7 @@ class _LoginScreenState extends State<LoginScreen>
     final isLoading = authProvider.isLoading;
     final errorMessage = authProvider.errorMessage;
     final theme = CommuSafeThemeExtension.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       body: CommuSafeAnimatedBackground(
@@ -205,14 +207,17 @@ class _LoginScreenState extends State<LoginScreen>
                                       children: <Widget>[
                                         _SignalBadge(
                                           icon: Icons.lock_outline_rounded,
-                                          label: 'Acceso seguro',
+                                          label: l10n.tr(
+                                            'Acceso seguro',
+                                            'Secure access',
+                                          ),
                                           color: theme.primary,
                                         ),
                                         const SizedBox(width: 10),
                                         _SignalBadge(
                                           icon: Icons
                                               .notifications_active_outlined,
-                                          label: 'Alertas',
+                                          label: l10n.tr('Alertas', 'Alerts'),
                                           color: theme.accent,
                                         ),
                                       ],
@@ -228,20 +233,31 @@ class _LoginScreenState extends State<LoginScreen>
                                       enabled: !isLoading,
                                       onChanged: (_) =>
                                           authProvider.clearError(),
-                                      decoration: const InputDecoration(
-                                        labelText: 'Correo electrónico',
-                                        prefixIcon: Icon(Icons.email_outlined),
+                                      decoration: InputDecoration(
+                                        labelText: l10n.tr(
+                                          'Correo electronico',
+                                          'Email',
+                                        ),
+                                        prefixIcon: const Icon(
+                                          Icons.email_outlined,
+                                        ),
                                       ),
                                       validator: (String? value) {
                                         final text = value?.trim() ?? '';
                                         if (text.isEmpty) {
-                                          return 'Ingresa tu correo electrónico.';
+                                          return l10n.tr(
+                                            'Ingresa tu correo electronico.',
+                                            'Enter your email.',
+                                          );
                                         }
                                         final emailRegex = RegExp(
                                           r'^[\w\.\-]+@([\w\-]+\.)+[a-zA-Z]{2,}$',
                                         );
                                         if (!emailRegex.hasMatch(text)) {
-                                          return 'Escribe un correo electrónico válido.';
+                                          return l10n.tr(
+                                            'Escribe un correo electronico valido.',
+                                            'Enter a valid email.',
+                                          );
                                         }
                                         return null;
                                       },
@@ -257,7 +273,10 @@ class _LoginScreenState extends State<LoginScreen>
                                       onChanged: (_) =>
                                           authProvider.clearError(),
                                       decoration: InputDecoration(
-                                        labelText: 'Contraseña',
+                                        labelText: l10n.tr(
+                                          'Contrasena',
+                                          'Password',
+                                        ),
                                         prefixIcon: const Icon(
                                           Icons.lock_outline_rounded,
                                         ),
@@ -280,7 +299,10 @@ class _LoginScreenState extends State<LoginScreen>
                                       validator: (String? value) {
                                         if (value == null ||
                                             value.trim().isEmpty) {
-                                          return 'Ingresa tu contraseña.';
+                                          return l10n.tr(
+                                            'Ingresa tu contrasena.',
+                                            'Enter your password.',
+                                          );
                                         }
                                         return null;
                                       },
@@ -401,7 +423,10 @@ class _LoginScreenState extends State<LoginScreen>
                                                             ),
                                                       )
                                                     : Text(
-                                                        'Ingresar',
+                                                        l10n.tr(
+                                                          'Ingresar',
+                                                          'Sign in',
+                                                        ),
                                                         key:
                                                             const ValueKey<
                                                               String
@@ -429,8 +454,11 @@ class _LoginScreenState extends State<LoginScreen>
                                         onPressed: isLoading
                                             ? null
                                             : () => context.go('/reset'),
-                                        child: const Text(
-                                          '¿Olvidaste tu contraseña?',
+                                        child: Text(
+                                          l10n.tr(
+                                            '¿Olvidaste tu contraseña?',
+                                            'Forgot your password?',
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -467,6 +495,7 @@ class _PrivacyPolicyAcceptance extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = CommuSafeThemeExtension.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       decoration: BoxDecoration(
@@ -484,7 +513,10 @@ class _PrivacyPolicyAcceptance extends StatelessWidget {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: <Widget>[
             Text(
-              'Confirmo que he leído y acepto la ',
+              l10n.tr(
+                'Confirmo que he leido y acepto la ',
+                'I confirm that I have read and accept the ',
+              ),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: AppColors.textSecondary,
                 height: 1.35,
@@ -494,7 +526,10 @@ class _PrivacyPolicyAcceptance extends StatelessWidget {
             InkWell(
               onTap: () => _showPrivacyPolicy(context),
               child: Text(
-                'política de recolección y tratamiento de datos personales',
+                l10n.tr(
+                  'politica de recoleccion y tratamiento de datos personales',
+                  'personal data collection and processing policy',
+                ),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: theme.accent,
                   height: 1.35,
@@ -521,8 +556,11 @@ class _PrivacyPolicyAcceptance extends StatelessWidget {
     return showDialog<void>(
       context: context,
       builder: (BuildContext dialogContext) {
+        final l10n = AppLocalizations.of(dialogContext);
         return AlertDialog(
-          title: const Text('Política de datos personales'),
+          title: Text(
+            l10n.tr('Politica de datos personales', 'Personal data policy'),
+          ),
           content: const SizedBox(
             width: double.maxFinite,
             child: SingleChildScrollView(
@@ -532,7 +570,7 @@ class _PrivacyPolicyAcceptance extends StatelessWidget {
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cerrar'),
+              child: Text(l10n.tr('Cerrar', 'Close')),
             ),
           ],
         );

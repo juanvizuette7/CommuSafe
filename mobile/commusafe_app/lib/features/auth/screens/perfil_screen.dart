@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../incidentes/providers/incidente_provider.dart';
 import '../../notificaciones/providers/notificacion_provider.dart';
@@ -47,6 +48,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
       ),
       builder: (BuildContext context) {
         final theme = CommuSafeThemeExtension.of(context);
+        final l10n = AppLocalizations.of(context);
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(18, 4, 18, 18),
@@ -59,9 +61,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     foregroundColor: Colors.white,
                     child: const Icon(Icons.photo_camera_rounded),
                   ),
-                  title: const Text(
-                    'Tomar foto',
-                    style: TextStyle(fontWeight: FontWeight.w800),
+                  title: Text(
+                    l10n.tr('Tomar foto', 'Take photo'),
+                    style: const TextStyle(fontWeight: FontWeight.w800),
                   ),
                   onTap: () => Navigator.of(context).pop(ImageSource.camera),
                 ),
@@ -71,9 +73,9 @@ class _PerfilScreenState extends State<PerfilScreen> {
                     foregroundColor: Colors.white,
                     child: const Icon(Icons.photo_library_rounded),
                   ),
-                  title: const Text(
-                    'Elegir de galería',
-                    style: TextStyle(fontWeight: FontWeight.w800),
+                  title: Text(
+                    l10n.tr('Elegir de galeria', 'Choose from gallery'),
+                    style: const TextStyle(fontWeight: FontWeight.w800),
                   ),
                   onTap: () => Navigator.of(context).pop(ImageSource.gallery),
                 ),
@@ -108,7 +110,16 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(ok ? 'Foto actualizada' : 'No se pudo subir la foto'),
+          content: Text(
+            ok
+                ? AppLocalizations.of(
+                    context,
+                  ).tr('Foto actualizada', 'Photo updated')
+                : AppLocalizations.of(context).tr(
+                    'No se pudo subir la foto',
+                    'The photo could not be uploaded',
+                  ),
+          ),
           backgroundColor: ok ? AppColors.success : AppColors.danger,
           behavior: SnackBarBehavior.floating,
         ),
@@ -118,8 +129,12 @@ class _PerfilScreenState extends State<PerfilScreen> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No se pudo subir la foto'),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(
+              context,
+            ).tr('No se pudo subir la foto', 'The photo could not be uploaded'),
+          ),
           backgroundColor: AppColors.danger,
           behavior: SnackBarBehavior.floating,
         ),
@@ -146,8 +161,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Perfil actualizado correctamente'),
+      SnackBar(
+        content: Text(
+          AppLocalizations.of(context).tr(
+            'Perfil actualizado correctamente',
+            'Profile updated successfully',
+          ),
+        ),
         backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
       ),
@@ -158,6 +178,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final usuario = authProvider.usuarioActual;
+    final l10n = AppLocalizations.of(context);
 
     if (usuario == null && authProvider.isInitializing) {
       return const Center(child: CircularProgressIndicator());
@@ -168,7 +189,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Text(
-            'No fue posible cargar la información del perfil.',
+            l10n.tr(
+              'No fue posible cargar la informacion del perfil.',
+              'The profile information could not be loaded.',
+            ),
             style: Theme.of(context).textTheme.titleMedium,
             textAlign: TextAlign.center,
           ),
@@ -201,30 +225,36 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 const SizedBox(height: 18),
                 _ProfileInfoCard(
                   icon: Icons.alternate_email_rounded,
-                  title: 'Correo electrónico',
+                  title: l10n.tr('Correo electronico', 'Email'),
                   value: usuario.email,
                 ),
                 const SizedBox(height: 14),
                 _ProfileInfoCard(
                   icon: Icons.home_work_outlined,
-                  title: 'Unidad residencial',
+                  title: l10n.tr('Unidad residencial', 'Residential unit'),
                   value: usuario.unidadResidencial?.trim().isNotEmpty == true
                       ? usuario.unidadResidencial!
-                      : 'No registrada',
+                      : l10n.tr('No registrada', 'Not registered'),
                 ),
                 const SizedBox(height: 14),
                 _ProfileInfoCard(
                   icon: Icons.phone_outlined,
-                  title: 'Teléfono',
+                  title: l10n.tr('Telefono', 'Phone'),
                   value: usuario.telefono?.trim().isNotEmpty == true
                       ? usuario.telefono!
-                      : 'No registrado',
+                      : l10n.tr('No registrado', 'Not registered'),
                 ),
                 const SizedBox(height: 14),
                 _ProfileInfoCard(
                   icon: Icons.tune_rounded,
-                  title: 'Ajustes de experiencia',
-                  value: 'Contraste, color, letra e idioma',
+                  title: l10n.tr(
+                    'Ajustes de experiencia',
+                    'Experience settings',
+                  ),
+                  value: l10n.tr(
+                    'Contraste, color, letra e idioma',
+                    'Contrast, color, text size and language',
+                  ),
                   onTap: () => context.push('/ajustes'),
                 ),
                 const SizedBox(height: 14),
@@ -243,7 +273,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       ),
                     ),
                     icon: const Icon(Icons.logout_rounded),
-                    label: const Text('Cerrar sesión'),
+                    label: Text(l10n.tr('Cerrar sesion', 'Log out')),
                   ),
                 ),
               ],
@@ -403,6 +433,7 @@ class _EditProfileCta extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = CommuSafeThemeExtension.of(context);
+    final l10n = AppLocalizations.of(context);
     final phoneReady = usuario.telefono?.trim().isNotEmpty == true;
 
     return Material(
@@ -432,7 +463,7 @@ class _EditProfileCta extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      'Editar datos personales',
+                      l10n.tr('Editar datos personales', 'Edit personal data'),
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w900,
                       ),
@@ -440,8 +471,14 @@ class _EditProfileCta extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       phoneReady
-                          ? 'Nombre y celular disponibles para contacto.'
-                          : 'Agrega tu celular para mejorar la atencion.',
+                          ? l10n.tr(
+                              'Nombre y celular disponibles para contacto.',
+                              'Name and phone available for contact.',
+                            )
+                          : l10n.tr(
+                              'Agrega tu celular para mejorar la atencion.',
+                              'Add your phone to improve assistance.',
+                            ),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: theme.textSecondary,
                         fontWeight: FontWeight.w700,
@@ -523,7 +560,10 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
       SnackBar(
         content: Text(
           context.read<AuthProvider>().errorMessage ??
-              'No se pudo actualizar el perfil.',
+              AppLocalizations.of(context).tr(
+                'No se pudo actualizar el perfil.',
+                'The profile could not be updated.',
+              ),
         ),
         backgroundColor: AppColors.danger,
         behavior: SnackBarBehavior.floating,
@@ -535,6 +575,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
   Widget build(BuildContext context) {
     final theme = CommuSafeThemeExtension.of(context);
     final isLoading = context.watch<AuthProvider>().isLoading;
+    final l10n = AppLocalizations.of(context);
 
     return SafeArea(
       child: Padding(
@@ -597,12 +638,15 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: <Widget>[
                             Text(
-                              'Actualizar perfil',
+                              l10n.tr('Actualizar perfil', 'Update profile'),
                               style: Theme.of(context).textTheme.titleLarge
                                   ?.copyWith(fontWeight: FontWeight.w900),
                             ),
                             Text(
-                              'Estos datos ayudan a contactarte rapido.',
+                              l10n.tr(
+                                'Estos datos ayudan a contactarte rapido.',
+                                'This information helps the team contact you quickly.',
+                              ),
                               style: Theme.of(context).textTheme.bodySmall
                                   ?.copyWith(
                                     color: theme.textSecondary,
@@ -618,13 +662,16 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
                   TextFormField(
                     controller: _nombreController,
                     textCapitalization: TextCapitalization.words,
-                    decoration: const InputDecoration(
-                      labelText: 'Nombre',
-                      prefixIcon: Icon(Icons.person_outline_rounded),
+                    decoration: InputDecoration(
+                      labelText: l10n.tr('Nombre', 'First name'),
+                      prefixIcon: const Icon(Icons.person_outline_rounded),
                     ),
                     validator: (String? value) {
                       if ((value ?? '').trim().length < 2) {
-                        return 'Escribe un nombre valido.';
+                        return l10n.tr(
+                          'Escribe un nombre valido.',
+                          'Enter a valid first name.',
+                        );
                       }
                       return null;
                     },
@@ -633,13 +680,16 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
                   TextFormField(
                     controller: _apellidoController,
                     textCapitalization: TextCapitalization.words,
-                    decoration: const InputDecoration(
-                      labelText: 'Apellido',
-                      prefixIcon: Icon(Icons.badge_outlined),
+                    decoration: InputDecoration(
+                      labelText: l10n.tr('Apellido', 'Last name'),
+                      prefixIcon: const Icon(Icons.badge_outlined),
                     ),
                     validator: (String? value) {
                       if ((value ?? '').trim().length < 2) {
-                        return 'Escribe un apellido valido.';
+                        return l10n.tr(
+                          'Escribe un apellido valido.',
+                          'Enter a valid last name.',
+                        );
                       }
                       return null;
                     },
@@ -648,10 +698,13 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
                   TextFormField(
                     controller: _telefonoController,
                     keyboardType: TextInputType.phone,
-                    decoration: const InputDecoration(
-                      labelText: 'Celular colombiano',
-                      hintText: 'Ej. 3001234567',
-                      prefixIcon: Icon(Icons.phone_iphone_rounded),
+                    decoration: InputDecoration(
+                      labelText: l10n.tr(
+                        'Celular colombiano',
+                        'Colombian mobile number',
+                      ),
+                      hintText: l10n.tr('Ej. 3001234567', 'Ex. 3001234567'),
+                      prefixIcon: const Icon(Icons.phone_iphone_rounded),
                     ),
                     validator: (String? value) {
                       final text = (value ?? '').replaceAll(RegExp(r'\s+'), '');
@@ -659,7 +712,10 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
                         return null;
                       }
                       if (!RegExp(r'^(\+57)?3\d{9}$').hasMatch(text)) {
-                        return 'Usa un celular colombiano valido.';
+                        return l10n.tr(
+                          'Usa un celular colombiano valido.',
+                          'Use a valid Colombian mobile number.',
+                        );
                       }
                       return null;
                     },
@@ -669,14 +725,23 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
                     TextFormField(
                       controller: _unidadController,
                       textCapitalization: TextCapitalization.words,
-                      decoration: const InputDecoration(
-                        labelText: 'Unidad residencial',
-                        hintText: 'Ej. Apto 301 Torre A',
-                        prefixIcon: Icon(Icons.home_work_outlined),
+                      decoration: InputDecoration(
+                        labelText: l10n.tr(
+                          'Unidad residencial',
+                          'Residential unit',
+                        ),
+                        hintText: l10n.tr(
+                          'Ej. Apto 301 Torre A',
+                          'Ex. Apt 301 Tower A',
+                        ),
+                        prefixIcon: const Icon(Icons.home_work_outlined),
                       ),
                       validator: (String? value) {
                         if ((value ?? '').trim().isEmpty) {
-                          return 'La unidad es obligatoria para residentes.';
+                          return l10n.tr(
+                            'La unidad es obligatoria para residentes.',
+                            'The unit is required for residents.',
+                          );
                         }
                         return null;
                       },
@@ -697,7 +762,11 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
                               ),
                             )
                           : const Icon(Icons.save_rounded),
-                      label: Text(isLoading ? 'Guardando...' : 'Guardar datos'),
+                      label: Text(
+                        isLoading
+                            ? l10n.tr('Guardando...', 'Saving...')
+                            : l10n.tr('Guardar datos', 'Save data'),
+                      ),
                       style: FilledButton.styleFrom(
                         backgroundColor: theme.primary,
                         foregroundColor: Colors.white,
@@ -726,9 +795,10 @@ class _ProfileStatusPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = CommuSafeThemeExtension.of(context);
+    final l10n = AppLocalizations.of(context);
     final unidad = usuario.unidadResidencial?.trim().isNotEmpty == true
         ? usuario.unidadResidencial!
-        : 'Sin unidad registrada';
+        : l10n.tr('Sin unidad registrada', 'No unit registered');
 
     return Container(
       width: double.infinity,
@@ -770,14 +840,17 @@ class _ProfileStatusPanel extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      'Cuenta protegida',
+                      l10n.tr('Cuenta protegida', 'Protected account'),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w900,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Sesion segura con JWT y acceso por rol.',
+                      l10n.tr(
+                        'Sesion segura con JWT y acceso por rol.',
+                        'Secure JWT session with role-based access.',
+                      ),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: theme.textSecondary,
                         height: 1.35,
@@ -795,9 +868,9 @@ class _ProfileStatusPanel extends StatelessWidget {
                   color: AppColors.success.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(999),
                 ),
-                child: const Text(
-                  'Activo',
-                  style: TextStyle(
+                child: Text(
+                  l10n.tr('Activo', 'Active'),
+                  style: const TextStyle(
                     color: AppColors.success,
                     fontWeight: FontWeight.w900,
                     fontSize: 12,
@@ -811,7 +884,7 @@ class _ProfileStatusPanel extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 child: _MiniProfileMetric(
-                  label: 'Rol',
+                  label: l10n.tr('Rol', 'Role'),
                   value: usuario.rolLegible,
                   icon: Icons.badge_rounded,
                   color: theme.primary,
@@ -820,7 +893,7 @@ class _ProfileStatusPanel extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: _MiniProfileMetric(
-                  label: 'Unidad',
+                  label: l10n.tr('Unidad', 'Unit'),
                   value: unidad,
                   icon: Icons.home_work_rounded,
                   color: theme.accent,
@@ -890,31 +963,36 @@ class _ProfileQuickActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = CommuSafeThemeExtension.of(context);
+    final l10n = AppLocalizations.of(context);
     final actions = <_ProfileAction>[
       _ProfileAction(
-        title: 'Ajustes',
-        subtitle: 'Color y letra',
+        title: l10n.tr('Ajustes', 'Settings'),
+        subtitle: l10n.tr('Color y letra', 'Color and text'),
         icon: Icons.tune_rounded,
         route: '/ajustes',
         color: theme.primary,
       ),
       _ProfileAction(
-        title: 'Alertas',
-        subtitle: 'Notificaciones',
+        title: l10n.tr('Alertas', 'Alerts'),
+        subtitle: l10n.tr('Notificaciones', 'Notifications'),
         icon: Icons.notifications_active_rounded,
         route: '/notificaciones',
         color: AppColors.danger,
       ),
       _ProfileAction(
-        title: 'Emergencias',
-        subtitle: 'Llamadas rapidas',
+        title: l10n.tr('Emergencias', 'Emergencies'),
+        subtitle: l10n.tr('Llamadas rapidas', 'Quick calls'),
         icon: Icons.local_police_rounded,
         route: '/emergencias',
         color: const Color(0xFFEA580C),
       ),
       _ProfileAction(
-        title: usuario.esResidente ? 'Mis reportes' : 'Incidentes',
-        subtitle: usuario.esResidente ? 'Seguimiento' : 'Operacion',
+        title: usuario.esResidente
+            ? l10n.tr('Mis reportes', 'My reports')
+            : l10n.tr('Incidentes', 'Incidents'),
+        subtitle: usuario.esResidente
+            ? l10n.tr('Seguimiento', 'Tracking')
+            : l10n.tr('Operacion', 'Operation'),
         icon: Icons.assignment_rounded,
         route: '/incidentes',
         color: theme.accent,
@@ -927,14 +1005,14 @@ class _ProfileQuickActions extends StatelessWidget {
         Row(
           children: <Widget>[
             Text(
-              'Accesos rapidos',
+              l10n.tr('Accesos rapidos', 'Quick actions'),
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
             ),
             const Spacer(),
             Text(
-              'Perfil',
+              l10n.tr('Perfil', 'Profile'),
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 color: theme.textSecondary,
                 fontWeight: FontWeight.w700,
@@ -1043,31 +1121,56 @@ class _RoleCapabilitiesCard extends StatelessWidget {
 
   final UsuarioModel usuario;
 
-  List<String> get _capabilities {
+  List<String> _capabilities(AppLocalizations l10n) {
     if (usuario.esAdmin) {
-      return const <String>[
-        'Gestionar usuarios y roles',
-        'Cerrar o eliminar incidentes con trazabilidad',
-        'Enviar avisos comunitarios segmentados',
+      return <String>[
+        l10n.tr('Gestionar usuarios y roles', 'Manage users and roles'),
+        l10n.tr(
+          'Cerrar o eliminar incidentes con trazabilidad',
+          'Close or delete incidents with traceability',
+        ),
+        l10n.tr(
+          'Enviar avisos comunitarios segmentados',
+          'Send segmented community notices',
+        ),
       ];
     }
     if (usuario.esVigilante) {
-      return const <String>[
-        'Ver incidentes de toda la comunidad',
-        'Actualizar estados con comentario',
-        'Enviar avisos operativos a residentes',
+      return <String>[
+        l10n.tr(
+          'Ver incidentes de toda la comunidad',
+          'View incidents from the whole community',
+        ),
+        l10n.tr(
+          'Actualizar estados con comentario',
+          'Update statuses with comments',
+        ),
+        l10n.tr(
+          'Enviar avisos operativos a residentes',
+          'Send operational notices to residents',
+        ),
       ];
     }
-    return const <String>[
-      'Reportar incidentes con evidencia',
-      'Consultar el avance de tus reportes',
-      'Recibir avisos y alertas importantes',
+    return <String>[
+      l10n.tr(
+        'Reportar incidentes con evidencia',
+        'Report incidents with evidence',
+      ),
+      l10n.tr(
+        'Consultar el avance de tus reportes',
+        'Track the progress of your reports',
+      ),
+      l10n.tr(
+        'Recibir avisos y alertas importantes',
+        'Receive important notices and alerts',
+      ),
     ];
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = CommuSafeThemeExtension.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       width: double.infinity,
@@ -1092,7 +1195,7 @@ class _RoleCapabilitiesCard extends StatelessWidget {
               Icon(Icons.auto_awesome_rounded, color: theme.primary),
               const SizedBox(width: 8),
               Text(
-                'Tu acceso en CommuSafe',
+                l10n.tr('Tu acceso en CommuSafe', 'Your CommuSafe access'),
                 style: Theme.of(
                   context,
                 ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
@@ -1100,7 +1203,7 @@ class _RoleCapabilitiesCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          ..._capabilities.map(
+          ..._capabilities(l10n).map(
             (item) => Padding(
               padding: const EdgeInsets.only(bottom: 8),
               child: Row(

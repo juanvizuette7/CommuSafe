@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/app_settings_provider.dart';
 
@@ -12,6 +13,7 @@ class AjustesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<AppSettingsProvider>();
     final theme = CommuSafeThemeExtension.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       body: ListView(
@@ -21,8 +23,11 @@ class AjustesScreen extends StatelessWidget {
           const SizedBox(height: 18),
           _SettingsSection(
             icon: Icons.palette_rounded,
-            title: 'Color de la aplicación',
-            subtitle: 'Personaliza la identidad visual sin perder legibilidad.',
+            title: l10n.tr('Color de la aplicacion', 'App color'),
+            subtitle: l10n.tr(
+              'Personaliza la identidad visual sin perder legibilidad.',
+              'Customize the visual identity without losing readability.',
+            ),
             child: Wrap(
               spacing: 10,
               runSpacing: 10,
@@ -38,8 +43,11 @@ class AjustesScreen extends StatelessWidget {
           const SizedBox(height: 14),
           _SettingsSection(
             icon: Icons.text_fields_rounded,
-            title: 'Tamaño de letra',
-            subtitle: 'Ajusta el texto para lectura cómoda en celular.',
+            title: l10n.tr('Tamano de letra', 'Text size'),
+            subtitle: l10n.tr(
+              'Ajusta el texto para lectura comoda en celular.',
+              'Adjust text for comfortable reading on mobile.',
+            ),
             child: Column(
               children: <Widget>[
                 Row(
@@ -51,7 +59,7 @@ class AjustesScreen extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 3),
                         child: ChoiceChip(
                           selected: selected,
-                          label: Text(preset.label),
+                          label: Text(_textSizeLabel(preset, l10n)),
                           onSelected: (_) => settings.setTextSizePreset(preset),
                         ),
                       ),
@@ -68,8 +76,11 @@ class AjustesScreen extends StatelessWidget {
                     fontWeight: FontWeight.w800,
                     fontSize: 16 * settings.textScaleFactor,
                   ),
-                  child: const Text(
-                    'Vista previa: reportar un incidente debe sentirse claro y rápido.',
+                  child: Text(
+                    l10n.tr(
+                      'Vista previa: reportar un incidente debe sentirse claro y rapido.',
+                      'Preview: reporting an incident should feel clear and fast.',
+                    ),
                   ),
                 ),
               ],
@@ -78,33 +89,42 @@ class AjustesScreen extends StatelessWidget {
           const SizedBox(height: 14),
           _SettingsSection(
             icon: Icons.contrast_rounded,
-            title: 'Accesibilidad visual',
-            subtitle: 'Mejora contraste, reduce movimiento y ajusta espacios.',
+            title: l10n.tr('Accesibilidad visual', 'Visual accessibility'),
+            subtitle: l10n.tr(
+              'Mejora contraste, reduce movimiento y ajusta espacios.',
+              'Improve contrast, reduce motion and tune spacing.',
+            ),
             child: Column(
               children: <Widget>[
                 _SettingsSwitchTile(
                   icon: Icons.visibility_rounded,
-                  title: 'Alto contraste',
-                  subtitle:
-                      'Texto más fuerte, bordes más claros y mayor lectura.',
+                  title: l10n.tr('Alto contraste', 'High contrast'),
+                  subtitle: l10n.tr(
+                    'Texto mas fuerte, bordes mas claros y mayor lectura.',
+                    'Stronger text, clearer borders and better readability.',
+                  ),
                   value: settings.highContrast,
                   onChanged: settings.setHighContrast,
                 ),
                 const Divider(),
                 _SettingsSwitchTile(
                   icon: Icons.motion_photos_pause_rounded,
-                  title: 'Reducir animaciones',
-                  subtitle:
-                      'Minimiza transiciones para una experiencia estable.',
+                  title: l10n.tr('Reducir animaciones', 'Reduce animations'),
+                  subtitle: l10n.tr(
+                    'Minimiza transiciones para una experiencia estable.',
+                    'Minimize transitions for a steadier experience.',
+                  ),
                   value: settings.reduceMotion,
                   onChanged: settings.setReduceMotion,
                 ),
                 const Divider(),
                 _SettingsSwitchTile(
                   icon: Icons.space_bar_rounded,
-                  title: 'Modo cómodo',
-                  subtitle:
-                      'Más aire visual en tarjetas y controles importantes.',
+                  title: l10n.tr('Modo comodo', 'Comfort mode'),
+                  subtitle: l10n.tr(
+                    'Mas aire visual en tarjetas y controles importantes.',
+                    'More breathing room in cards and important controls.',
+                  ),
                   value: settings.comfortableMode,
                   onChanged: settings.setComfortableMode,
                 ),
@@ -114,9 +134,11 @@ class AjustesScreen extends StatelessWidget {
           const SizedBox(height: 14),
           _SettingsSection(
             icon: Icons.language_rounded,
-            title: 'Idioma y formato regional',
-            subtitle:
-                'Define cómo se muestran fechas, textos del sistema y región.',
+            title: l10n.tr('Idioma', 'Language'),
+            subtitle: l10n.tr(
+              'Cambia entre espanol e ingles para la interfaz principal.',
+              'Switch the main interface between Spanish and English.',
+            ),
             child: Column(
               children: LanguagePreset.values.map((LanguagePreset preset) {
                 return _LanguageOptionTile(
@@ -130,21 +152,31 @@ class AjustesScreen extends StatelessWidget {
           const SizedBox(height: 14),
           _SettingsSection(
             icon: Icons.tune_rounded,
-            title: 'Experiencia inteligente',
-            subtitle: 'Ajustes pensados para una app comunitaria más amable.',
+            title: l10n.tr('Experiencia inteligente', 'Smart experience'),
+            subtitle: l10n.tr(
+              'Ajustes pensados para una app comunitaria mas amable.',
+              'Settings designed for a friendlier community app.',
+            ),
             child: Column(
               children: <Widget>[
                 _InsightTile(
                   icon: Icons.bolt_rounded,
-                  title: 'Modo operativo',
-                  description:
-                      'Los colores de prioridad y estado se mantienen para no perder alertas críticas.',
+                  title: l10n.tr('Modo operativo', 'Operational mode'),
+                  description: l10n.tr(
+                    'Las emergencias conservan color rojo para no perder alertas criticas.',
+                    'Emergencies stay red so critical alerts remain clear.',
+                  ),
                 ),
                 _InsightTile(
                   icon: Icons.security_rounded,
-                  title: 'Preferencias privadas',
-                  description:
-                      'Estos ajustes viven solo en tu dispositivo y no afectan a otros usuarios.',
+                  title: l10n.tr(
+                    'Preferencias privadas',
+                    'Private preferences',
+                  ),
+                  description: l10n.tr(
+                    'Estos ajustes viven solo en tu dispositivo y no afectan a otros usuarios.',
+                    'These settings live only on your device and do not affect other users.',
+                  ),
                 ),
               ],
             ),
@@ -153,7 +185,7 @@ class AjustesScreen extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: settings.reset,
             icon: const Icon(Icons.restart_alt_rounded),
-            label: const Text('Restablecer diseño original'),
+            label: Text(l10n.tr('Restablecer diseno original', 'Reset design')),
           ),
           const SizedBox(height: 10),
           Text(
@@ -178,6 +210,7 @@ class _HeroPreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = CommuSafeThemeExtension.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return TweenAnimationBuilder<double>(
       duration: settings.reduceMotion
@@ -238,7 +271,10 @@ class _HeroPreview extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       Text(
-                        'Ajustes de experiencia',
+                        l10n.tr(
+                          'Ajustes de experiencia',
+                          'Experience settings',
+                        ),
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           color: Colors.white,
                           fontWeight: FontWeight.w900,
@@ -246,7 +282,10 @@ class _HeroPreview extends StatelessWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Haz que CommuSafe se adapte a ti.',
+                        l10n.tr(
+                          'Haz que CommuSafe se adapte a ti.',
+                          'Make CommuSafe adapt to you.',
+                        ),
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Colors.white.withValues(alpha: 0.82),
                           fontWeight: FontWeight.w600,
@@ -275,7 +314,10 @@ class _HeroPreview extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      'Vista previa: tarjeta clara, botones grandes y alertas visibles.',
+                      l10n.tr(
+                        'Vista previa: tarjeta clara, botones grandes y alertas visibles.',
+                        'Preview: clear card, large buttons and visible alerts.',
+                      ),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
@@ -289,6 +331,19 @@ class _HeroPreview extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+String _textSizeLabel(TextSizePreset preset, AppLocalizations l10n) {
+  switch (preset) {
+    case TextSizePreset.compacto:
+      return l10n.tr('Compacto', 'Compact');
+    case TextSizePreset.normal:
+      return l10n.tr('Normal', 'Normal');
+    case TextSizePreset.grande:
+      return l10n.tr('Grande', 'Large');
+    case TextSizePreset.extraGrande:
+      return l10n.tr('Muy grande', 'Extra large');
   }
 }
 
@@ -372,6 +427,8 @@ class _ColorPresetChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return InkWell(
       borderRadius: BorderRadius.circular(22),
       onTap: onTap,
@@ -408,14 +465,14 @@ class _ColorPresetChip extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              preset.label,
+              _label(l10n),
               style: Theme.of(
                 context,
               ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 4),
             Text(
-              preset.description,
+              _description(l10n),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -427,6 +484,44 @@ class _ColorPresetChip extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _label(AppLocalizations l10n) {
+    switch (preset) {
+      case ColorPreset.remansos:
+        return l10n.tr('Azul Remansos', 'Remansos blue');
+      case ColorPreset.esmeralda:
+        return l10n.tr('Verde seguro', 'Safe green');
+      case ColorPreset.atardecer:
+        return l10n.tr('Alerta calida', 'Warm alert');
+      case ColorPreset.carbono:
+        return l10n.tr('Carbono elegante', 'Elegant carbon');
+    }
+  }
+
+  String _description(AppLocalizations l10n) {
+    switch (preset) {
+      case ColorPreset.remansos:
+        return l10n.tr(
+          'Identidad original de CommuSafe.',
+          'Original CommuSafe identity.',
+        );
+      case ColorPreset.esmeralda:
+        return l10n.tr(
+          'Mas fresco y amable para lectura diaria.',
+          'Fresher and friendlier for daily reading.',
+        );
+      case ColorPreset.atardecer:
+        return l10n.tr(
+          'Mayor energia visual para alertas.',
+          'More visual energy for alerts.',
+        );
+      case ColorPreset.carbono:
+        return l10n.tr(
+          'Sobrio, fuerte y de alto contraste.',
+          'Clean, strong and high contrast.',
+        );
+    }
   }
 }
 
@@ -490,6 +585,7 @@ class _LanguageOptionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = CommuSafeThemeExtension.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -531,8 +627,14 @@ class _LanguageOptionTile extends StatelessWidget {
                     const SizedBox(height: 3),
                     Text(
                       preset == LanguagePreset.esCo
-                          ? 'Formato y fechas para Colombia.'
-                          : 'English regional format.',
+                          ? l10n.tr(
+                              'Formato y fechas para Colombia.',
+                              'Colombian date and format settings.',
+                            )
+                          : l10n.tr(
+                              'Formato regional en ingles.',
+                              'English regional format.',
+                            ),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: theme.textSecondary,
                         fontWeight: FontWeight.w600,
