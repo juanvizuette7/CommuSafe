@@ -445,17 +445,11 @@ String _referenciaValor(UsuarioModel usuario, AppLocalizations l10n) {
   }
 
   if (usuario.esAdmin) {
-    return l10n.tr(
-      'Administracion - ${AppConstants.residentialComplexName}',
-      'Administration - ${AppConstants.residentialComplexName}',
-    );
+    return l10n.tr('Admin - Remansos', 'Admin - Remansos');
   }
 
   if (usuario.esVigilante) {
-    return l10n.tr(
-      'Vigilancia - ${AppConstants.residentialComplexName}',
-      'Security team - ${AppConstants.residentialComplexName}',
-    );
+    return l10n.tr('Vigilancia - Remansos', 'Security - Remansos');
   }
 
   return AppConstants.residentialComplexName;

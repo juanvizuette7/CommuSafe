@@ -335,16 +335,10 @@ String _referenciaDrawerUsuario(UsuarioModel usuario, AppLocalizations l10n) {
         : l10n.tr('Unidad no registrada', 'Unit not registered');
   }
   if (usuario.esAdmin == true) {
-    return l10n.tr(
-      'Administracion - ${AppConstants.residentialComplexName}',
-      'Administration - ${AppConstants.residentialComplexName}',
-    );
+    return l10n.tr('Admin - Remansos', 'Admin - Remansos');
   }
   if (usuario.esVigilante == true) {
-    return l10n.tr(
-      'Vigilancia - ${AppConstants.residentialComplexName}',
-      'Security team - ${AppConstants.residentialComplexName}',
-    );
+    return l10n.tr('Vigilancia - Remansos', 'Security - Remansos');
   }
   return AppConstants.residentialComplexName;
 }

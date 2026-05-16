@@ -42,9 +42,9 @@ class DestinatarioAvisoModel {
     final referencia = esResidente
         ? unidadResidencial
         : esAdministrador
-        ? 'Administracion - ${AppConstants.residentialComplexName}'
+        ? 'Admin - Remansos'
         : esVigilante
-        ? 'Vigilancia - ${AppConstants.residentialComplexName}'
+        ? 'Vigilancia - Remansos'
         : AppConstants.residentialComplexName;
     final partes = <String>[
       if (referencia.trim().isNotEmpty) referencia,

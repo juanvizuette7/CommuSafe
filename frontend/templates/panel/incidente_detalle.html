@@ -34,7 +34,7 @@
             </div>
         </article>
 
-        <article class="rounded-[30px] border border-slate-200 bg-white p-6 shadow-soft">
+        <article class="rounded-[30px] border border-slate-200 bg-white p-6 shadow-soft" x-data="{ evidenciasIncidente: [{% for evidencia in evidencias %}{ url: '{{ evidencia.imagen.url|escapejs }}', titulo: 'Evidencia {{ forloop.counter }} - {{ incidente.titulo|escapejs }}' }{% if not forloop.last %},{% endif %}{% endfor %}] }">
             <div class="flex items-center justify-between">
                 <div>
                     <h3 class="text-2xl font-black text-primary">Evidencias fotográficas</h3>
@@ -46,7 +46,7 @@
                 <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     {% for evidencia in evidencias %}
                     <figure class="overflow-hidden rounded-[24px] border border-slate-200 bg-slate-50">
-                        <a href="{{ evidencia.imagen.url }}" target="_blank" rel="noopener" @click.prevent="abrirImagen('{{ evidencia.imagen.url }}', 'Evidencia {{ forloop.counter }} - {{ incidente.titulo|escapejs }}')" class="group relative block w-full overflow-hidden text-left focus:outline-none focus:ring-4 focus:ring-accent/20" aria-label="Ver evidencia {{ forloop.counter }}">
+                        <a href="{{ evidencia.imagen.url }}" target="_blank" rel="noopener" @click.prevent="abrirImagen(evidenciasIncidente[{{ forloop.counter0 }}].url, evidenciasIncidente[{{ forloop.counter0 }}].titulo, evidenciasIncidente, {{ forloop.counter0 }})" class="group relative block w-full overflow-hidden text-left focus:outline-none focus:ring-4 focus:ring-accent/20" aria-label="Ver evidencia {{ forloop.counter }}">
                             <img src="{{ evidencia.imagen.url }}" alt="Evidencia {{ forloop.counter }}" class="h-56 w-full object-cover transition duration-300 hover:scale-[1.03]" onerror="this.parentElement.classList.add('hidden'); this.parentElement.nextElementSibling.classList.remove('hidden');">
                             <span class="absolute inset-0 flex items-center justify-center bg-slate-950/55 text-sm font-black uppercase tracking-[0.18em] text-white opacity-0 transition group-hover:opacity-100">
                                 Ver evidencia

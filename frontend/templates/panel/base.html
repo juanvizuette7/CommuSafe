@@ -13,18 +13,38 @@
             abierto: false,
             url: '',
             titulo: '',
+            galeria: [],
+            indice: 0,
         },
-        abrirImagen(url, titulo) {
+        abrirImagen(url, titulo, galeria = [], indice = 0) {
+            const lista = Array.isArray(galeria) && galeria.length > 0 ? galeria : [{ url, titulo }];
+            const posicion = Math.max(0, Math.min(indice, lista.length - 1));
+            const actual = lista[posicion] || { url, titulo };
             this.visorImagen = {
                 abierto: true,
-                url,
-                titulo,
+                url: actual.url || url,
+                titulo: actual.titulo || titulo,
+                galeria: lista,
+                indice: posicion,
             };
         },
         cerrarImagen() {
             this.visorImagen.abierto = false;
             this.visorImagen.url = '';
             this.visorImagen.titulo = '';
+            this.visorImagen.galeria = [];
+            this.visorImagen.indice = 0;
+        },
+        cambiarImagen(direccion) {
+            if (!this.visorImagen.galeria || this.visorImagen.galeria.length < 2) {
+                return;
+            }
+            const total = this.visorImagen.galeria.length;
+            const nuevoIndice = (this.visorImagen.indice + direccion + total) % total;
+            const actual = this.visorImagen.galeria[nuevoIndice];
+            this.visorImagen.indice = nuevoIndice;
+            this.visorImagen.url = actual.url;
+            this.visorImagen.titulo = actual.titulo;
         },
         tokenPanel() {
             const cookie = document.cookie.split('; ').find((item) => item.startsWith('commusafe_panel_access='));
@@ -214,27 +234,26 @@
         x-show="visorImagen.abierto"
         x-transition.opacity
         @keydown.escape.window="cerrarImagen()"
-        class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/90 p-2 sm:p-6"
+        @keydown.arrow-left.window="cambiarImagen(-1)"
+        @keydown.arrow-right.window="cambiarImagen(1)"
+        class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/95 p-3"
         style="display: none;"
     >
-        <div @click.away="cerrarImagen()" class="flex h-[94vh] w-full max-w-[min(96vw,1200px)] flex-col overflow-hidden rounded-[28px] bg-white shadow-glass">
-            <div class="flex items-center justify-between gap-4 border-b border-slate-100 px-5 py-4">
-                <div class="min-w-0">
-                    <p class="truncate text-sm font-black text-primary" x-text="visorImagen.titulo"></p>
-                    <p class="mt-1 text-xs font-semibold text-slate-400">Vista ampliada de la imagen seleccionada</p>
-                </div>
-                <div class="flex shrink-0 items-center gap-2">
-                    <a :href="visorImagen.url" target="_blank" rel="noopener" class="hidden rounded-2xl bg-primary px-4 py-2 text-xs font-black text-white transition hover:bg-accent sm:inline-flex">
-                        Abrir original
-                    </a>
-                    <button type="button" @click="cerrarImagen()" class="rounded-2xl bg-slate-100 px-3 py-2 text-sm font-black text-slate-500 transition hover:bg-slate-200" aria-label="Cerrar imagen">
-                        &#10005;
-                    </button>
-                </div>
+        <div @click.away="cerrarImagen()" class="relative flex h-full w-full items-center justify-center">
+            <div class="absolute left-4 top-4 z-10 max-w-[calc(100vw-6rem)] rounded-2xl bg-white/10 px-4 py-3 text-white backdrop-blur-md">
+                <p class="truncate text-sm font-black" x-text="visorImagen.titulo"></p>
+                <p x-show="visorImagen.galeria.length > 1" class="mt-1 text-xs font-bold text-white/70" x-text="`${visorImagen.indice + 1} de ${visorImagen.galeria.length}`"></p>
             </div>
-            <div class="flex min-h-0 flex-1 items-center justify-center bg-slate-950 p-3 sm:p-5">
-                <img :src="visorImagen.url" :alt="visorImagen.titulo" class="h-full w-full rounded-2xl object-contain shadow-glass">
-            </div>
+            <button type="button" @click="cerrarImagen()" class="absolute right-4 top-4 z-10 rounded-2xl bg-white/10 px-4 py-3 text-sm font-black text-white backdrop-blur-md transition hover:bg-white/20" aria-label="Cerrar imagen">
+                &#10005;
+            </button>
+            <button x-cloak x-show="visorImagen.galeria.length > 1" type="button" @click.stop="cambiarImagen(-1)" class="absolute left-4 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-3xl font-black text-white backdrop-blur-md transition hover:bg-white/20" aria-label="Imagen anterior">
+                &#8249;
+            </button>
+            <img :src="visorImagen.url" :alt="visorImagen.titulo" class="max-h-[92vh] max-w-[94vw] rounded-xl object-contain shadow-glass">
+            <button x-cloak x-show="visorImagen.galeria.length > 1" type="button" @click.stop="cambiarImagen(1)" class="absolute right-4 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-3xl font-black text-white backdrop-blur-md transition hover:bg-white/20" aria-label="Imagen siguiente">
+                &#8250;
+            </button>
         </div>
     </div>
 </div>

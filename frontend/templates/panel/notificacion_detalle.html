@@ -31,11 +31,6 @@
         <a href="{% url 'panel_web:panel_notificaciones' %}" class="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-black text-slate-600 shadow-soft transition hover:-translate-y-0.5 hover:bg-slate-50">
             Volver a notificaciones
         </a>
-        {% if notificacion.incidente_relacionado %}
-        <a href="{% url 'panel_web:incidente_detalle' notificacion.incidente_relacionado.id %}" class="rounded-2xl bg-primary px-5 py-3 text-sm font-black text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-accent">
-            Abrir incidente relacionado
-        </a>
-        {% endif %}
     </div>
 </section>
 {% endblock panel_content %}
