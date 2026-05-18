@@ -1,5 +1,6 @@
 """Configuración principal del proyecto CommuSafe Backend."""
 
+import hashlib
 from datetime import timedelta
 from pathlib import Path
 
@@ -102,11 +103,18 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [PROJECT_ROOT / "frontend" / "static"]
-STATICFILES_STORAGE = (
-    "whitenoise.storage.CompressedStaticFilesStorage"
-    if DEBUG
-    else "whitenoise.storage.CompressedManifestStaticFilesStorage"
-)
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": (
+            "whitenoise.storage.CompressedStaticFilesStorage"
+            if DEBUG
+            else "whitenoise.storage.CompressedManifestStaticFilesStorage"
+        ),
+    },
+}
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -134,6 +142,12 @@ REST_FRAMEWORK = {
     ),
 }
 
+JWT_SIGNING_KEY = config("JWT_SIGNING_KEY", default="").strip()
+if not JWT_SIGNING_KEY:
+    JWT_SIGNING_KEY = SECRET_KEY
+if len(JWT_SIGNING_KEY.encode("utf-8")) < 32:
+    JWT_SIGNING_KEY = hashlib.sha256(f"commusafe-jwt:{JWT_SIGNING_KEY}".encode("utf-8")).hexdigest()
+
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=8),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
@@ -141,6 +155,7 @@ SIMPLE_JWT = {
     "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": True,
     "AUTH_HEADER_TYPES": ("Bearer",),
+    "SIGNING_KEY": JWT_SIGNING_KEY,
 }
 
 CORS_ALLOWED_ORIGINS = [

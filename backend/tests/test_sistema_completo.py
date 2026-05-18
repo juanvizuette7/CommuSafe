@@ -21,6 +21,7 @@ def crear_usuario(email, rol=Usuario.Rol.RESIDENTE, password="Commu2026*", **ext
         "apellido": extra.pop("apellido", rol.title()),
         "rol": rol,
         "unidad_residencial": extra.pop("unidad_residencial", "Apto 101 Torre A"),
+        "politica_privacidad_aceptada": extra.pop("politica_privacidad_aceptada", True),
     }
     if rol != Usuario.Rol.RESIDENTE:
         defaults["unidad_residencial"] = extra.pop("unidad_residencial", "")

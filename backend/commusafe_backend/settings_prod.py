@@ -20,7 +20,7 @@ DATABASES = {
     )
 }
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STORAGES["staticfiles"]["BACKEND"] = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 SECURE_SSL_REDIRECT = True
 SESSION_COOKIE_SECURE = True
