@@ -9,6 +9,9 @@ backend/db.sqlite3
 dist/
 backend/media/
 backend/htmlcov/
+backend/*.report.html
+backend/*.report.json
+backend/commusafe.onrender.com_*.html
 backend/staticfiles/
 backend/.venv/
 backend/.venv-local/

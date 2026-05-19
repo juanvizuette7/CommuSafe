@@ -1,0 +1,3 @@
+backend/*.report.html linguist-generated=true
+backend/*.report.json linguist-generated=true
+backend/commusafe.onrender.com_*.html linguist-generated=true
