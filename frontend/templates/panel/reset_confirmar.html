@@ -1,10 +1,11 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Nueva contraseña | CommuSafe{% endblock title %}
 
 {% block body %}
 <main class="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(233,69,96,0.20),_transparent_34%),linear-gradient(145deg,_#1A1A2E_0%,_#16213E_55%,_#0F3460_100%)] px-4 py-10">
-    <section class="w-full max-w-md rounded-[32px] bg-white p-8 shadow-glass sm:p-10" x-data="{ mostrar1: false, mostrar2: false }">
+    <section class="w-full max-w-md rounded-[32px] bg-white p-8 shadow-glass sm:p-10">
         <div class="text-center">
             <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-[22px] bg-danger text-3xl text-white shadow-soft">&#128272;</div>
             <h1 class="mt-6 text-3xl font-black tracking-tight text-primary">Nueva contraseña</h1>
@@ -29,8 +30,8 @@
                 <label for="{{ form.password.id_for_label }}" class="text-sm font-semibold text-slate-700">{{ form.password.label }}</label>
                 <div class="relative">
                     {{ form.password }}
-                    <button type="button" @click="mostrar1 = !mostrar1; document.getElementById('{{ form.password.id_for_label }}').type = mostrar1 ? 'text' : 'password'" class="absolute inset-y-0 right-3 inline-flex items-center text-sm font-semibold text-slate-500 transition hover:text-primary">
-                        <span x-text="mostrar1 ? 'Ocultar' : 'Mostrar'"></span>
+                    <button type="button" data-password-toggle="{{ form.password.id_for_label }}" class="absolute inset-y-0 right-3 inline-flex items-center text-sm font-semibold text-slate-500 transition hover:text-primary" aria-label="Mostrar contraseña" aria-pressed="false">
+                        <span>Mostrar</span>
                     </button>
                 </div>
                 {% for error in form.password.errors %}
@@ -42,8 +43,8 @@
                 <label for="{{ form.password2.id_for_label }}" class="text-sm font-semibold text-slate-700">{{ form.password2.label }}</label>
                 <div class="relative">
                     {{ form.password2 }}
-                    <button type="button" @click="mostrar2 = !mostrar2; document.getElementById('{{ form.password2.id_for_label }}').type = mostrar2 ? 'text' : 'password'" class="absolute inset-y-0 right-3 inline-flex items-center text-sm font-semibold text-slate-500 transition hover:text-primary">
-                        <span x-text="mostrar2 ? 'Ocultar' : 'Mostrar'"></span>
+                    <button type="button" data-password-toggle="{{ form.password2.id_for_label }}" class="absolute inset-y-0 right-3 inline-flex items-center text-sm font-semibold text-slate-500 transition hover:text-primary" aria-label="Mostrar contraseña" aria-pressed="false">
+                        <span>Mostrar</span>
                     </button>
                 </div>
                 {% for error in form.password2.errors %}
@@ -67,4 +68,5 @@
         </div>
     </section>
 </main>
+<script src="{% static 'js/password-toggle.js' %}" defer></script>
 {% endblock body %}

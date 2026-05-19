@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Iniciar sesión | CommuSafe{% endblock title %}
 
@@ -27,7 +28,7 @@
             </div>
         </section>
 
-        <section class="bg-white px-6 py-10 sm:px-10 lg:px-12" x-data="{ mostrarPassword: false }">
+        <section class="bg-white px-6 py-10 sm:px-10 lg:px-12">
             <div class="mx-auto max-w-md">
                 <div class="text-center">
                     <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-[22px] bg-primary text-3xl text-white shadow-soft">&#128737;&#65039;</div>
@@ -54,9 +55,9 @@
                     <div class="space-y-2">
                         <label for="password" class="text-sm font-semibold text-slate-700">Contraseña</label>
                         <div class="relative">
-                            <input id="password" name="password" x-bind:type="mostrarPassword ? 'text' : 'password'" required autocomplete="current-password" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pr-14 text-sm text-slate-900 outline-none transition focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10" placeholder="Ingresa tu contraseña">
-                            <button type="button" @click="mostrarPassword = !mostrarPassword" class="absolute inset-y-0 right-3 inline-flex items-center text-sm font-semibold text-slate-500 transition hover:text-primary">
-                                <span x-text="mostrarPassword ? 'Ocultar' : 'Mostrar'"></span>
+                            <input id="password" name="password" type="password" required autocomplete="current-password" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pr-14 text-sm text-slate-900 outline-none transition focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10" placeholder="Ingresa tu contraseña">
+                            <button type="button" data-password-toggle="password" class="absolute inset-y-0 right-3 inline-flex items-center text-sm font-semibold text-slate-500 transition hover:text-primary" aria-label="Mostrar contraseña" aria-pressed="false">
+                                <span>Mostrar</span>
                             </button>
                         </div>
                     </div>
@@ -83,4 +84,5 @@
         </section>
     </div>
 </main>
+<script src="{% static 'js/password-toggle.js' %}" defer></script>
 {% endblock body %}
