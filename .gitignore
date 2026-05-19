@@ -13,6 +13,9 @@ backend/*.report.html
 backend/*.report.json
 backend/commusafe.onrender.com_*.html
 backend/staticfiles/
+backend/*.report.html
+backend/lighthouse*.html
+backend/evidencia-lighthouse*.html
 backend/.venv/
 backend/.venv-local/
 backend/venv/
