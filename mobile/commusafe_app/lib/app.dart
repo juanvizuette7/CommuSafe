@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'core/services/navigation_service.dart';
 import 'core/theme/app_theme.dart';
-import 'features/ajustes/providers/app_settings_provider.dart';
-import 'features/ajustes/screens/ajustes_screen.dart';
 import 'features/asistente/screens/chat_screen.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/auth/screens/login_screen.dart';
@@ -42,33 +39,10 @@ class _CommuSafeAppState extends State<CommuSafeApp> {
 
   @override
   Widget build(BuildContext context) {
-    final settings = context.watch<AppSettingsProvider>();
-
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       title: 'CommuSafe',
-      theme: settings.theme,
-      locale: settings.locale,
-      supportedLocales: const <Locale>[
-        Locale('es', 'CO'),
-        Locale('es'),
-        Locale('en'),
-      ],
-      localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      builder: (BuildContext context, Widget? child) {
-        final mediaQuery = MediaQuery.of(context);
-        return MediaQuery(
-          data: mediaQuery.copyWith(
-            textScaler: TextScaler.linear(settings.textScaleFactor),
-            disableAnimations: settings.reduceMotion,
-          ),
-          child: child ?? const SizedBox.shrink(),
-        );
-      },
+      theme: AppTheme.lightTheme,
       routerConfig: _router!,
     );
   }
@@ -151,12 +125,6 @@ class AppRouter {
               path: '/perfil',
               builder: (BuildContext context, GoRouterState state) {
                 return const PerfilScreen();
-              },
-            ),
-            GoRoute(
-              path: '/ajustes',
-              builder: (BuildContext context, GoRouterState state) {
-                return const AjustesScreen();
               },
             ),
             GoRoute(
@@ -258,15 +226,13 @@ class _StartupLoadingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = CommuSafeThemeExtension.of(context);
-
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: <Color>[theme.primary, theme.accent],
+            colors: <Color>[AppColors.primary, AppColors.accent],
           ),
         ),
         child: const Center(

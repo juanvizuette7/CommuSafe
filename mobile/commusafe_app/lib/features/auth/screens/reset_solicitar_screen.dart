@@ -75,8 +75,6 @@ class _ResetSolicitarScreenState extends State<ResetSolicitarScreen>
 
   @override
   Widget build(BuildContext context) {
-    final theme = CommuSafeThemeExtension.of(context);
-
     return Scaffold(
       body: CommuSafeAnimatedBackground(
         dark: true,
@@ -122,7 +120,7 @@ class _ResetSolicitarScreenState extends State<ResetSolicitarScreen>
                             'Recuperar contraseña',
                             style: Theme.of(context).textTheme.headlineSmall
                                 ?.copyWith(
-                                  color: theme.primary,
+                                  color: AppColors.primary,
                                   fontWeight: FontWeight.w900,
                                 ),
                           ),
@@ -195,7 +193,7 @@ class _ResetSolicitarScreenState extends State<ResetSolicitarScreen>
                           FilledButton.icon(
                             onPressed: _isLoading ? null : _submit,
                             style: FilledButton.styleFrom(
-                              backgroundColor: theme.primary,
+                              backgroundColor: AppColors.primary,
                               foregroundColor: Colors.white,
                               minimumSize: const Size.fromHeight(56),
                               shape: RoundedRectangleBorder(

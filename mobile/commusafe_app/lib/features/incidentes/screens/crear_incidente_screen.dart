@@ -6,7 +6,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../providers/incidente_provider.dart';
 
@@ -50,7 +49,6 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (BuildContext context) {
-        final l10n = AppLocalizations.of(context);
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -67,10 +65,7 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                 ),
                 const SizedBox(height: 18),
                 Text(
-                  l10n.tr(
-                    'Agregar evidencia fotografica',
-                    'Add photo evidence',
-                  ),
+                  'Agregar evidencia fotográfica',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
@@ -81,13 +76,8 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                     backgroundColor: Color(0xFFE2E8F0),
                     child: Icon(Icons.photo_camera_rounded),
                   ),
-                  title: Text(l10n.tr('Tomar foto', 'Take photo')),
-                  subtitle: Text(
-                    l10n.tr(
-                      'Usar la camara del dispositivo',
-                      'Use the device camera',
-                    ),
-                  ),
+                  title: const Text('Tomar foto'),
+                  subtitle: const Text('Usar la cámara del dispositivo'),
                   onTap: () async {
                     Navigator.of(context).pop();
                     await _tomarFoto();
@@ -98,15 +88,8 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                     backgroundColor: Color(0xFFE2E8F0),
                     child: Icon(Icons.photo_library_rounded),
                   ),
-                  title: Text(
-                    l10n.tr('Elegir de la galeria', 'Choose from gallery'),
-                  ),
-                  subtitle: Text(
-                    l10n.tr(
-                      'Selecciona hasta 3 imagenes',
-                      'Select up to 3 images',
-                    ),
-                  ),
+                  title: const Text('Elegir de la galería'),
+                  subtitle: const Text('Selecciona hasta 3 imágenes'),
                   onTap: () async {
                     Navigator.of(context).pop();
                     await _seleccionarGaleria();
@@ -145,14 +128,8 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
 
   void _agregarImagenes(List<XFile> images) {
     final remaining = 3 - _imagenes.length;
-    final l10n = AppLocalizations.of(context);
     if (remaining <= 0) {
-      _showSnack(
-        l10n.tr(
-          'Solo puedes adjuntar maximo 3 evidencias.',
-          'You can attach up to 3 evidence files.',
-        ),
-      );
+      _showSnack('Solo puedes adjuntar máximo 3 evidencias.');
       return;
     }
 
@@ -161,22 +138,14 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
     });
 
     if (images.length > remaining) {
-      _showSnack(
-        l10n.tr(
-          'Solo se agregaron $remaining imagenes.',
-          'Only $remaining images were added.',
-        ),
-      );
+      _showSnack('Solo se agregaron $remaining imágenes.');
     }
   }
 
-  void _showSnack(String message, {Color? color}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color ?? CommuSafeThemeExtension.of(context).primary,
-      ),
-    );
+  void _showSnack(String message, {Color color = AppColors.primary}) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: color));
   }
 
   Future<void> _callEmergencyLine() async {
@@ -203,38 +172,25 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
     }
 
     if (incidente == null) {
-      final l10n = AppLocalizations.of(context);
       _showSnack(
-        provider.errorMessage ??
-            l10n.tr(
-              'No fue posible reportar el incidente.',
-              'The incident could not be reported.',
-            ),
+        provider.errorMessage ?? 'No fue posible reportar el incidente.',
         color: AppColors.danger,
       );
       return;
     }
 
-    _showSnack(
-      AppLocalizations.of(context).tr(
-        'Incidente reportado correctamente.',
-        'Incident reported successfully.',
-      ),
-      color: AppColors.success,
-    );
+    _showSnack('Incidente reportado correctamente.', color: AppColors.success);
     context.pop(true);
   }
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<IncidenteProvider>();
-    final theme = CommuSafeThemeExtension.of(context);
-    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        title: Text(l10n.tr('Reportar incidente', 'Report incident')),
+        title: const Text('Reportar incidente'),
         leading: IconButton(
           icon: const Icon(Icons.close_rounded),
           onPressed: () => context.pop(),
@@ -248,36 +204,28 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
             children: <Widget>[
               _FormCard(
-                title: l10n.tr('Informacion principal', 'Main information'),
-                subtitle: l10n.tr(
-                  'Describe claramente el incidente que estas reportando.',
-                  'Clearly describe the incident you are reporting.',
-                ),
+                title: 'Información principal',
+                subtitle:
+                    'Describe claramente el incidente que estás reportando.',
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     TextFormField(
                       controller: _tituloController,
-                      decoration: InputDecoration(
-                        labelText: l10n.tr('Titulo', 'Title'),
-                        hintText: l10n.tr(
-                          'Ej. Ruido excesivo en torre B',
-                          'Ex. Excessive noise in tower B',
-                        ),
+                      decoration: const InputDecoration(
+                        labelText: 'Título',
+                        hintText: 'Ej. Ruido excesivo en torre B',
                       ),
                       validator: (String? value) {
                         if ((value ?? '').trim().isEmpty) {
-                          return l10n.tr(
-                            'Ingresa un titulo para el incidente.',
-                            'Enter a title for the incident.',
-                          );
+                          return 'Ingresa un título para el incidente.';
                         }
                         return null;
                       },
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      l10n.tr('Categoria', 'Category'),
+                      'Categoría',
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w700,
                       ),
@@ -294,9 +242,7 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                           final isSelected =
                               _categoriaSeleccionada == categoria['value'];
                           return ChoiceChip(
-                            label: Text(
-                              _categoryLabel(categoria['value'] ?? '', l10n),
-                            ),
+                            label: Text(categoria['label'] ?? ''),
                             selected: isSelected,
                             onSelected: (_) {
                               setState(() {
@@ -304,11 +250,11 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                                     categoria['value'] ?? 'SEGURIDAD';
                               });
                             },
-                            selectedColor: theme.primary,
+                            selectedColor: AppColors.primary,
                             backgroundColor: const Color(0xFFF1F5F9),
                             side: BorderSide(
                               color: isSelected
-                                  ? theme.primary
+                                  ? AppColors.primary
                                   : const Color(0xFFE2E8F0),
                             ),
                             labelStyle: TextStyle(
@@ -349,10 +295,7 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
-                                          l10n.tr(
-                                            'ATENCION: Estas reportando una emergencia.',
-                                            'ATTENTION: You are reporting an emergency.',
-                                          ),
+                                          'ATENCIÓN: Estás reportando una emergencia.',
                                           style: Theme.of(context)
                                               .textTheme
                                               .titleSmall
@@ -366,10 +309,7 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                                   ),
                                   const SizedBox(height: 10),
                                   Text(
-                                    l10n.tr(
-                                      'Si hay riesgo de vida, llama al 112 directamente.',
-                                      'If there is a life-threatening risk, call 112 directly.',
-                                    ),
+                                    'Si hay riesgo de vida, llama al 112 directamente.',
                                     style: Theme.of(context)
                                         .textTheme
                                         .bodyMedium
@@ -388,9 +328,7 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                                       ),
                                     ),
                                     icon: const Icon(Icons.call_rounded),
-                                    label: Text(
-                                      l10n.tr('Llamar al 112', 'Call 112'),
-                                    ),
+                                    label: const Text('Llamar al 112'),
                                   ),
                                 ],
                               ),
@@ -403,26 +341,18 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                       minLines: 4,
                       maxLines: 6,
                       maxLength: 500,
-                      decoration: InputDecoration(
-                        labelText: l10n.tr('Descripcion', 'Description'),
-                        hintText: l10n.tr(
-                          'Describe lo sucedido con el mayor detalle posible.',
-                          'Describe what happened with as much detail as possible.',
-                        ),
+                      decoration: const InputDecoration(
+                        labelText: 'Descripción',
+                        hintText:
+                            'Describe lo sucedido con el mayor detalle posible.',
                         alignLabelWithHint: true,
                       ),
                       validator: (String? value) {
                         if ((value ?? '').trim().isEmpty) {
-                          return l10n.tr(
-                            'Ingresa una descripcion del incidente.',
-                            'Enter an incident description.',
-                          );
+                          return 'Ingresa una descripción del incidente.';
                         }
                         if ((value ?? '').trim().length < 10) {
-                          return l10n.tr(
-                            'La descripcion debe tener al menos 10 caracteres.',
-                            'The description must have at least 10 characters.',
-                          );
+                          return 'La descripción debe tener al menos 10 caracteres.';
                         }
                         return null;
                       },
@@ -430,16 +360,10 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                     const SizedBox(height: 12),
                     TextFormField(
                       controller: _ubicacionController,
-                      decoration: InputDecoration(
-                        labelText: l10n.tr(
-                          'Ubicacion de referencia',
-                          'Reference location',
-                        ),
-                        hintText: l10n.tr(
-                          'Ej. Porteria principal, Torre A piso 2',
-                          'Ex. Main gate, Tower A floor 2',
-                        ),
-                        prefixIcon: const Icon(Icons.place_outlined),
+                      decoration: const InputDecoration(
+                        labelText: 'Ubicación de referencia',
+                        hintText: 'Ej. Portería principal, Torre A piso 2',
+                        prefixIcon: Icon(Icons.place_outlined),
                       ),
                     ),
                   ],
@@ -447,11 +371,8 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
               ),
               const SizedBox(height: 18),
               _FormCard(
-                title: l10n.tr('Evidencias fotograficas', 'Photo evidence'),
-                subtitle: l10n.tr(
-                  'Adjunta hasta 3 imagenes para respaldar el reporte.',
-                  'Attach up to 3 images to support the report.',
-                ),
+                title: 'Evidencias fotográficas',
+                subtitle: 'Adjunta hasta 3 imágenes para respaldar el reporte.',
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
@@ -474,7 +395,9 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                                   borderRadius: BorderRadius.circular(18),
                                   border: Border.all(
                                     color: canAdd
-                                        ? theme.primary.withValues(alpha: 0.2)
+                                        ? AppColors.primary.withValues(
+                                            alpha: 0.2,
+                                          )
                                         : const Color(0xFFE2E8F0),
                                   ),
                                 ),
@@ -484,20 +407,18 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                                     Icon(
                                       Icons.add_a_photo_outlined,
                                       color: canAdd
-                                          ? theme.primary
+                                          ? AppColors.primary
                                           : AppColors.textSecondary,
                                     ),
                                     const SizedBox(height: 10),
                                     Text(
-                                      canAdd
-                                          ? l10n.tr('Agregar', 'Add')
-                                          : l10n.tr('Limite', 'Limit'),
+                                      canAdd ? 'Agregar' : 'Límite',
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodySmall
                                           ?.copyWith(
                                             color: canAdd
-                                                ? theme.primary
+                                                ? AppColors.primary
                                                 : AppColors.textSecondary,
                                             fontWeight: FontWeight.w700,
                                           ),
@@ -551,10 +472,7 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      l10n.tr(
-                        'Seleccionadas: ${_imagenes.length}/3',
-                        'Selected: ${_imagenes.length}/3',
-                      ),
+                      'Seleccionadas: ${_imagenes.length}/3',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
                         fontWeight: FontWeight.w600,
@@ -583,7 +501,7 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                             color: Colors.white,
                           ),
                         )
-                      : Text(l10n.tr('Reportar incidente', 'Report incident')),
+                      : const Text('Reportar incidente'),
                 ),
               ),
             ],
@@ -591,21 +509,6 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
         ),
       ),
     );
-  }
-}
-
-String _categoryLabel(String value, AppLocalizations l10n) {
-  switch (value) {
-    case 'SEGURIDAD':
-      return l10n.tr('Seguridad', 'Security');
-    case 'CONVIVENCIA':
-      return l10n.tr('Convivencia', 'Community');
-    case 'INFRAESTRUCTURA':
-      return l10n.tr('Infraestructura', 'Infrastructure');
-    case 'EMERGENCIA':
-      return l10n.tr('Emergencia', 'Emergency');
-    default:
-      return value;
   }
 }
 
@@ -622,17 +525,14 @@ class _FormCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = CommuSafeThemeExtension.of(context);
-
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: theme.surface,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: theme.primary.withValues(alpha: 0.08)),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: theme.primary.withValues(alpha: 0.07),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 22,
             offset: const Offset(0, 10),
           ),

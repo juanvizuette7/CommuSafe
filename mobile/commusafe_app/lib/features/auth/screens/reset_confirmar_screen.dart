@@ -103,8 +103,6 @@ class _ResetConfirmarScreenState extends State<ResetConfirmarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = CommuSafeThemeExtension.of(context);
-
     return Scaffold(
       body: CommuSafeAnimatedBackground(
         dark: true,
@@ -150,7 +148,7 @@ class _ResetConfirmarScreenState extends State<ResetConfirmarScreen> {
                             'Nueva contraseña',
                             style: Theme.of(context).textTheme.headlineSmall
                                 ?.copyWith(
-                                  color: theme.primary,
+                                  color: AppColors.primary,
                                   fontWeight: FontWeight.w900,
                                 ),
                           ),
@@ -261,7 +259,7 @@ class _ResetConfirmarScreenState extends State<ResetConfirmarScreen> {
                           FilledButton.icon(
                             onPressed: _isLoading ? null : _submit,
                             style: FilledButton.styleFrom(
-                              backgroundColor: theme.primary,
+                              backgroundColor: AppColors.primary,
                               foregroundColor: Colors.white,
                               minimumSize: const Size.fromHeight(56),
                               shape: RoundedRectangleBorder(

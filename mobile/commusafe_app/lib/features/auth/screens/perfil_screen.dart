@@ -6,8 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/constants/app_constants.dart';
-import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../incidentes/providers/incidente_provider.dart';
 import '../../notificaciones/providers/notificacion_provider.dart';
@@ -48,8 +46,6 @@ class _PerfilScreenState extends State<PerfilScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
       ),
       builder: (BuildContext context) {
-        final theme = CommuSafeThemeExtension.of(context);
-        final l10n = AppLocalizations.of(context);
         return SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(18, 4, 18, 18),
@@ -57,26 +53,26 @@ class _PerfilScreenState extends State<PerfilScreen> {
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: theme.primary,
+                  leading: const CircleAvatar(
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
-                    child: const Icon(Icons.photo_camera_rounded),
+                    child: Icon(Icons.photo_camera_rounded),
                   ),
-                  title: Text(
-                    l10n.tr('Tomar foto', 'Take photo'),
-                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  title: const Text(
+                    'Tomar foto',
+                    style: TextStyle(fontWeight: FontWeight.w800),
                   ),
                   onTap: () => Navigator.of(context).pop(ImageSource.camera),
                 ),
                 ListTile(
-                  leading: CircleAvatar(
-                    backgroundColor: theme.accent,
+                  leading: const CircleAvatar(
+                    backgroundColor: AppColors.accent,
                     foregroundColor: Colors.white,
-                    child: const Icon(Icons.photo_library_rounded),
+                    child: Icon(Icons.photo_library_rounded),
                   ),
-                  title: Text(
-                    l10n.tr('Elegir de galeria', 'Choose from gallery'),
-                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  title: const Text(
+                    'Elegir de galería',
+                    style: TextStyle(fontWeight: FontWeight.w800),
                   ),
                   onTap: () => Navigator.of(context).pop(ImageSource.gallery),
                 ),
@@ -111,16 +107,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            ok
-                ? AppLocalizations.of(
-                    context,
-                  ).tr('Foto actualizada', 'Photo updated')
-                : AppLocalizations.of(context).tr(
-                    'No se pudo subir la foto',
-                    'The photo could not be uploaded',
-                  ),
-          ),
+          content: Text(ok ? 'Foto actualizada' : 'No se pudo subir la foto'),
           backgroundColor: ok ? AppColors.success : AppColors.danger,
           behavior: SnackBarBehavior.floating,
         ),
@@ -130,12 +117,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            AppLocalizations.of(
-              context,
-            ).tr('No se pudo subir la foto', 'The photo could not be uploaded'),
-          ),
+        const SnackBar(
+          content: Text('No se pudo subir la foto'),
           backgroundColor: AppColors.danger,
           behavior: SnackBarBehavior.floating,
         ),
@@ -147,39 +130,10 @@ class _PerfilScreenState extends State<PerfilScreen> {
     }
   }
 
-  Future<void> _abrirEditorPerfil(UsuarioModel usuario) async {
-    final actualizado = await showModalBottomSheet<bool>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (BuildContext context) {
-        return _EditProfileSheet(usuario: usuario);
-      },
-    );
-
-    if (!mounted || actualizado != true) {
-      return;
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          AppLocalizations.of(context).tr(
-            'Perfil actualizado correctamente',
-            'Profile updated successfully',
-          ),
-        ),
-        backgroundColor: AppColors.success,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final usuario = authProvider.usuarioActual;
-    final l10n = AppLocalizations.of(context);
 
     if (usuario == null && authProvider.isInitializing) {
       return const Center(child: CircularProgressIndicator());
@@ -190,10 +144,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Text(
-            l10n.tr(
-              'No fue posible cargar la informacion del perfil.',
-              'The profile information could not be loaded.',
-            ),
+            'No fue posible cargar la información del perfil.',
             style: Theme.of(context).textTheme.titleMedium,
             textAlign: TextAlign.center,
           ),
@@ -215,49 +166,27 @@ class _PerfilScreenState extends State<PerfilScreen> {
             padding: const EdgeInsets.fromLTRB(20, 20, 20, 28),
             child: Column(
               children: <Widget>[
-                _ProfileStatusPanel(usuario: usuario),
-                const SizedBox(height: 14),
-                _EditProfileCta(
-                  onTap: () => _abrirEditorPerfil(usuario),
-                  usuario: usuario,
-                ),
-                const SizedBox(height: 14),
-                _ProfileQuickActions(usuario: usuario),
-                const SizedBox(height: 18),
                 _ProfileInfoCard(
                   icon: Icons.alternate_email_rounded,
-                  title: l10n.tr('Correo electronico', 'Email'),
+                  title: 'Correo electrónico',
                   value: usuario.email,
                 ),
                 const SizedBox(height: 14),
                 _ProfileInfoCard(
                   icon: Icons.home_work_outlined,
-                  title: _referenciaTitulo(usuario, l10n),
-                  value: _referenciaValor(usuario, l10n),
+                  title: 'Unidad residencial',
+                  value: usuario.unidadResidencial?.trim().isNotEmpty == true
+                      ? usuario.unidadResidencial!
+                      : 'No registrada',
                 ),
                 const SizedBox(height: 14),
                 _ProfileInfoCard(
                   icon: Icons.phone_outlined,
-                  title: l10n.tr('Telefono', 'Phone'),
+                  title: 'Teléfono',
                   value: usuario.telefono?.trim().isNotEmpty == true
                       ? usuario.telefono!
-                      : l10n.tr('No registrado', 'Not registered'),
+                      : 'No registrado',
                 ),
-                const SizedBox(height: 14),
-                _ProfileInfoCard(
-                  icon: Icons.tune_rounded,
-                  title: l10n.tr(
-                    'Ajustes de experiencia',
-                    'Experience settings',
-                  ),
-                  value: l10n.tr(
-                    'Contraste, color, letra e idioma',
-                    'Contrast, color, text size and language',
-                  ),
-                  onTap: () => context.push('/ajustes'),
-                ),
-                const SizedBox(height: 14),
-                _RoleCapabilitiesCard(usuario: usuario),
                 const SizedBox(height: 28),
                 SizedBox(
                   width: double.infinity,
@@ -272,7 +201,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                       ),
                     ),
                     icon: const Icon(Icons.logout_rounded),
-                    label: Text(l10n.tr('Cerrar sesion', 'Log out')),
+                    label: const Text('Cerrar sesión'),
                   ),
                 ),
               ],
@@ -295,29 +224,27 @@ class _ProfileHeader extends StatelessWidget {
   final bool subiendoFoto;
   final VoidCallback onAvatarTap;
 
-  Color _badgeColor(CommuSafeThemeExtension theme) {
+  Color _badgeColor() {
     if (usuario.esAdmin) {
-      return theme.primary;
+      return const Color(0xFF1D4ED8);
     }
     if (usuario.esVigilante) {
-      return theme.accent;
+      return const Color(0xFF2563EB);
     }
     return AppColors.success;
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = CommuSafeThemeExtension.of(context);
-
     return Container(
       padding: const EdgeInsets.fromLTRB(24, 28, 24, 30),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: <Color>[theme.primary, theme.accent],
+          colors: <Color>[AppColors.primary, AppColors.accent],
         ),
-        borderRadius: const BorderRadius.only(
+        borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(30),
           bottomRight: Radius.circular(30),
         ),
@@ -362,7 +289,7 @@ class _ProfileHeader extends StatelessWidget {
                     height: 30,
                     width: 30,
                     decoration: BoxDecoration(
-                      color: theme.primary,
+                      color: AppColors.primary,
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 2),
                     ),
@@ -405,7 +332,7 @@ class _ProfileHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: _badgeColor(theme).withValues(alpha: 0.22),
+              color: _badgeColor().withValues(alpha: 0.22),
               borderRadius: BorderRadius.circular(999),
               border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
             ),
@@ -423,912 +350,56 @@ class _ProfileHeader extends StatelessWidget {
   }
 }
 
-String _referenciaTitulo(UsuarioModel usuario, AppLocalizations l10n) {
-  if (usuario.esResidente) {
-    return l10n.tr('Unidad residencial', 'Residential unit');
-  }
-  return l10n.tr('Referencia del conjunto', 'Community reference');
-}
-
-String _referenciaMetricaTitulo(UsuarioModel usuario, AppLocalizations l10n) {
-  if (usuario.esResidente) {
-    return l10n.tr('Unidad', 'Unit');
-  }
-  return l10n.tr('Conjunto', 'Community');
-}
-
-String _referenciaValor(UsuarioModel usuario, AppLocalizations l10n) {
-  if (usuario.esResidente) {
-    return usuario.unidadResidencial?.trim().isNotEmpty == true
-        ? usuario.unidadResidencial!
-        : l10n.tr('No registrada', 'Not registered');
-  }
-
-  if (usuario.esAdmin) {
-    return l10n.tr('Admin - Remansos', 'Admin - Remansos');
-  }
-
-  if (usuario.esVigilante) {
-    return l10n.tr('Vigilancia - Remansos', 'Security - Remansos');
-  }
-
-  return AppConstants.residentialComplexName;
-}
-
-class _EditProfileCta extends StatelessWidget {
-  const _EditProfileCta({required this.usuario, required this.onTap});
-
-  final UsuarioModel usuario;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = CommuSafeThemeExtension.of(context);
-    final l10n = AppLocalizations.of(context);
-    final phoneReady = usuario.telefono?.trim().isNotEmpty == true;
-
-    return Material(
-      color: theme.primary.withValues(alpha: 0.08),
-      borderRadius: BorderRadius.circular(22),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(22),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: <Widget>[
-              Container(
-                height: 48,
-                width: 48,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: <Color>[theme.primary, theme.accent],
-                  ),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: const Icon(Icons.edit_rounded, color: Colors.white),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      l10n.tr('Editar datos personales', 'Edit personal data'),
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      phoneReady
-                          ? l10n.tr(
-                              'Nombre y celular disponibles para contacto.',
-                              'Name and phone available for contact.',
-                            )
-                          : l10n.tr(
-                              'Agrega tu celular para mejorar la atencion.',
-                              'Add your phone to improve assistance.',
-                            ),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: theme.textSecondary,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(Icons.chevron_right_rounded, color: theme.primary),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _EditProfileSheet extends StatefulWidget {
-  const _EditProfileSheet({required this.usuario});
-
-  final UsuarioModel usuario;
-
-  @override
-  State<_EditProfileSheet> createState() => _EditProfileSheetState();
-}
-
-class _EditProfileSheetState extends State<_EditProfileSheet> {
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  late final TextEditingController _nombreController;
-  late final TextEditingController _apellidoController;
-  late final TextEditingController _telefonoController;
-  late final TextEditingController _unidadController;
-
-  @override
-  void initState() {
-    super.initState();
-    _nombreController = TextEditingController(text: widget.usuario.nombre);
-    _apellidoController = TextEditingController(text: widget.usuario.apellido);
-    _telefonoController = TextEditingController(
-      text: widget.usuario.telefono ?? '',
-    );
-    _unidadController = TextEditingController(
-      text: widget.usuario.unidadResidencial ?? '',
-    );
-  }
-
-  @override
-  void dispose() {
-    _nombreController.dispose();
-    _apellidoController.dispose();
-    _telefonoController.dispose();
-    _unidadController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _guardar() async {
-    final form = _formKey.currentState;
-    if (form == null || !form.validate()) {
-      return;
-    }
-
-    final ok = await context.read<AuthProvider>().actualizarPerfil(
-      nombre: _nombreController.text,
-      apellido: _apellidoController.text,
-      telefono: _telefonoController.text,
-      unidadResidencial: widget.usuario.esResidente
-          ? _unidadController.text
-          : null,
-    );
-
-    if (!mounted) {
-      return;
-    }
-
-    if (ok) {
-      Navigator.of(context).pop(true);
-      return;
-    }
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          context.read<AuthProvider>().errorMessage ??
-              AppLocalizations.of(context).tr(
-                'No se pudo actualizar el perfil.',
-                'The profile could not be updated.',
-              ),
-        ),
-        backgroundColor: AppColors.danger,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = CommuSafeThemeExtension.of(context);
-    final isLoading = context.watch<AuthProvider>().isLoading;
-    final l10n = AppLocalizations.of(context);
-
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.only(
-          left: 14,
-          right: 14,
-          bottom: MediaQuery.of(context).viewInsets.bottom + 14,
-          top: 14,
-        ),
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
-          decoration: BoxDecoration(
-            color: theme.surface,
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: <BoxShadow>[
-              BoxShadow(
-                color: theme.primary.withValues(alpha: 0.18),
-                blurRadius: 28,
-                offset: const Offset(0, 14),
-              ),
-            ],
-          ),
-          child: Form(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Center(
-                    child: Container(
-                      width: 46,
-                      height: 5,
-                      decoration: BoxDecoration(
-                        color: AppColors.muted,
-                        borderRadius: BorderRadius.circular(999),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  Row(
-                    children: <Widget>[
-                      Container(
-                        height: 48,
-                        width: 48,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: <Color>[theme.primary, theme.accent],
-                          ),
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                        child: const Icon(
-                          Icons.manage_accounts_rounded,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: <Widget>[
-                            Text(
-                              l10n.tr('Actualizar perfil', 'Update profile'),
-                              style: Theme.of(context).textTheme.titleLarge
-                                  ?.copyWith(fontWeight: FontWeight.w900),
-                            ),
-                            Text(
-                              l10n.tr(
-                                'Estos datos ayudan a contactarte rapido.',
-                                'This information helps the team contact you quickly.',
-                              ),
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
-                                    color: theme.textSecondary,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  TextFormField(
-                    controller: _nombreController,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: InputDecoration(
-                      labelText: l10n.tr('Nombre', 'First name'),
-                      prefixIcon: const Icon(Icons.person_outline_rounded),
-                    ),
-                    validator: (String? value) {
-                      if ((value ?? '').trim().length < 2) {
-                        return l10n.tr(
-                          'Escribe un nombre valido.',
-                          'Enter a valid first name.',
-                        );
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _apellidoController,
-                    textCapitalization: TextCapitalization.words,
-                    decoration: InputDecoration(
-                      labelText: l10n.tr('Apellido', 'Last name'),
-                      prefixIcon: const Icon(Icons.badge_outlined),
-                    ),
-                    validator: (String? value) {
-                      if ((value ?? '').trim().length < 2) {
-                        return l10n.tr(
-                          'Escribe un apellido valido.',
-                          'Enter a valid last name.',
-                        );
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _telefonoController,
-                    keyboardType: TextInputType.phone,
-                    decoration: InputDecoration(
-                      labelText: l10n.tr(
-                        'Celular colombiano',
-                        'Colombian mobile number',
-                      ),
-                      hintText: l10n.tr('Ej. 3001234567', 'Ex. 3001234567'),
-                      prefixIcon: const Icon(Icons.phone_iphone_rounded),
-                    ),
-                    validator: (String? value) {
-                      final text = (value ?? '').replaceAll(RegExp(r'\s+'), '');
-                      if (text.isEmpty) {
-                        return null;
-                      }
-                      if (!RegExp(r'^(\+57)?3\d{9}$').hasMatch(text)) {
-                        return l10n.tr(
-                          'Usa un celular colombiano valido.',
-                          'Use a valid Colombian mobile number.',
-                        );
-                      }
-                      return null;
-                    },
-                  ),
-                  if (widget.usuario.esResidente) ...<Widget>[
-                    const SizedBox(height: 12),
-                    TextFormField(
-                      controller: _unidadController,
-                      textCapitalization: TextCapitalization.words,
-                      decoration: InputDecoration(
-                        labelText: l10n.tr(
-                          'Unidad residencial',
-                          'Residential unit',
-                        ),
-                        hintText: l10n.tr(
-                          'Ej. Apto 301 Torre A',
-                          'Ex. Apt 301 Tower A',
-                        ),
-                        prefixIcon: const Icon(Icons.home_work_outlined),
-                      ),
-                      validator: (String? value) {
-                        if ((value ?? '').trim().isEmpty) {
-                          return l10n.tr(
-                            'La unidad es obligatoria para residentes.',
-                            'The unit is required for residents.',
-                          );
-                        }
-                        return null;
-                      },
-                    ),
-                  ],
-                  const SizedBox(height: 18),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: isLoading ? null : _guardar,
-                      icon: isLoading
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.2,
-                                color: Colors.white,
-                              ),
-                            )
-                          : const Icon(Icons.save_rounded),
-                      label: Text(
-                        isLoading
-                            ? l10n.tr('Guardando...', 'Saving...')
-                            : l10n.tr('Guardar datos', 'Save data'),
-                      ),
-                      style: FilledButton.styleFrom(
-                        backgroundColor: theme.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ProfileStatusPanel extends StatelessWidget {
-  const _ProfileStatusPanel({required this.usuario});
-
-  final UsuarioModel usuario;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = CommuSafeThemeExtension.of(context);
-    final l10n = AppLocalizations.of(context);
-    final referencia = _referenciaValor(usuario, l10n);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: theme.surface,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: theme.primary.withValues(alpha: 0.10)),
-        boxShadow: <BoxShadow>[
-          BoxShadow(
-            color: theme.primary.withValues(alpha: 0.08),
-            blurRadius: 22,
-            offset: const Offset(0, 14),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              Container(
-                height: 46,
-                width: 46,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: <Color>[theme.primary, theme.accent],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: const Icon(
-                  Icons.verified_user_rounded,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      l10n.tr('Cuenta protegida', 'Protected account'),
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      l10n.tr(
-                        'Sesion segura con JWT y acceso por rol.',
-                        'Secure JWT session with role-based access.',
-                      ),
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: theme.textSecondary,
-                        height: 1.35,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 7,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.success.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Text(
-                  l10n.tr('Activo', 'Active'),
-                  style: const TextStyle(
-                    color: AppColors.success,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: _MiniProfileMetric(
-                  label: l10n.tr('Rol', 'Role'),
-                  value: usuario.rolLegible,
-                  icon: Icons.badge_rounded,
-                  color: theme.primary,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _MiniProfileMetric(
-                  label: _referenciaMetricaTitulo(usuario, l10n),
-                  value: referencia,
-                  icon: Icons.home_work_rounded,
-                  color: theme.accent,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _MiniProfileMetric extends StatelessWidget {
-  const _MiniProfileMetric({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Icon(icon, color: color, size: 20),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 3),
-          Text(
-            value,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(fontWeight: FontWeight.w900),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ProfileQuickActions extends StatelessWidget {
-  const _ProfileQuickActions({required this.usuario});
-
-  final UsuarioModel usuario;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = CommuSafeThemeExtension.of(context);
-    final l10n = AppLocalizations.of(context);
-    final actions = <_ProfileAction>[
-      _ProfileAction(
-        title: l10n.tr('Ajustes', 'Settings'),
-        subtitle: l10n.tr('Color y letra', 'Color and text'),
-        icon: Icons.tune_rounded,
-        route: '/ajustes',
-        color: theme.primary,
-      ),
-      _ProfileAction(
-        title: l10n.tr('Alertas', 'Alerts'),
-        subtitle: l10n.tr('Notificaciones', 'Notifications'),
-        icon: Icons.notifications_active_rounded,
-        route: '/notificaciones',
-        color: AppColors.danger,
-      ),
-      _ProfileAction(
-        title: l10n.tr('Emergencias', 'Emergencies'),
-        subtitle: l10n.tr('Llamadas rapidas', 'Quick calls'),
-        icon: Icons.local_police_rounded,
-        route: '/emergencias',
-        color: const Color(0xFFEA580C),
-      ),
-      _ProfileAction(
-        title: usuario.esResidente
-            ? l10n.tr('Mis reportes', 'My reports')
-            : l10n.tr('Incidentes', 'Incidents'),
-        subtitle: usuario.esResidente
-            ? l10n.tr('Seguimiento', 'Tracking')
-            : l10n.tr('Operacion', 'Operation'),
-        icon: Icons.assignment_rounded,
-        route: '/incidentes',
-        color: theme.accent,
-      ),
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        Row(
-          children: <Widget>[
-            Text(
-              l10n.tr('Accesos rapidos', 'Quick actions'),
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
-            ),
-            const Spacer(),
-            Text(
-              l10n.tr('Perfil', 'Profile'),
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: theme.textSecondary,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: actions.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 1.55,
-          ),
-          itemBuilder: (BuildContext context, int index) {
-            final action = actions[index];
-            return _ProfileActionCard(action: action);
-          },
-        ),
-      ],
-    );
-  }
-}
-
-class _ProfileAction {
-  const _ProfileAction({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.route,
-    required this.color,
-  });
-
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final String route;
-  final Color color;
-}
-
-class _ProfileActionCard extends StatelessWidget {
-  const _ProfileActionCard({required this.action});
-
-  final _ProfileAction action;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: action.color.withValues(alpha: 0.09),
-      borderRadius: BorderRadius.circular(22),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(22),
-        onTap: () => context.push(action.route),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: <Widget>[
-              Container(
-                height: 36,
-                width: 36,
-                decoration: BoxDecoration(
-                  color: action.color.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(action.icon, color: action.color, size: 20),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Text(
-                    action.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    action.subtitle,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.textSecondary,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _RoleCapabilitiesCard extends StatelessWidget {
-  const _RoleCapabilitiesCard({required this.usuario});
-
-  final UsuarioModel usuario;
-
-  List<String> _capabilities(AppLocalizations l10n) {
-    if (usuario.esAdmin) {
-      return <String>[
-        l10n.tr('Gestionar usuarios y roles', 'Manage users and roles'),
-        l10n.tr(
-          'Cerrar o eliminar incidentes con trazabilidad',
-          'Close or delete incidents with traceability',
-        ),
-        l10n.tr(
-          'Enviar avisos comunitarios segmentados',
-          'Send segmented community notices',
-        ),
-      ];
-    }
-    if (usuario.esVigilante) {
-      return <String>[
-        l10n.tr(
-          'Ver incidentes de toda la comunidad',
-          'View incidents from the whole community',
-        ),
-        l10n.tr(
-          'Actualizar estados con comentario',
-          'Update statuses with comments',
-        ),
-        l10n.tr(
-          'Enviar avisos operativos a residentes',
-          'Send operational notices to residents',
-        ),
-      ];
-    }
-    return <String>[
-      l10n.tr(
-        'Reportar incidentes con evidencia',
-        'Report incidents with evidence',
-      ),
-      l10n.tr(
-        'Consultar el avance de tus reportes',
-        'Track the progress of your reports',
-      ),
-      l10n.tr(
-        'Recibir avisos y alertas importantes',
-        'Receive important notices and alerts',
-      ),
-    ];
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = CommuSafeThemeExtension.of(context);
-    final l10n = AppLocalizations.of(context);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: <Color>[
-            theme.primary.withValues(alpha: 0.10),
-            theme.accent.withValues(alpha: 0.08),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: theme.primary.withValues(alpha: 0.10)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              Icon(Icons.auto_awesome_rounded, color: theme.primary),
-              const SizedBox(width: 8),
-              Text(
-                l10n.tr('Tu acceso en CommuSafe', 'Your CommuSafe access'),
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          ..._capabilities(l10n).map(
-            (item) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  Icon(
-                    Icons.check_circle_rounded,
-                    color: theme.accent,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      item,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w700,
-                        height: 1.35,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _ProfileInfoCard extends StatelessWidget {
   const _ProfileInfoCard({
     required this.icon,
     required this.title,
     required this.value,
-    this.onTap,
   });
 
   final IconData icon;
   final String title;
   final String value;
-  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Row(
-            children: <Widget>[
-              Container(
-                height: 48,
-                width: 48,
-                decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.primary.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Icon(icon, color: Theme.of(context).colorScheme.primary),
+      child: Padding(
+        padding: const EdgeInsets.all(18),
+        child: Row(
+          children: <Widget>[
+            Container(
+              height: 48,
+              width: 48,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(16),
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      title,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
+              child: Icon(icon, color: AppColors.primary),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    title,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      value,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    value,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-              if (onTap != null)
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

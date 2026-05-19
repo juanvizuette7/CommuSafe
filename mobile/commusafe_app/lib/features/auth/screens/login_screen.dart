@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_constants.dart';
-import '../../../core/localization/app_localizations.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/commusafe_animated_background.dart';
 import '../providers/auth_provider.dart';
@@ -88,8 +87,6 @@ class _LoginScreenState extends State<LoginScreen>
     final authProvider = context.watch<AuthProvider>();
     final isLoading = authProvider.isLoading;
     final errorMessage = authProvider.errorMessage;
-    final theme = CommuSafeThemeExtension.of(context);
-    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       body: CommuSafeAnimatedBackground(
@@ -143,9 +140,9 @@ class _LoginScreenState extends State<LoginScreen>
                                             borderRadius: BorderRadius.circular(
                                               20,
                                             ),
-                                            gradient: LinearGradient(
+                                            gradient: const LinearGradient(
                                               colors: <Color>[
-                                                theme.primary,
+                                                AppColors.primary,
                                                 AppColors.danger,
                                               ],
                                             ),
@@ -158,12 +155,10 @@ class _LoginScreenState extends State<LoginScreen>
                                               ),
                                             ],
                                           ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.all(7),
-                                            child: Image.asset(
-                                              AppConstants.appLogoAsset,
-                                              fit: BoxFit.contain,
-                                            ),
+                                          child: const Icon(
+                                            Icons.shield_rounded,
+                                            color: Colors.white,
+                                            size: 30,
                                           ),
                                         ),
                                         const SizedBox(width: 14),
@@ -178,7 +173,7 @@ class _LoginScreenState extends State<LoginScreen>
                                                     .textTheme
                                                     .headlineSmall
                                                     ?.copyWith(
-                                                      color: theme.primary,
+                                                      color: AppColors.primary,
                                                       fontWeight:
                                                           FontWeight.w900,
                                                     ),
@@ -204,21 +199,18 @@ class _LoginScreenState extends State<LoginScreen>
                                     ),
                                     const SizedBox(height: 22),
                                     Row(
-                                      children: <Widget>[
+                                      children: const <Widget>[
                                         _SignalBadge(
                                           icon: Icons.lock_outline_rounded,
-                                          label: l10n.tr(
-                                            'Acceso seguro',
-                                            'Secure access',
-                                          ),
-                                          color: theme.primary,
+                                          label: 'Acceso seguro',
+                                          color: AppColors.primary,
                                         ),
-                                        const SizedBox(width: 10),
+                                        SizedBox(width: 10),
                                         _SignalBadge(
                                           icon: Icons
                                               .notifications_active_outlined,
-                                          label: l10n.tr('Alertas', 'Alerts'),
-                                          color: theme.accent,
+                                          label: 'Alertas',
+                                          color: AppColors.danger,
                                         ),
                                       ],
                                     ),
@@ -233,31 +225,20 @@ class _LoginScreenState extends State<LoginScreen>
                                       enabled: !isLoading,
                                       onChanged: (_) =>
                                           authProvider.clearError(),
-                                      decoration: InputDecoration(
-                                        labelText: l10n.tr(
-                                          'Correo electronico',
-                                          'Email',
-                                        ),
-                                        prefixIcon: const Icon(
-                                          Icons.email_outlined,
-                                        ),
+                                      decoration: const InputDecoration(
+                                        labelText: 'Correo electrónico',
+                                        prefixIcon: Icon(Icons.email_outlined),
                                       ),
                                       validator: (String? value) {
                                         final text = value?.trim() ?? '';
                                         if (text.isEmpty) {
-                                          return l10n.tr(
-                                            'Ingresa tu correo electronico.',
-                                            'Enter your email.',
-                                          );
+                                          return 'Ingresa tu correo electrónico.';
                                         }
                                         final emailRegex = RegExp(
                                           r'^[\w\.\-]+@([\w\-]+\.)+[a-zA-Z]{2,}$',
                                         );
                                         if (!emailRegex.hasMatch(text)) {
-                                          return l10n.tr(
-                                            'Escribe un correo electronico valido.',
-                                            'Enter a valid email.',
-                                          );
+                                          return 'Escribe un correo electrónico válido.';
                                         }
                                         return null;
                                       },
@@ -273,10 +254,7 @@ class _LoginScreenState extends State<LoginScreen>
                                       onChanged: (_) =>
                                           authProvider.clearError(),
                                       decoration: InputDecoration(
-                                        labelText: l10n.tr(
-                                          'Contrasena',
-                                          'Password',
-                                        ),
+                                        labelText: 'Contraseña',
                                         prefixIcon: const Icon(
                                           Icons.lock_outline_rounded,
                                         ),
@@ -299,10 +277,7 @@ class _LoginScreenState extends State<LoginScreen>
                                       validator: (String? value) {
                                         if (value == null ||
                                             value.trim().isEmpty) {
-                                          return l10n.tr(
-                                            'Ingresa tu contrasena.',
-                                            'Enter your password.',
-                                          );
+                                          return 'Ingresa tu contraseña.';
                                         }
                                         return null;
                                       },
@@ -376,16 +351,16 @@ class _LoginScreenState extends State<LoginScreen>
                                     DecoratedBox(
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(16),
-                                        gradient: LinearGradient(
+                                        gradient: const LinearGradient(
                                           colors: <Color>[
-                                            theme.primary,
-                                            theme.accent,
+                                            AppColors.primary,
+                                            AppColors.accent,
                                             AppColors.danger,
                                           ],
                                         ),
                                         boxShadow: <BoxShadow>[
                                           BoxShadow(
-                                            color: theme.primary.withValues(
+                                            color: AppColors.primary.withValues(
                                               alpha: 0.30,
                                             ),
                                             blurRadius: 22,
@@ -423,10 +398,7 @@ class _LoginScreenState extends State<LoginScreen>
                                                             ),
                                                       )
                                                     : Text(
-                                                        l10n.tr(
-                                                          'Ingresar',
-                                                          'Sign in',
-                                                        ),
+                                                        'Ingresar',
                                                         key:
                                                             const ValueKey<
                                                               String
@@ -454,11 +426,8 @@ class _LoginScreenState extends State<LoginScreen>
                                         onPressed: isLoading
                                             ? null
                                             : () => context.go('/reset'),
-                                        child: Text(
-                                          l10n.tr(
-                                            '¿Olvidaste tu contraseña?',
-                                            'Forgot your password?',
-                                          ),
+                                        child: const Text(
+                                          '¿Olvidaste tu contraseña?',
                                         ),
                                       ),
                                     ),
@@ -494,29 +463,23 @@ class _PrivacyPolicyAcceptance extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = CommuSafeThemeExtension.of(context);
-    final l10n = AppLocalizations.of(context);
-
     return Container(
       decoration: BoxDecoration(
-        color: theme.primary.withValues(alpha: 0.04),
+        color: AppColors.primary.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.primary.withValues(alpha: 0.10)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.10)),
       ),
       child: CheckboxListTile(
         value: value,
         onChanged: enabled ? onChanged : null,
         controlAffinity: ListTileControlAffinity.leading,
         contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        activeColor: theme.primary,
+        activeColor: AppColors.primary,
         title: Wrap(
           crossAxisAlignment: WrapCrossAlignment.center,
           children: <Widget>[
             Text(
-              l10n.tr(
-                'Confirmo que he leido y acepto la ',
-                'I confirm that I have read and accept the ',
-              ),
+              'Confirmo que he leído y acepto la ',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: AppColors.textSecondary,
                 height: 1.35,
@@ -526,12 +489,9 @@ class _PrivacyPolicyAcceptance extends StatelessWidget {
             InkWell(
               onTap: () => _showPrivacyPolicy(context),
               child: Text(
-                l10n.tr(
-                  'politica de recoleccion y tratamiento de datos personales',
-                  'personal data collection and processing policy',
-                ),
+                'política de recolección y tratamiento de datos personales',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: theme.accent,
+                  color: AppColors.accent,
                   height: 1.35,
                   fontWeight: FontWeight.w900,
                   decoration: TextDecoration.underline,
@@ -556,11 +516,8 @@ class _PrivacyPolicyAcceptance extends StatelessWidget {
     return showDialog<void>(
       context: context,
       builder: (BuildContext dialogContext) {
-        final l10n = AppLocalizations.of(dialogContext);
         return AlertDialog(
-          title: Text(
-            l10n.tr('Politica de datos personales', 'Personal data policy'),
-          ),
+          title: const Text('Política de datos personales'),
           content: const SizedBox(
             width: double.maxFinite,
             child: SingleChildScrollView(
@@ -570,7 +527,7 @@ class _PrivacyPolicyAcceptance extends StatelessWidget {
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(l10n.tr('Cerrar', 'Close')),
+              child: const Text('Cerrar'),
             ),
           ],
         );

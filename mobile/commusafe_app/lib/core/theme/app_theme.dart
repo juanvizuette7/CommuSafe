@@ -51,32 +51,13 @@ class AppColors {
 class AppTheme {
   const AppTheme._();
 
-  static ThemeData lightTheme({
-    Color primary = AppColors.primary,
-    Color secondary = AppColors.secondary,
-    Color accent = AppColors.accent,
-    bool highContrast = false,
-    bool comfortableMode = true,
-  }) {
-    final background = highContrast
-        ? const Color(0xFFFFFFFF)
-        : AppColors.background;
-    final surface = highContrast ? const Color(0xFFFFFFFF) : AppColors.surface;
-    final textPrimary = highContrast
-        ? const Color(0xFF020617)
-        : AppColors.textPrimary;
-    final textSecondary = highContrast
-        ? const Color(0xFF1E293B)
-        : AppColors.textSecondary;
-    final muted = highContrast ? const Color(0xFFCBD5E1) : AppColors.muted;
-
+  static ThemeData get lightTheme {
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: primary,
-      primary: primary,
-      secondary: accent,
-      tertiary: secondary,
+      seedColor: AppColors.primary,
+      primary: AppColors.primary,
+      secondary: AppColors.accent,
       error: AppColors.danger,
-      surface: surface,
+      surface: AppColors.surface,
       brightness: Brightness.light,
     );
 
@@ -84,21 +65,15 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
-      visualDensity: comfortableMode
-          ? VisualDensity.standard
-          : VisualDensity.compact,
-      materialTapTargetSize: comfortableMode
-          ? MaterialTapTargetSize.padded
-          : MaterialTapTargetSize.shrinkWrap,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: background,
-      primaryColor: primary,
+      scaffoldBackgroundColor: AppColors.background,
+      primaryColor: AppColors.primary,
       textTheme: baseTextTheme.apply(
-        bodyColor: textPrimary,
-        displayColor: textPrimary,
+        bodyColor: AppColors.textPrimary,
+        displayColor: AppColors.textPrimary,
       ),
-      appBarTheme: AppBarTheme(
-        backgroundColor: primary,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         centerTitle: false,
         elevation: 0,
@@ -106,16 +81,15 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
       ),
       cardTheme: CardThemeData(
-        color: surface,
-        elevation: highContrast ? 1 : 0,
-        shadowColor: Colors.black.withValues(alpha: highContrast ? 0.12 : 0.08),
+        color: AppColors.surface,
+        elevation: 0,
+        shadowColor: Colors.black.withValues(alpha: 0.08),
         margin: EdgeInsets.zero,
-        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: primary,
+          backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
           elevation: 0,
           minimumSize: const Size.fromHeight(52),
@@ -130,8 +104,8 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: primary,
-          side: BorderSide(color: primary),
+          foregroundColor: AppColors.primary,
+          side: const BorderSide(color: AppColors.primary),
           minimumSize: const Size.fromHeight(50),
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           shape: RoundedRectangleBorder(
@@ -141,9 +115,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: highContrast
-            ? const Color(0xFFFFFFFF)
-            : const Color(0xFFF1F5F9),
+        fillColor: const Color(0xFFF1F5F9),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 16,
@@ -154,14 +126,11 @@ class AppTheme {
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: muted),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(
-            color: accent,
-            width: highContrast ? 1.8 : 1.4,
-          ),
+          borderSide: const BorderSide(color: AppColors.accent, width: 1.4),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -172,155 +141,16 @@ class AppTheme {
           borderSide: const BorderSide(color: AppColors.danger, width: 1.4),
         ),
       ),
-      drawerTheme: DrawerThemeData(backgroundColor: surface),
-      listTileTheme: ListTileThemeData(
-        minVerticalPadding: comfortableMode ? 10 : 4,
-        iconColor: primary,
-        textColor: textPrimary,
-      ),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        selectedItemColor: primary,
-        unselectedItemColor: textSecondary,
-        backgroundColor: surface,
-        type: BottomNavigationBarType.fixed,
-        selectedLabelStyle: baseTextTheme.labelSmall?.copyWith(
-          fontWeight: FontWeight.w800,
-        ),
-      ),
-      sliderTheme: SliderThemeData(
-        activeTrackColor: primary,
-        inactiveTrackColor: muted,
-        thumbColor: primary,
-        overlayColor: primary.withValues(alpha: 0.14),
-      ),
-      switchTheme: SwitchThemeData(
-        thumbColor: WidgetStateProperty.resolveWith((Set<WidgetState> states) {
-          return states.contains(WidgetState.selected) ? Colors.white : muted;
-        }),
-        trackColor: WidgetStateProperty.resolveWith((Set<WidgetState> states) {
-          return states.contains(WidgetState.selected)
-              ? primary
-              : muted.withValues(alpha: 0.88);
-        }),
-      ),
-      chipTheme: ChipThemeData(
-        selectedColor: primary,
-        disabledColor: muted,
-        backgroundColor: highContrast ? Colors.white : const Color(0xFFF1F5F9),
-        labelStyle: baseTextTheme.labelMedium?.copyWith(
-          color: textPrimary,
-          fontWeight: FontWeight.w700,
-        ),
-        secondaryLabelStyle: baseTextTheme.labelMedium?.copyWith(
-          color: Colors.white,
-          fontWeight: FontWeight.w800,
-        ),
-        side: BorderSide(color: muted),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
-      ),
+      drawerTheme: const DrawerThemeData(backgroundColor: AppColors.surface),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: primary,
+        backgroundColor: AppColors.primary,
         contentTextStyle: baseTextTheme.bodyMedium?.copyWith(
           color: Colors.white,
           fontWeight: FontWeight.w600,
         ),
       ),
-      dividerColor: muted,
-      extensions: <ThemeExtension<dynamic>>[
-        CommuSafeThemeExtension(
-          primary: primary,
-          secondary: secondary,
-          accent: accent,
-          background: background,
-          surface: surface,
-          textPrimary: textPrimary,
-          textSecondary: textSecondary,
-          highContrast: highContrast,
-        ),
-      ],
-    );
-  }
-}
-
-@immutable
-class CommuSafeThemeExtension extends ThemeExtension<CommuSafeThemeExtension> {
-  const CommuSafeThemeExtension({
-    required this.primary,
-    required this.secondary,
-    required this.accent,
-    required this.background,
-    required this.surface,
-    required this.textPrimary,
-    required this.textSecondary,
-    required this.highContrast,
-  });
-
-  final Color primary;
-  final Color secondary;
-  final Color accent;
-  final Color background;
-  final Color surface;
-  final Color textPrimary;
-  final Color textSecondary;
-  final bool highContrast;
-
-  static CommuSafeThemeExtension of(BuildContext context) {
-    return Theme.of(context).extension<CommuSafeThemeExtension>() ??
-        const CommuSafeThemeExtension(
-          primary: AppColors.primary,
-          secondary: AppColors.secondary,
-          accent: AppColors.accent,
-          background: AppColors.background,
-          surface: AppColors.surface,
-          textPrimary: AppColors.textPrimary,
-          textSecondary: AppColors.textSecondary,
-          highContrast: false,
-        );
-  }
-
-  @override
-  CommuSafeThemeExtension copyWith({
-    Color? primary,
-    Color? secondary,
-    Color? accent,
-    Color? background,
-    Color? surface,
-    Color? textPrimary,
-    Color? textSecondary,
-    bool? highContrast,
-  }) {
-    return CommuSafeThemeExtension(
-      primary: primary ?? this.primary,
-      secondary: secondary ?? this.secondary,
-      accent: accent ?? this.accent,
-      background: background ?? this.background,
-      surface: surface ?? this.surface,
-      textPrimary: textPrimary ?? this.textPrimary,
-      textSecondary: textSecondary ?? this.textSecondary,
-      highContrast: highContrast ?? this.highContrast,
-    );
-  }
-
-  @override
-  CommuSafeThemeExtension lerp(
-    ThemeExtension<CommuSafeThemeExtension>? other,
-    double t,
-  ) {
-    if (other is! CommuSafeThemeExtension) {
-      return this;
-    }
-
-    return CommuSafeThemeExtension(
-      primary: Color.lerp(primary, other.primary, t) ?? primary,
-      secondary: Color.lerp(secondary, other.secondary, t) ?? secondary,
-      accent: Color.lerp(accent, other.accent, t) ?? accent,
-      background: Color.lerp(background, other.background, t) ?? background,
-      surface: Color.lerp(surface, other.surface, t) ?? surface,
-      textPrimary: Color.lerp(textPrimary, other.textPrimary, t) ?? textPrimary,
-      textSecondary:
-          Color.lerp(textSecondary, other.textSecondary, t) ?? textSecondary,
-      highContrast: t < 0.5 ? highContrast : other.highContrast,
+      dividerColor: const Color(0xFFE2E8F0),
     );
   }
 }

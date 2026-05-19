@@ -9,8 +9,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_localizations:
-    sdk: flutter
   cupertino_icons: ^1.0.8
   dio: ^5.9.0
   flutter_secure_storage: ^9.2.4
@@ -33,17 +31,6 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   flutter_lints: ^5.0.0
-  flutter_launcher_icons: ^0.14.4
 
 flutter:
   uses-material-design: true
-  assets:
-    - assets/images/commusafe_logo.png
-
-flutter_launcher_icons:
-  android: true
-  ios: false
-  image_path: assets/images/commusafe_logo.png
-  adaptive_icon_background: "#1A1A2E"
-  adaptive_icon_foreground: assets/images/commusafe_logo.png
-  min_sdk_android: 23

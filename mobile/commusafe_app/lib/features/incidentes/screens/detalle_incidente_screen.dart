@@ -173,9 +173,8 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
     }
   }
 
-  Color _headerColor(BuildContext context, IncidenteModel? incidente) {
-    return incidente?.prioridadColor ??
-        CommuSafeThemeExtension.of(context).primary;
+  Color _headerColor(IncidenteModel? incidente) {
+    return incidente?.prioridadColor ?? AppColors.primary;
   }
 
   @override
@@ -184,7 +183,6 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
     final authProvider = context.watch<AuthProvider>();
     final usuario = authProvider.usuarioActual;
     final incidente = provider.incidentePorId(widget.incidenteId);
-    final theme = CommuSafeThemeExtension.of(context);
     final availableStates = incidente == null
         ? <String>[]
         : _availableStates(incidente, usuario);
@@ -211,7 +209,7 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
             SliverAppBar(
               pinned: true,
               expandedHeight: 220,
-              backgroundColor: _headerColor(context, incidente),
+              backgroundColor: _headerColor(incidente),
               foregroundColor: Colors.white,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
@@ -238,8 +236,8 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: <Color>[
-                        _headerColor(context, incidente),
-                        CommuSafeThemeExtension.of(context).primary,
+                        _headerColor(incidente),
+                        AppColors.primary,
                       ],
                     ),
                   ),
@@ -371,7 +369,7 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                               children: <Widget>[
                                 CircleAvatar(
                                   radius: 28,
-                                  backgroundColor: theme.primary.withValues(
+                                  backgroundColor: AppColors.primary.withValues(
                                     alpha: 0.12,
                                   ),
                                   child: Text(
@@ -380,7 +378,7 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                                         .textTheme
                                         .titleMedium
                                         ?.copyWith(
-                                          color: theme.primary,
+                                          color: AppColors.primary,
                                           fontWeight: FontWeight.w800,
                                         ),
                                   ),
@@ -444,7 +442,8 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                                               incidente.reportadoPorTelefono,
                                             ),
                                             style: TextButton.styleFrom(
-                                              foregroundColor: theme.primary,
+                                              foregroundColor:
+                                                  AppColors.primary,
                                               padding:
                                                   const EdgeInsets.symmetric(
                                                     horizontal: 10,
@@ -454,7 +453,7 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                                               tapTargetSize:
                                                   MaterialTapTargetSize
                                                       .shrinkWrap,
-                                              backgroundColor: theme.primary
+                                              backgroundColor: AppColors.primary
                                                   .withValues(alpha: 0.08),
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
@@ -615,7 +614,7 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                                           ),
                                           decoration: BoxDecoration(
                                             color: isActive
-                                                ? theme.primary
+                                                ? AppColors.primary
                                                 : AppColors.muted,
                                             borderRadius: BorderRadius.circular(
                                               999,
@@ -796,7 +795,6 @@ class _CategoryIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = CommuSafeThemeExtension.of(context);
     late final IconData icon;
     late final Color color;
 
@@ -807,7 +805,7 @@ class _CategoryIcon extends StatelessWidget {
         break;
       case 'CONVIVENCIA':
         icon = Icons.groups_rounded;
-        color = theme.accent;
+        color = const Color(0xFF2563EB);
         break;
       case 'INFRAESTRUCTURA':
         icon = Icons.settings_suggest_rounded;
@@ -819,7 +817,7 @@ class _CategoryIcon extends StatelessWidget {
         break;
       default:
         icon = Icons.info_outline_rounded;
-        color = theme.primary;
+        color = AppColors.primary;
     }
 
     return Container(

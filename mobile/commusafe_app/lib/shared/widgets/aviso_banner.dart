@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../core/localization/app_localizations.dart';
-import '../../core/theme/app_theme.dart';
 import '../../features/notificaciones/models/aviso_destacado_model.dart';
 import '../../features/notificaciones/providers/notificacion_provider.dart';
 
@@ -13,11 +11,10 @@ class AvisoBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = CommuSafeThemeExtension.of(context);
     final emergencia = aviso.esEmergencia;
     final colors = emergencia
         ? const <Color>[Color(0xFFE94560), Color(0xFF8B1029)]
-        : <Color>[theme.primary, theme.accent];
+        : const <Color>[Color(0xFFF97316), Color(0xFFB45309)];
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -91,9 +88,7 @@ class AvisoBanner extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               IconButton(
-                tooltip: AppLocalizations.of(
-                  context,
-                ).tr('Descartar aviso', 'Dismiss notice'),
+                tooltip: 'Descartar aviso',
                 onPressed: () {
                   context.read<NotificacionProvider>().marcarLeida(aviso.id);
                 },

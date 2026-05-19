@@ -23,24 +23,8 @@ class IncidentStatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = CommuSafeThemeExtension.of(context);
-    final color = _statusColor(status, theme);
+    final color = AppColors.incidentStateColor(status);
     return _BadgeBase(label: label ?? _formatStatus(status), color: color);
-  }
-
-  static Color _statusColor(String status, CommuSafeThemeExtension theme) {
-    switch (status.toUpperCase()) {
-      case 'REGISTRADO':
-        return theme.textSecondary;
-      case 'EN_PROCESO':
-        return theme.primary;
-      case 'RESUELTO':
-        return AppColors.success;
-      case 'CERRADO':
-        return theme.secondary;
-      default:
-        return theme.primary;
-    }
   }
 
   static String _formatStatus(String status) {

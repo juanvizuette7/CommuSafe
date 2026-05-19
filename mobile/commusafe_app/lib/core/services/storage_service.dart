@@ -8,7 +8,6 @@ class StorageService {
   static const String _accessTokenKey = 'access_token';
   static const String _refreshTokenKey = 'refresh_token';
   static const String _userDataKey = 'user_data';
-  static const String _settingsPrefix = 'app_setting_';
 
   static const FlutterSecureStorage _storage = FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
@@ -63,23 +62,7 @@ class StorageService {
     return accessToken != null && accessToken.isNotEmpty;
   }
 
-  static Future<String?> readSetting(String key) {
-    return _storage.read(key: '$_settingsPrefix$key');
-  }
-
-  static Future<void> saveSetting(String key, String value) {
-    return _storage.write(key: '$_settingsPrefix$key', value: value);
-  }
-
-  static Future<void> deleteSetting(String key) {
-    return _storage.delete(key: '$_settingsPrefix$key');
-  }
-
   static Future<void> clearSession() {
-    return Future.wait(<Future<void>>[
-      _storage.delete(key: _accessTokenKey),
-      _storage.delete(key: _refreshTokenKey),
-      _storage.delete(key: _userDataKey),
-    ]);
+    return _storage.deleteAll();
   }
 }

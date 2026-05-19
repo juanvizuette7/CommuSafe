@@ -43,7 +43,6 @@ class _CommuSafeAnimatedBackgroundState
 
   @override
   Widget build(BuildContext context) {
-    final theme = CommuSafeThemeExtension.of(context);
     return AnimatedBuilder(
       animation: _controller,
       builder: (BuildContext context, Widget? child) {
@@ -51,10 +50,6 @@ class _CommuSafeAnimatedBackgroundState
           painter: _CommuSafeBackgroundPainter(
             progress: _controller.value,
             dark: widget.dark,
-            primary: theme.primary,
-            secondary: theme.secondary,
-            accent: theme.accent,
-            background: theme.background,
           ),
           child: child,
         );
@@ -68,18 +63,10 @@ class _CommuSafeBackgroundPainter extends CustomPainter {
   const _CommuSafeBackgroundPainter({
     required this.progress,
     required this.dark,
-    required this.primary,
-    required this.secondary,
-    required this.accent,
-    required this.background,
   });
 
   final double progress;
   final bool dark;
-  final Color primary;
-  final Color secondary;
-  final Color accent;
-  final Color background;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -88,11 +75,15 @@ class _CommuSafeBackgroundPainter extends CustomPainter {
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
       colors: dark
-          ? <Color>[primary, secondary, accent]
-          : <Color>[
-              background,
-              Color.lerp(background, primary, 0.08) ?? background,
-              Color.lerp(background, accent, 0.10) ?? background,
+          ? const <Color>[
+              AppColors.primary,
+              AppColors.secondary,
+              AppColors.accent,
+            ]
+          : const <Color>[
+              Color(0xFFF8FAFC),
+              Color(0xFFEFF6FF),
+              Color(0xFFFFF1F2),
             ],
     );
     canvas.drawRect(rect, Paint()..shader = baseGradient.createShader(rect));
@@ -107,7 +98,7 @@ class _CommuSafeBackgroundPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.2
       ..strokeCap = StrokeCap.round
-      ..color = (dark ? Colors.white : primary).withValues(
+      ..color = (dark ? Colors.white : AppColors.primary).withValues(
         alpha: dark ? 0.12 : 0.08,
       );
 
@@ -115,7 +106,7 @@ class _CommuSafeBackgroundPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2
       ..strokeCap = StrokeCap.round
-      ..color = accent.withValues(alpha: dark ? 0.20 : 0.13);
+      ..color = AppColors.danger.withValues(alpha: dark ? 0.20 : 0.13);
 
     final drift = math.sin(progress * math.pi * 2) * 18;
     for (var i = -2; i < 8; i++) {
@@ -137,7 +128,7 @@ class _CommuSafeBackgroundPainter extends CustomPainter {
   void _drawWindowGrid(Canvas canvas, Size size) {
     final paint = Paint()
       ..style = PaintingStyle.fill
-      ..color = (dark ? Colors.white : primary).withValues(
+      ..color = (dark ? Colors.white : AppColors.primary).withValues(
         alpha: dark ? 0.065 : 0.045,
       );
 
@@ -175,7 +166,7 @@ class _CommuSafeBackgroundPainter extends CustomPainter {
         end: Alignment.bottomCenter,
         colors: <Color>[
           Colors.transparent,
-          accent.withValues(alpha: dark ? 0.10 : 0.08),
+          AppColors.success.withValues(alpha: dark ? 0.10 : 0.08),
           Colors.transparent,
         ],
       ).createShader(scannerRect);
@@ -184,7 +175,7 @@ class _CommuSafeBackgroundPainter extends CustomPainter {
 
     final linePaint = Paint()
       ..strokeWidth = 1.4
-      ..color = accent.withValues(alpha: dark ? 0.22 : 0.16);
+      ..color = AppColors.success.withValues(alpha: dark ? 0.22 : 0.16);
     canvas.drawLine(
       Offset(0, sweepTop + 45),
       Offset(size.width, sweepTop + 45),
@@ -194,11 +185,6 @@ class _CommuSafeBackgroundPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _CommuSafeBackgroundPainter oldDelegate) {
-    return oldDelegate.progress != progress ||
-        oldDelegate.dark != dark ||
-        oldDelegate.primary != primary ||
-        oldDelegate.secondary != secondary ||
-        oldDelegate.accent != accent ||
-        oldDelegate.background != background;
+    return oldDelegate.progress != progress || oldDelegate.dark != dark;
   }
 }

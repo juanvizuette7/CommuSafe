@@ -11,10 +11,6 @@ import '../../../core/services/storage_service.dart';
 import '../models/usuario_model.dart';
 
 class AuthProvider extends ChangeNotifier {
-  AuthProvider() {
-    ApiService.setUnauthorizedHandler(_handleUnauthorizedSession);
-  }
-
   UsuarioModel? _usuarioActual;
   bool _isLoading = false;
   bool _isInitializing = true;
@@ -50,19 +46,14 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       await cargarPerfil(notifyLoading: false);
-    } on DioException catch (error) {
-      if (_isAuthError(error)) {
+    } catch (_) {
+      final storedUser = await StorageService.getUserData();
+      if (storedUser != null && await StorageService.hasActiveSession()) {
+        _usuarioActual = UsuarioModel.fromJson(storedUser);
+      } else {
         await StorageService.clearSession();
         _usuarioActual = null;
-        _isInitializing = false;
-        _initializationFuture = Future<bool>.value(false);
-        notifyListeners();
-        return false;
       }
-
-      await _restoreCachedUserOrClearSession();
-    } catch (_) {
-      await _restoreCachedUserOrClearSession();
     }
 
     _isInitializing = false;
@@ -84,9 +75,6 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await StorageService.clearSession();
-      _usuarioActual = null;
-
       final response = await ApiService.post<Map<String, dynamic>>(
         AppConstants.loginEndpoint,
         data: <String, dynamic>{
@@ -104,7 +92,7 @@ class AuthProvider extends ChangeNotifier {
 
       if (accessToken.isEmpty || refreshToken.isEmpty || rawUser is! Map) {
         _errorMessage =
-            'La respuesta del servidor no contiene la informacion de autenticacion necesaria.';
+            'La respuesta del servidor no contiene la información de autenticación necesaria.';
         _isLoading = false;
         notifyListeners();
         return false;
@@ -126,7 +114,7 @@ class AuthProvider extends ChangeNotifier {
       try {
         await cargarPerfil(notifyLoading: false);
       } catch (_) {
-        // Si el perfil detallado falla, se conserva la informacion minima del login.
+        // Si el perfil detallado falla, se conserva la información mínima del login.
       }
 
       FirebaseMessagingService.registerTokenRefreshSync();
@@ -143,7 +131,7 @@ class AuthProvider extends ChangeNotifier {
       return false;
     } catch (_) {
       _errorMessage =
-          'No fue posible iniciar sesion. Intenta nuevamente en unos segundos.';
+          'No fue posible iniciar sesión. Intenta nuevamente en unos segundos.';
       _isLoading = false;
       notifyListeners();
       return false;
@@ -214,61 +202,12 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> actualizarPerfil({
-    required String nombre,
-    required String apellido,
-    String? telefono,
-    String? unidadResidencial,
-  }) async {
-    _isLoading = true;
-    _errorMessage = null;
-    notifyListeners();
-
-    try {
-      final response = await ApiService.put<Map<String, dynamic>>(
-        AppConstants.profileEndpoint,
-        data: <String, dynamic>{
-          'nombre': nombre.trim(),
-          'apellido': apellido.trim(),
-          'telefono': telefono?.trim() ?? '',
-          if (_usuarioActual?.esResidente == true)
-            'unidad_residencial': unidadResidencial?.trim() ?? '',
-        },
-      );
-      final payload = response.data ?? <String, dynamic>{};
-      final usuario = UsuarioModel.fromJson(payload);
-      _usuarioActual = usuario;
-      await StorageService.saveUserData(usuario.toJson());
-      _errorMessage = null;
-      return true;
-    } on DioException catch (error) {
-      _errorMessage = _extractErrorMessage(error);
-      return false;
-    } catch (_) {
-      _errorMessage = 'No se pudo actualizar el perfil.';
-      return false;
-    } finally {
-      _isLoading = false;
-      notifyListeners();
-    }
-  }
-
   Future<void> logout() async {
     await StorageService.clearSession();
     _usuarioActual = null;
     _isLoading = false;
     _isInitializing = false;
     _errorMessage = null;
-    _initializationFuture = Future<bool>.value(false);
-    notifyListeners();
-  }
-
-  Future<void> _handleUnauthorizedSession() async {
-    _usuarioActual = null;
-    _isLoading = false;
-    _isInitializing = false;
-    _errorMessage =
-        'Tu sesion expiro o no es valida. Inicia sesion nuevamente.';
     _initializationFuture = Future<bool>.value(false);
     notifyListeners();
   }
@@ -282,31 +221,16 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> _restoreCachedUserOrClearSession() async {
-    final storedUser = await StorageService.getUserData();
-    if (storedUser != null && await StorageService.hasActiveSession()) {
-      _usuarioActual = UsuarioModel.fromJson(storedUser);
-      return;
-    }
-
-    await StorageService.clearSession();
-    _usuarioActual = null;
-  }
-
   String _extractErrorMessage(DioException error) {
-    if (_isAuthError(error)) {
-      return 'Tu sesion expiro o no es valida. Inicia sesion nuevamente.';
-    }
-
     if (_isNetworkError(error)) {
-      return 'No se pudo conectar con el backend. Verifica que el servidor este disponible antes de iniciar sesion.';
+      return 'No se pudo conectar con el backend. Verifica que Django esté ejecutándose antes de iniciar sesión.';
     }
 
     final data = error.response?.data;
     if (data is Map<String, dynamic>) {
       final detail = data['detail'];
       if (detail is String && detail.trim().isNotEmpty) {
-        return _normalizeBackendMessage(detail);
+        return detail;
       }
 
       final nonFieldErrors = data['non_field_errors'];
@@ -326,28 +250,10 @@ class AuthProvider extends ChangeNotifier {
     }
 
     if (data is String && data.trim().isNotEmpty) {
-      return _normalizeBackendMessage(data);
+      return data;
     }
 
-    return 'No fue posible completar la autenticacion. Verifica tus credenciales.';
-  }
-
-  String _normalizeBackendMessage(String message) {
-    final normalized = message.toLowerCase();
-    if (normalized.contains('authentication credentials') ||
-        normalized.contains('credenciales de autenticacion') ||
-        normalized.contains('credenciales de autenticaci')) {
-      return 'Tu sesion expiro o no es valida. Inicia sesion nuevamente.';
-    }
-    if (normalized.contains('token') && normalized.contains('valid')) {
-      return 'Tu sesion expiro. Inicia sesion nuevamente.';
-    }
-    return message;
-  }
-
-  bool _isAuthError(DioException error) {
-    final statusCode = error.response?.statusCode;
-    return statusCode == 401 || statusCode == 403;
+    return 'No fue posible completar la autenticación. Verifica tus credenciales.';
   }
 
   bool _isNetworkError(DioException error) {

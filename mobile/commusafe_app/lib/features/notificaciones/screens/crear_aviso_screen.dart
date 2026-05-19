@@ -165,7 +165,6 @@ class _CrearAvisoScreenState extends State<CrearAvisoScreen> {
   Widget build(BuildContext context) {
     final usuario = context.watch<AuthProvider>().usuarioActual;
     final provider = context.watch<NotificacionProvider>();
-    final theme = CommuSafeThemeExtension.of(context);
     final puedeCrear = usuario?.esAdmin == true || usuario?.esVigilante == true;
     final audiencias = usuario?.esAdmin == true
         ? _audienciasAdmin
@@ -187,7 +186,7 @@ class _CrearAvisoScreenState extends State<CrearAvisoScreen> {
     }
 
     return Scaffold(
-      backgroundColor: theme.background,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const Text('Crear aviso'),
         actions: <Widget>[
@@ -327,7 +326,7 @@ class _CrearAvisoScreenState extends State<CrearAvisoScreen> {
             style: FilledButton.styleFrom(
               backgroundColor: _tipo == 'EMERGENCIA'
                   ? AppColors.danger
-                  : theme.primary,
+                  : AppColors.primary,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
@@ -360,8 +359,6 @@ class _SpecificRecipientsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = CommuSafeThemeExtension.of(context);
-
     if (isLoading) {
       return Container(
         padding: const EdgeInsets.all(18),
@@ -409,9 +406,9 @@ class _SpecificRecipientsSection extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: theme.primary.withValues(alpha: 0.04),
+        color: AppColors.primary.withValues(alpha: 0.04),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: theme.primary.withValues(alpha: 0.12)),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.12)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -422,10 +419,13 @@ class _SpecificRecipientsSection extends StatelessWidget {
                 height: 42,
                 width: 42,
                 decoration: BoxDecoration(
-                  color: theme.primary.withValues(alpha: 0.10),
+                  color: AppColors.primary.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(16),
                 ),
-                child: Icon(Icons.groups_2_rounded, color: theme.primary),
+                child: const Icon(
+                  Icons.groups_2_rounded,
+                  color: AppColors.primary,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -492,8 +492,6 @@ class _RecipientsGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = CommuSafeThemeExtension.of(context);
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: Column(
@@ -514,13 +512,13 @@ class _RecipientsGroup extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 8),
               child: Material(
                 color: selected
-                    ? theme.primary.withValues(alpha: 0.08)
+                    ? AppColors.primary.withValues(alpha: 0.08)
                     : Colors.white,
                 borderRadius: BorderRadius.circular(18),
                 child: CheckboxListTile(
                   value: selected,
                   onChanged: (value) => onChanged(recipient.id, value ?? false),
-                  activeColor: theme.primary,
+                  activeColor: AppColors.primary,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(18),
                   ),
@@ -559,7 +557,6 @@ class _HeroHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = CommuSafeThemeExtension.of(context);
     final isEmergency = tipo == 'EMERGENCIA';
     return Container(
       clipBehavior: Clip.antiAlias,
@@ -570,13 +567,12 @@ class _HeroHeader extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: isEmergency
               ? const <Color>[AppColors.danger, Color(0xFF7F1D1D)]
-              : <Color>[theme.primary, theme.accent],
+              : const <Color>[AppColors.primary, AppColors.accent],
         ),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: (isEmergency ? AppColors.danger : theme.primary).withValues(
-              alpha: 0.26,
-            ),
+            color: (isEmergency ? AppColors.danger : AppColors.primary)
+                .withValues(alpha: 0.26),
             blurRadius: 26,
             offset: const Offset(0, 16),
           ),
@@ -695,8 +691,7 @@ class _OptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = CommuSafeThemeExtension.of(context);
-    final color = danger ? AppColors.danger : theme.primary;
+    final color = danger ? AppColors.danger : AppColors.primary;
     return Material(
       color: selected ? color.withValues(alpha: 0.08) : Colors.white,
       borderRadius: BorderRadius.circular(20),
