@@ -2,9 +2,21 @@
 
 from django.conf import settings
 from django.contrib import admin
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.urls import include, path, re_path
 from django.views.static import serve as serve_media
+
+
+FAVICON_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+<rect width="64" height="64" rx="14" fill="#1A1A2E"/>
+<path d="M32 9 50 17v13c0 11.8-7.2 20.2-18 25-10.8-4.8-18-13.2-18-25V17l18-8Z" fill="#0F3460"/>
+<path d="M32 15 44 20v10c0 7.6-4.6 13.4-12 17-7.4-3.6-12-9.4-12-17V20l12-5Z" fill="#FFFFFF"/>
+<path d="M28 33.6 23.8 29.4 20.8 32.4 28 39.6 43.2 24.4 40.2 21.4 28 33.6Z" fill="#16A34A"/>
+</svg>"""
+
+
+def favicon(_request):
+    return HttpResponse(FAVICON_SVG, content_type="image/svg+xml")
 
 
 def health_check(_request):
@@ -12,6 +24,7 @@ def health_check(_request):
 
 
 urlpatterns = [
+    path("favicon.ico", favicon, name="favicon"),
     path("health/", health_check, name="health"),
     path("admin/", admin.site.urls),
     path("api/auth/", include("usuarios.urls")),
