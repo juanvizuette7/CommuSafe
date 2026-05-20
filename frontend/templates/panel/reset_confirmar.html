@@ -9,7 +9,7 @@
         <div class="text-center">
             <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-[22px] bg-danger text-3xl text-white shadow-soft">&#128272;</div>
             <h1 class="mt-6 text-3xl font-black tracking-tight text-primary">Nueva contraseña</h1>
-            <p class="mt-3 text-sm font-medium leading-6 text-slate-500">
+            <p class="mt-3 text-sm font-semibold leading-6 text-slate-700">
                 Crea una contraseña segura para recuperar tu acceso a CommuSafe.
             </p>
         </div>
@@ -30,7 +30,7 @@
                 <label for="{{ form.password.id_for_label }}" class="text-sm font-semibold text-slate-700">{{ form.password.label }}</label>
                 <div class="relative">
                     {{ form.password }}
-                    <button type="button" data-password-toggle="{{ form.password.id_for_label }}" class="absolute inset-y-0 right-3 inline-flex items-center text-sm font-semibold text-slate-500 transition hover:text-primary" aria-label="Mostrar contraseña" aria-pressed="false">
+                    <button type="button" data-password-toggle="{{ form.password.id_for_label }}" class="absolute inset-y-0 right-3 inline-flex items-center text-sm font-semibold text-slate-700 transition hover:text-primary" aria-label="Mostrar contraseña" aria-pressed="false">
                         <span>Mostrar</span>
                     </button>
                 </div>
@@ -43,7 +43,7 @@
                 <label for="{{ form.password2.id_for_label }}" class="text-sm font-semibold text-slate-700">{{ form.password2.label }}</label>
                 <div class="relative">
                     {{ form.password2 }}
-                    <button type="button" data-password-toggle="{{ form.password2.id_for_label }}" class="absolute inset-y-0 right-3 inline-flex items-center text-sm font-semibold text-slate-500 transition hover:text-primary" aria-label="Mostrar contraseña" aria-pressed="false">
+                    <button type="button" data-password-toggle="{{ form.password2.id_for_label }}" class="absolute inset-y-0 right-3 inline-flex items-center text-sm font-semibold text-slate-700 transition hover:text-primary" aria-label="Mostrar contraseña" aria-pressed="false">
                         <span>Mostrar</span>
                     </button>
                 </div>

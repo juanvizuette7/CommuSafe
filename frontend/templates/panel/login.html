@@ -5,25 +5,25 @@
 
 {% block body %}
 <main class="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top,_rgba(15,52,96,0.35),_transparent_38%),linear-gradient(145deg,_#1A1A2E_0%,_#16213E_55%,_#0F3460_100%)] px-4 py-10">
-    <div class="grid w-full max-w-5xl overflow-hidden rounded-[32px] bg-white/10 shadow-glass backdrop-blur-xl lg:grid-cols-[1.1fr_0.9fr]">
-        <section class="hidden flex-col justify-between bg-white/5 p-10 text-white lg:flex">
+    <div class="grid w-full max-w-5xl overflow-hidden rounded-[32px] bg-primary shadow-glass lg:grid-cols-[1.1fr_0.9fr]">
+        <section class="hidden flex-col justify-between bg-primary p-10 text-white lg:flex">
             <div>
-                <div class="inline-flex items-center gap-3 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-semibold">
+                <div class="inline-flex items-center gap-3 rounded-full border border-slate-300 bg-accent px-4 py-2 text-sm font-semibold text-white">
                     <span class="text-xl">&#128737;&#65039;</span>
                     <span>CommuSafe</span>
                 </div>
                 <h1 class="mt-8 max-w-md text-5xl font-black leading-tight tracking-tight">
                     Seguridad y organización comunitaria con visión operativa.
                 </h1>
-                <p class="mt-6 max-w-lg text-base leading-7 text-slate-200">
+                <p class="mt-6 max-w-lg text-base leading-7 text-white">
                     Panel administrativo para incidentes, seguimiento de casos y control del conjunto residencial Remansos del Norte.
                 </p>
             </div>
             <div class="grid gap-4">
-                <div class="rounded-[24px] border border-white/10 bg-white/10 p-5">
-                    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-slate-300">Cobertura</p>
+                <div class="rounded-[24px] border border-slate-300 bg-accent p-5 text-white">
+                    <p class="text-sm font-semibold uppercase tracking-[0.2em] text-white">Cobertura</p>
                     <p class="mt-3 text-2xl font-bold">Administración y vigilancia</p>
-                    <p class="mt-2 text-sm text-slate-200">Control centralizado de incidentes, trazabilidad y respuesta rápida.</p>
+                    <p class="mt-2 text-sm text-white">Control centralizado de incidentes, trazabilidad y respuesta rápida.</p>
                 </div>
             </div>
         </section>
@@ -33,7 +33,7 @@
                 <div class="text-center">
                     <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-[22px] bg-primary text-3xl text-white shadow-soft">&#128737;&#65039;</div>
                     <h2 class="mt-6 text-4xl font-black tracking-tight text-primary">CommuSafe</h2>
-                    <p class="mt-2 text-sm font-medium text-slate-500">Remansos del Norte</p>
+                    <p class="mt-2 text-sm font-semibold text-slate-700">Remansos del Norte</p>
                 </div>
 
                 {% if messages %}
@@ -56,7 +56,7 @@
                         <label for="password" class="text-sm font-semibold text-slate-700">Contraseña</label>
                         <div class="relative">
                             <input id="password" name="password" type="password" required autocomplete="current-password" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 pr-14 text-sm text-slate-900 outline-none transition focus:border-primary focus:bg-white focus:ring-4 focus:ring-primary/10" placeholder="Ingresa tu contraseña">
-                            <button type="button" data-password-toggle="password" class="absolute inset-y-0 right-3 inline-flex items-center text-sm font-semibold text-slate-500 transition hover:text-primary" aria-label="Mostrar contraseña" aria-pressed="false">
+                            <button type="button" data-password-toggle="password" class="absolute inset-y-0 right-3 inline-flex items-center text-sm font-semibold text-slate-700 transition hover:text-primary" aria-label="Mostrar contraseña" aria-pressed="false">
                                 <span>Mostrar</span>
                             </button>
                         </div>
