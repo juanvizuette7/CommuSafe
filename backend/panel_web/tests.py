@@ -21,6 +21,8 @@ from panel_web.views import (
     inicio,
     login_view,
     logout_view,
+    politica_privacidad,
+    reset_solicitar,
     usuario_toggle_activo,
     usuarios_lista,
 )
@@ -200,6 +202,22 @@ class PanelWebViewsTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertNotIn("_auth_user_id", request.session)
+
+    def test_reset_solicitar_permite_head_para_validadores(self):
+        request = self._request("head", "/reset/")
+
+        with patch("panel_web.views.render", return_value=HttpResponse("ok")):
+            response = reset_solicitar(request)
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_politica_privacidad_permite_head_para_validadores(self):
+        request = self._request("head", "/politica-privacidad/")
+
+        with patch("panel_web.views.render", return_value=HttpResponse("ok")):
+            response = politica_privacidad(request)
+
+        self.assertEqual(response.status_code, 200)
 
     def test_inicio_redireccion(self):
         anonimo = self._request("get", "/", user=AnonymousUser())

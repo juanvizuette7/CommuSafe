@@ -180,7 +180,7 @@ def login_view(request):
     )
 
 
-@require_http_methods(["GET", "POST"])
+@require_http_methods(["GET", "HEAD", "POST"])
 def reset_solicitar(request):
     """Muestra y procesa el formulario publico de recuperacion."""
 
@@ -255,7 +255,7 @@ def logout_view(request):
     return response
 
 
-@require_GET
+@require_http_methods(["GET", "HEAD"])
 def politica_privacidad(request):
     """Muestra la politica de recoleccion y tratamiento de datos personales."""
 
