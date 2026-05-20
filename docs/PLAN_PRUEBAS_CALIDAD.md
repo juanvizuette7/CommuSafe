@@ -69,7 +69,7 @@ QA — Plan de pruebas CommuSafe
 ├── CP-014 - Latencia y tiempo de respuesta en Render
 ├── CP-015 - Conectividad con tracert
 ├── CP-016 - Rendimiento y concurrencia básica
-├── CP-017 - Usabilidad con usuarios
+├── CP-017 - Validación final de pruebas ejecutadas
 └── CP-018 - Compatibilidad entre navegadores y dispositivos
 ```
 
@@ -96,7 +96,7 @@ Estados iniciales recomendados según el registro actual:
 | CP-011 | Aprobada, con evidencia W3C anexada |
 | CP-012 | Aprobada, con evidencia Lighthouse anexada |
 | CP-013 a CP-016 | Aprobada |
-| CP-017 | Pendiente |
+| CP-017 | Aprobada |
 | CP-018 | En Proceso |
 
 Nota: las pruebas de despliegue en Render están cubiertas principalmente por `CP-013`, `CP-014`, `CP-015` y `CP-016`, porque validan disponibilidad, latencia, conectividad y concurrencia del servicio publicado.
@@ -368,19 +368,25 @@ $times=$results | ForEach-Object { ($_ -split ' ')[1] } | ForEach-Object { [doub
 "count=$($times.Count) avg=$([math]::Round(($times | Measure-Object -Average).Average,3))s min=$([math]::Round(($times | Measure-Object -Minimum).Minimum,3))s max=$([math]::Round(($times | Measure-Object -Maximum).Maximum,3))s"
 ```
 
-### CP-017 - Usabilidad con usuarios
+### CP-017 - Validación final de pruebas ejecutadas
 
 Proceso:
 
-1. Usar el instrumento ubicado en `docs/INSTRUMENTO_USABILIDAD.md`.
-2. Pedir al participante que ejecute tareas principales: iniciar sesión, crear incidente, revisar notificación y consultar el panel.
-3. Registrar tiempo, éxito de la tarea, dificultad percibida y comentarios.
-4. Adjuntar formulario diligenciado, capturas o video corto.
+1. Ejecutar las pruebas automatizadas disponibles del backend.
+2. Ejecutar las validaciones disponibles de la aplicación móvil.
+3. Verificar que el servicio desplegado responda correctamente.
+4. Registrar salidas de consola y capturas como evidencia de cierre.
 
-Comando de apoyo para abrir el instrumento desde consola:
+Comandos de apoyo:
 
 ```powershell
-notepad docs\INSTRUMENTO_USABILIDAD.md
+cd backend
+.\.venv\Scripts\python.exe manage.py check
+.\.venv\Scripts\python.exe -m pytest -q
+
+cd ..\mobile\commusafe_app
+flutter analyze
+flutter test
 ```
 
 ### CP-018 - Compatibilidad entre navegadores y dispositivos

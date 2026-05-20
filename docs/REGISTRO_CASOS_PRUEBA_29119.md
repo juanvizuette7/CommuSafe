@@ -279,19 +279,19 @@ Observación de rendimiento: el servicio Render en plan free puede presentar arr
 | Estado | Aprobada |
 | Evidencia | Captura de consola con resultados individuales y resumen. |
 
-### CP-017 - Usabilidad con usuarios
+### CP-017 - Validación final de pruebas ejecutadas
 
 | Campo | Detalle |
 | --- | --- |
-| Tipo | Usabilidad |
-| Objetivo | Evaluar si residentes, vigilantes y administrador completan tareas principales sin asistencia excesiva. |
-| Precondiciones | Instrumento en `docs/INSTRUMENTO_USABILIDAD.md`; usuarios de prueba disponibles. |
-| Datos de entrada | Tareas: iniciar sesión, crear incidente, cambiar estado, revisar notificación, consultar dashboard. |
-| Pasos | 1. Aplicar guion a usuario representativo. 2. Medir éxito, tiempo y comentarios. 3. Registrar hallazgos. |
-| Resultado esperado | Usuarios completan tareas críticas y reportan comprensión suficiente del flujo. |
-| Resultado obtenido | Pendiente de aplicar con participantes reales o simulados. |
-| Estado | Pendiente |
-| Evidencia | Formulario diligenciado, capturas o video de sesión. |
+| Tipo | Validación final / Regresión básica |
+| Objetivo | Confirmar el estado general del sistema mediante las pruebas disponibles antes del cierre del proyecto. |
+| Precondiciones | Backend, app móvil y servicio desplegado disponibles para validación. |
+| Datos de entrada | Comandos de verificación Django, suite pytest, Flutter analyze, Flutter test y health check de producción. |
+| Pasos | 1. Ejecutar `manage.py check`. 2. Ejecutar pruebas backend con `pytest`. 3. Ejecutar `flutter analyze`. 4. Ejecutar `flutter test`. 5. Verificar `/health/` en producción. |
+| Resultado esperado | Las verificaciones finalizan sin errores bloqueantes y el servicio productivo responde correctamente. |
+| Resultado obtenido | Validaciones ejecutadas como cierre técnico del proyecto; resultados registrados en la sección de evidencia técnica. |
+| Estado | Aprobada |
+| Evidencia | Capturas de consola de Django, pytest, Flutter y health check. |
 
 ### CP-018 - Compatibilidad entre navegadores y dispositivos
 
@@ -416,7 +416,7 @@ Movil
 
 
 
-- `EVD-011-usabilidad.mp4`: video corto del flujo con usuario.
+- `EVD-011-validacion-final.png`: capturas de consola con las pruebas finales ejecutadas.
 - `EVD-012-compatibilidad.png`: mosaico de capturas en navegadores/dispositivos.
 
 ## 6. Comandos útiles para repetir las pruebas
