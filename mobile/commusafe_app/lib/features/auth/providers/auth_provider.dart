@@ -223,7 +223,7 @@ class AuthProvider extends ChangeNotifier {
 
   String _extractErrorMessage(DioException error) {
     if (_isNetworkError(error)) {
-      return 'No se pudo conectar con el backend. Verifica que Django esté ejecutándose antes de iniciar sesión.';
+      return 'No se pudo conectar con el servidor. Verifica tu internet e intenta nuevamente; si Render estaba en reposo puede tardar unos segundos en despertar.';
     }
 
     final data = error.response?.data;

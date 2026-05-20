@@ -16,7 +16,7 @@ class AppConstants {
       ? baseUrlProduccion
       : _baseUrlLocal;
 
-  static const Duration requestTimeout = Duration(seconds: 10);
+  static const Duration requestTimeout = Duration(seconds: 45);
 
   static const String loginEndpoint = '/api/auth/login/';
   static const String refreshEndpoint = '/api/auth/refresh/';
