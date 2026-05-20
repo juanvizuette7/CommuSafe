@@ -193,19 +193,21 @@ Observación de rendimiento: el servicio Render en plan free puede presentar arr
 | Estado | Aprobada |
 | Evidencia | Captura de consola o respuesta JSON. |
 
-### CP-011 - Validación W3C del panel web
+### CP-011 - Validación W3C de la página principal
 
 | Campo | Detalle |
 | --- | --- |
 | Tipo | Estándares W3C |
-| Objetivo | Validar que las vistas HTML principales del panel no presenten errores críticos de marcado. |
-| Precondiciones | Panel web desplegado o backend local ejecutándose. |
-| Datos de entrada | URLs: `/login/`, dashboard, lista de incidentes, detalle de incidente. |
-| Pasos | 1. Abrir cada URL renderizada. 2. Validar en Nu Html Checker de W3C. 3. Adjuntar reporte. |
-| Resultado esperado | Sin errores críticos de estructura HTML; advertencias justificadas si dependen de CDN o plantillas. |
-| Resultado obtenido | Pendiente de adjuntar reporte visual del validador. |
-| Estado | Pendiente |
-| Evidencia | Captura del resultado del validador W3C por cada vista. |
+| Objetivo | Validar el cumplimiento básico del marcado HTML de la página principal de CommuSafe mediante Nu Html Checker de W3C, identificando errores de estructura o atributos no reconocidos. |
+| Precondiciones | Servicio web de CommuSafe desplegado en Render. URL pública disponible: `https://commusafe.onrender.com/`. Acceso al validador Nu Html Checker de W3C. |
+| Datos de entrada | Herramienta: Nu Html Checker. URL evaluada: `https://commusafe.onrender.com/`. Versión del validador: `vnu 26.5.19`. |
+| Pasos | 1. Ingresar al validador Nu Html Checker. 2. Seleccionar validación por dirección URL. 3. Ingresar la URL `https://commusafe.onrender.com/`. 4. Ejecutar la validación. 5. Revisar los errores y advertencias reportadas por la herramienta. |
+| Resultado esperado | La página principal debe ser validada sin errores críticos de marcado HTML o, en caso de usar atributos propios de librerías externas, estos deben quedar identificados y documentados. |
+| Resultado obtenido | El validador detectó 4 errores relacionados con atributos propios de Alpine.js, los cuales no son reconocidos como atributos HTML estándar por W3C. |
+| Errores encontrados | `Attribute x-data not allowed on element section.` `Attribute x-bind:type not allowed on element input.` `Attribute @click not allowed on element button.` `Attribute x-text not allowed on element span.` |
+| Estado | Mejora registrada. Corrección aplicada en el commit `c6ba6f6d`; pendiente de nueva validación en Render cuando el despliegue publique la versión corregida. |
+| Evidencia | Captura de pantalla o reporte del Nu Html Checker mostrando los errores detectados en la URL evaluada. |
+| Observaciones | Los errores reportados corresponden a directivas de Alpine.js utilizadas para manejar el comportamiento dinámico del formulario, como mostrar u ocultar la contraseña. Aunque no afectan directamente el funcionamiento visual de la página, sí generan incumplimiento en la validación estricta de W3C. Se registró como mejora y se corrigió reemplazando las directivas Alpine por atributos HTML válidos `data-password-toggle` y JavaScript estándar. |
 
 ### CP-012 - Accesibilidad básica
 

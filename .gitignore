@@ -16,6 +16,8 @@ backend/staticfiles/
 backend/*.report.html
 backend/lighthouse*.html
 backend/evidencia-lighthouse*.html
+evidencia-lighthouse*.report.html
+evidencia-lighthouse*.report.json
 backend/.venv/
 backend/.venv-local/
 backend/venv/
