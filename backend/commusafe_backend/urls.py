@@ -13,6 +13,7 @@ FAVICON_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
 <path d="M32 15 44 20v10c0 7.6-4.6 13.4-12 17-7.4-3.6-12-9.4-12-17V20l12-5Z" fill="#FFFFFF"/>
 <path d="M28 33.6 23.8 29.4 20.8 32.4 28 39.6 43.2 24.4 40.2 21.4 28 33.6Z" fill="#16A34A"/>
 </svg>"""
+LOADER_IO_TOKEN = "loaderio-24994142aa27fcc0e43b4b8cd771e64d"
 
 
 def favicon(_request):
@@ -23,8 +24,15 @@ def health_check(_request):
     return JsonResponse({"status": "ok", "servicio": "CommuSafe"})
 
 
+def loaderio_verification(_request):
+    return HttpResponse(LOADER_IO_TOKEN, content_type="text/plain")
+
+
 urlpatterns = [
     path("favicon.ico", favicon, name="favicon"),
+    path(f"{LOADER_IO_TOKEN}.txt", loaderio_verification, name="loaderio_verification_txt"),
+    path(f"{LOADER_IO_TOKEN}.html", loaderio_verification, name="loaderio_verification_html"),
+    path(f"{LOADER_IO_TOKEN}/", loaderio_verification, name="loaderio_verification_path"),
     path("health/", health_check, name="health"),
     path("admin/", admin.site.urls),
     path("api/auth/", include("usuarios.urls")),
