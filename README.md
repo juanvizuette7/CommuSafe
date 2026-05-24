@@ -18,6 +18,32 @@ CommuSafe se encuentra preparado para operación controlada y presentación acad
 
 No incluye módulo de cámaras de vigilancia ni integración con CCTV. La cámara del dispositivo se usa únicamente para adjuntar evidencias fotográficas a los reportes de incidentes.
 
+## Problema Que Resuelve
+
+En una comunidad residencial, los reportes de seguridad, convivencia e infraestructura suelen gestionarse por canales dispersos como llamadas, mensajes informales o comunicación verbal. Esto dificulta conocer quién reportó, cuándo se atendió, qué evidencia existe, quién hizo seguimiento y cuál fue el cierre del caso.
+
+CommuSafe resuelve ese problema centralizando el ciclo completo del incidente: registro, clasificación, evidencia, atención, historial, notificación y cierre. El sistema no reemplaza a la administración ni a la vigilancia; les entrega una herramienta trazable para operar con información ordenada, consultar historial y comunicar avisos de forma segmentada.
+
+## Alcance Funcional Cumplido
+
+El alcance implementado corresponde al núcleo operativo del producto:
+
+- Administración de cuentas por rol: residente, vigilante y administrador.
+- Inicio de sesión seguro con JWT en la app móvil y sesión protegida en panel web.
+- Reporte de incidentes con título, descripción, categoría, ubicación y evidencia fotográfica.
+- Clasificación automática de prioridad por reglas de negocio.
+- Seguimiento del ciclo de vida del incidente: registrado, en proceso, resuelto y cerrado.
+- Historial inmutable de cambios de estado con responsable, fecha y comentario.
+- Consulta diferenciada por rol: residentes ven sus propios incidentes; vigilancia y administración ven el conjunto operativo.
+- Panel web para dashboard, usuarios, incidentes, perfil de usuarios, avisos, notificaciones, auditoría y exportaciones.
+- App móvil Android para reportar, consultar, recibir alertas, usar asistente y llamar líneas de emergencia.
+- Notificaciones internas y push con Firebase Cloud Messaging.
+- Avisos comunitarios segmentados por audiencia o usuarios específicos.
+- Asistente virtual con IA/fallback para consultas de uso y orientación comunitaria.
+- Despliegue backend HTTPS en Render con PostgreSQL.
+
+Quedan explícitamente fuera del alcance actual cámaras de vigilancia, integración con hardware de acceso físico, pagos de administración, votaciones de asamblea y analítica avanzada. Esas funcionalidades pueden plantearse como evolución futura sin afectar el núcleo ya entregado.
+
 ## Stack Tecnológico
 
 | Capa | Tecnología | Propósito |
@@ -62,6 +88,23 @@ Django Backend
 
 Los residentes reportan incidentes desde la app móvil. Vigilantes y administradores pueden consultar todos los casos autorizados, cambiar estados y generar trazabilidad. La administración gestiona usuarios, incidentes, avisos y auditoría desde el panel web. El asistente virtual responde consultas frecuentes del conjunto y deriva a administración cuando la consulta está fuera del alcance.
 
+## Flujo Operativo Principal
+
+El flujo principal del sistema es el ciclo de vida de un incidente:
+
+1. El residente o vigilante inicia sesión en la app móvil.
+2. El usuario crea un incidente seleccionando categoría, descripción, ubicación y hasta tres evidencias.
+3. El backend guarda el incidente y calcula la prioridad automáticamente.
+4. El sistema genera notificaciones para los roles correspondientes.
+5. Vigilancia o administración revisa el caso desde la app o el panel web.
+6. El responsable cambia el estado agregando un comentario obligatorio.
+7. Cada cambio se registra en el historial del incidente.
+8. El residente recibe notificación del avance.
+9. La administración puede cerrar el incidente cuando el caso queda finalizado.
+10. El historial queda disponible para consulta, auditoría y exportación.
+
+Este flujo garantiza trazabilidad: el sistema conserva quién reportó, quién atendió, qué evidencia se adjuntó, cuándo cambió cada estado y cuál fue el comentario operativo de cada transición.
+
 ## Roles Del Sistema
 
 | Rol | Acceso móvil | Acceso web | Responsabilidades |
@@ -89,6 +132,48 @@ Los residentes reportan incidentes desde la app móvil. Vigilantes y administrad
 - Asistente virtual con IA real si existe API key configurada y modo local si no existe.
 - Contactos de emergencia reales para Colombia/Pasto.
 
+## Reglas De Negocio Principales
+
+La prioridad del incidente no se define manualmente desde la app ni con IA. Se calcula en el backend mediante reglas determinísticas para garantizar consistencia, trazabilidad y control operativo:
+
+| Categoría | Prioridad automática | Justificación |
+|---|---|---|
+| Emergencia | Alta | Puede comprometer seguridad o integridad inmediata |
+| Seguridad | Alta | Requiere atención prioritaria de vigilancia/administración |
+| Convivencia | Media | Afecta convivencia, pero normalmente no implica riesgo inmediato |
+| Infraestructura | Baja | Requiere gestión, pero suele permitir programación de atención |
+
+La IA se usa en el asistente virtual para consultas informativas, no para tomar decisiones críticas sobre prioridad o atención de incidentes. Esta separación es intencional: las decisiones operativas sensibles quedan bajo reglas auditables y bajo responsabilidad humana.
+
+Otras reglas implementadas:
+
+- Un incidente puede tener máximo tres evidencias fotográficas.
+- El historial de estado es inmutable: se crea, pero no se edita.
+- Solo administración puede eliminar incidentes, y la eliminación exige motivo de trazabilidad.
+- Residentes no acceden al panel web.
+- Vigilantes pueden atender incidentes y emitir avisos operativos según permisos.
+- Administradores gestionan usuarios, roles, incidentes, avisos y auditoría.
+- Las cuentas son creadas por administración; la recuperación pública de contraseña está oculta en interfaz.
+
+## Correspondencia Con Requerimientos
+
+| Requerimiento | Estado | Evidencia en el sistema |
+|---|---|---|
+| Autenticación con correo y contraseña | Cumplido | JWT, login móvil, login panel |
+| Roles de usuario | Cumplido | Residente, vigilante, administrador |
+| Reporte de incidentes | Cumplido | App móvil y API REST |
+| Evidencia fotográfica | Cumplido | ImageField, subida multipart, visor web |
+| Clasificación automática | Cumplido | Regla en modelo `Incidente.save()` |
+| Seguimiento de estados | Cumplido | Cambios con comentario e historial |
+| Notificaciones | Cumplido | Internas, conteo, avisos, FCM |
+| Panel administrativo | Cumplido | Dashboard, incidentes, usuarios, avisos |
+| Gestión de usuarios | Cumplido | Crear, editar, rol, activar, eliminar, perfil |
+| Asistente virtual | Cumplido | Chat IA/fallback y health check |
+| Contactos de emergencia | Cumplido | Líneas públicas de Colombia/Pasto |
+| Exportación de historial | Cumplido | Excel y PDF desde panel |
+| Auditoría de eliminación | Cumplido | Modelo `IncidenteEliminado` |
+| Despliegue HTTPS | Cumplido | Render con PostgreSQL |
+
 ## Metodología Incremental
 
 El desarrollo se organizó bajo el **Modelo de Desarrollo Incremental**. En GitHub Projects se trabajó con 5 sprints macro; cada sprint entregó una parte funcional verificable y se integró sobre el incremento anterior.
@@ -102,6 +187,20 @@ El desarrollo se organizó bajo el **Modelo de Desarrollo Incremental**. En GitH
 | Sprint 5 | Calidad, despliegue y documentación | Pruebas, correcciones visuales, Render, PostgreSQL, README y preparación de lanzamiento |
 
 Este enfoque permitió validar el producto por incrementos, reducir riesgos técnicos y mantener trazabilidad entre requerimientos, implementación y pruebas.
+
+Cada incremento tuvo un criterio de cierre funcional: debía poder ejecutarse, integrarse con el trabajo anterior y verificarse mediante pruebas o revisión operativa. Por eso el proyecto no se construyó como una entrega monolítica al final, sino como una evolución progresiva: primero el núcleo de autenticación, luego incidentes, después panel y notificaciones, posteriormente app móvil e IA, y finalmente despliegue, pruebas y documentación.
+
+## Decisiones Técnicas Relevantes
+
+- Django se eligió porque permite integrar API REST, ORM, autenticación, panel web y administración de archivos en un mismo backend mantenible.
+- Flutter se eligió para construir una app Android con interfaz moderna, navegación protegida y consumo directo de la API.
+- PostgreSQL se usa en producción por estabilidad, integridad y compatibilidad con Render.
+- JWT se usa en móvil porque permite autenticación stateless y refresh controlado.
+- Las reglas de prioridad se implementan en backend para impedir manipulación desde clientes.
+- Las evidencias se manejan como archivos asociados al incidente para mantener relación directa entre reporte y soporte visual.
+- Firebase Cloud Messaging se usa para push real; si el dispositivo no recibe push, el sistema conserva notificaciones internas consultables.
+- El asistente virtual tiene fallback local para que el módulo no falle si no hay API key o si el proveedor IA no responde.
+- La recuperación de contraseña existe a nivel técnico, pero está oculta en interfaz porque la operación actual usa cuentas creadas por administración.
 
 ## Producción
 
@@ -128,6 +227,14 @@ Render usa:
 ```bash
 cd backend && gunicorn commusafe_backend.wsgi:application --bind 0.0.0.0:$PORT --worker-class gthread --workers 1 --threads 4 --timeout 120 --access-logfile - --error-logfile -
 ```
+
+La aplicación móvil de producción se compila con:
+
+```powershell
+flutter build apk --release --dart-define=PROD=true
+```
+
+Con ese parámetro la app usa la URL pública de Render. En desarrollo, sin `PROD=true`, usa `10.0.2.2:8000` para conectarse al backend local desde el emulador Android.
 
 ## Variables De Entorno
 
@@ -263,6 +370,8 @@ Información adicional que puede mejorar la precisión del asistente:
 - Correos o canales oficiales del conjunto.
 - Reglamento resumido de mascotas, ruido, parqueaderos y reservas.
 
+El asistente tiene límites definidos: no reemplaza a administración, vigilancia, servicios de emergencia ni asesoría jurídica. Si una consulta excede el conocimiento configurado, debe orientar al usuario a contactar administración o usar las líneas de emergencia según corresponda.
+
 ## Contactos De Emergencia En La App
 
 La pantalla móvil de emergencias usa líneas públicas reales para Colombia y operación en Pasto:
@@ -337,6 +446,18 @@ Validaciones aplicadas:
 - Renderizado del panel web.
 - Compilación Android.
 - Pruebas de interfaz móvil base.
+
+Además, la calidad del software se evaluó con base en atributos prácticos alineados con ISO/IEC 25010:
+
+| Atributo | Cómo se cumple en CommuSafe |
+|---|---|
+| Funcionalidad | Flujos completos de login, incidentes, avisos, notificaciones y perfiles |
+| Seguridad | Roles, JWT, sesiones protegidas, HTTPS y variables fuera del repo |
+| Usabilidad | App móvil con navegación inferior, panel visual, badges, filtros y estados claros |
+| Mantenibilidad | Apps Django separadas, providers Flutter, servicios reutilizables y documentación |
+| Confiabilidad | Historial inmutable, reglas backend y PostgreSQL en producción |
+| Portabilidad | Backend desplegable en Render y app Android instalable por APK |
+| Eficiencia | Consultas paginadas, filtros server-side y endpoints específicos por módulo |
 
 ## Estructura Del Repositorio
 
