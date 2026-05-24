@@ -15,7 +15,7 @@ from django.utils import timezone
 from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from incidentes.models import Incidente, IncidenteEliminado
+from incidentes.models import EvidenciaIncidente, Incidente, IncidenteEliminado
 from incidentes.serializers import CambiarEstadoSerializer, EliminarIncidenteSerializer
 from incidentes.services import cambiar_estado_incidente
 from incidentes.services_eliminacion import eliminar_incidente_con_trazabilidad
@@ -602,6 +602,50 @@ def usuarios_lista(request):
         roles=Usuario.Rol.choices,
     )
     return render(request, "panel/usuarios_lista.html", contexto)
+
+
+@panel_login_required
+@require_GET
+def usuario_detalle(request, usuario_id):
+    """Muestra el perfil completo de un usuario dentro del panel."""
+
+    usuario = get_object_or_404(Usuario, id=usuario_id)
+    incidentes_reportados = (
+        Incidente.objects.filter(reportado_por=usuario)
+        .select_related("reportado_por", "atendido_por")
+        .prefetch_related("evidencias")
+        .order_by("-fecha_reporte")
+    )
+    incidentes_atendidos = (
+        Incidente.objects.filter(atendido_por=usuario)
+        .select_related("reportado_por", "atendido_por")
+        .order_by("-fecha_actualizacion")
+    )
+    evidencias_recientes = (
+        EvidenciaIncidente.objects.filter(incidente__reportado_por=usuario)
+        .select_related("incidente")
+        .order_by("-fecha_subida")[:8]
+    )
+
+    contexto = _contexto_base_panel(
+        request,
+        page_title=usuario.nombre_completo,
+        page_subtitle="Perfil operativo del usuario",
+        active_nav="usuarios",
+        usuario_objetivo=usuario,
+        metricas_usuario={
+            "reportados": incidentes_reportados.count(),
+            "activos": incidentes_reportados.exclude(estado=Incidente.Estado.CERRADO).count(),
+            "resueltos": incidentes_reportados.filter(
+                estado__in=[Incidente.Estado.RESUELTO, Incidente.Estado.CERRADO]
+            ).count(),
+            "atendidos": incidentes_atendidos.count(),
+        },
+        incidentes_reportados=incidentes_reportados[:10],
+        incidentes_atendidos=incidentes_atendidos[:10],
+        evidencias_recientes=evidencias_recientes,
+    )
+    return render(request, "panel/usuario_detalle.html", contexto)
 
 
 @panel_login_required

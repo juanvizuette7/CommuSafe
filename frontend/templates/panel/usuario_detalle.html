@@ -1,0 +1,223 @@
+{% extends "panel/base.html" %}
+
+{% block panel_content %}
+<section class="space-y-6">
+    <div class="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+        <article class="overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-soft">
+            <div class="bg-[linear-gradient(135deg,_#1A1A2E_0%,_#0F3460_100%)] px-6 py-7 text-white">
+                <div class="flex flex-col gap-5 sm:flex-row sm:items-center">
+                    {% if usuario_objetivo.foto_perfil %}
+                    <a href="{{ usuario_objetivo.foto_perfil.url }}" target="_blank" rel="noopener" @click.prevent="abrirImagen('{{ usuario_objetivo.foto_perfil.url }}', 'Foto de perfil de {{ usuario_objetivo.nombre_completo|escapejs }}')" class="group relative h-28 w-28 shrink-0 overflow-hidden rounded-[30px] border border-white/20 bg-white/10 shadow-glass focus:outline-none focus:ring-4 focus:ring-white/20">
+                        <img src="{{ usuario_objetivo.foto_perfil.url }}" alt="Foto de perfil de {{ usuario_objetivo.nombre_completo }}" class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.04]" onerror="this.parentElement.classList.add('hidden'); this.parentElement.nextElementSibling.classList.remove('hidden');">
+                        <span class="absolute inset-0 flex items-center justify-center bg-slate-950/50 text-xs font-black uppercase tracking-[0.18em] text-white opacity-0 transition group-hover:opacity-100">
+                            Ver foto
+                        </span>
+                    </a>
+                    <div class="hidden h-28 w-28 shrink-0 items-center justify-center rounded-[30px] border border-white/20 bg-white/10 text-3xl font-black text-white flex">
+                        {{ usuario_objetivo.nombre|first }}{{ usuario_objetivo.apellido|first }}
+                    </div>
+                    {% else %}
+                    <div class="flex h-28 w-28 shrink-0 items-center justify-center rounded-[30px] border border-white/20 bg-white/10 text-3xl font-black text-white">
+                        {{ usuario_objetivo.nombre|first }}{{ usuario_objetivo.apellido|first }}
+                    </div>
+                    {% endif %}
+                    <div class="min-w-0">
+                        <p class="text-xs font-black uppercase tracking-[0.24em] text-slate-300">Perfil del usuario</p>
+                        <h2 class="mt-2 text-3xl font-black leading-tight">{{ usuario_objetivo.nombre_completo }}</h2>
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            <span class="inline-flex rounded-full px-4 py-2 text-xs font-black {% if usuario_objetivo.rol == 'ADMINISTRADOR' %}bg-white text-primary{% elif usuario_objetivo.rol == 'VIGILANTE' %}bg-blue-100 text-blue-700{% else %}bg-success/10 text-emerald-100{% endif %}">
+                                {{ usuario_objetivo.get_rol_display }}
+                            </span>
+                            <span class="inline-flex rounded-full px-4 py-2 text-xs font-black {% if usuario_objetivo.activo %}bg-success text-white{% else %}bg-slate-200 text-slate-700{% endif %}">
+                                {% if usuario_objetivo.activo %}Cuenta activa{% else %}Cuenta inactiva{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid gap-4 p-6 sm:grid-cols-2">
+                <div class="rounded-[24px] bg-slate-50 p-5">
+                    <p class="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Correo</p>
+                    <p class="mt-3 break-all text-sm font-bold text-slate-900">{{ usuario_objetivo.email }}</p>
+                </div>
+                <div class="rounded-[24px] bg-slate-50 p-5">
+                    <p class="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Teléfono</p>
+                    <p class="mt-3 text-sm font-bold text-slate-900">{{ usuario_objetivo.telefono|default:"No registrado" }}</p>
+                </div>
+                <div class="rounded-[24px] bg-slate-50 p-5">
+                    <p class="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Referencia</p>
+                    <p class="mt-3 text-sm font-bold text-slate-900">
+                        {% if usuario_objetivo.es_residente %}
+                        {{ usuario_objetivo.unidad_residencial|default:"Unidad no registrada" }}
+                        {% else %}
+                        Remansos del Norte
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="rounded-[24px] bg-slate-50 p-5">
+                    <p class="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Registro</p>
+                    <p class="mt-3 text-sm font-bold text-slate-900">{{ usuario_objetivo.fecha_registro|date:"d/m/Y h:i a" }}</p>
+                </div>
+                <div class="rounded-[24px] bg-slate-50 p-5 sm:col-span-2">
+                    <p class="text-xs font-black uppercase tracking-[0.18em] text-slate-400">Tratamiento de datos</p>
+                    <p class="mt-3 text-sm font-bold text-slate-900">
+                        {% if usuario_objetivo.politica_privacidad_aceptada %}
+                        Aceptado{% if usuario_objetivo.politica_privacidad_aceptada_en %} el {{ usuario_objetivo.politica_privacidad_aceptada_en|date:"d/m/Y h:i a" }}{% endif %}
+                        {% else %}
+                        Pendiente de aceptación
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            {% if request.user.es_administrador %}
+            <div class="flex flex-col gap-3 border-t border-slate-100 p-6 sm:flex-row">
+                <a href="{% url 'panel_web:usuario_editar' usuario_objetivo.id %}" class="inline-flex flex-1 justify-center rounded-2xl bg-primary px-5 py-3 text-sm font-black text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-accent">
+                    Editar datos
+                </a>
+                <form method="post" action="{% url 'panel_web:usuario_toggle_activo' usuario_objetivo.id %}" class="flex-1">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full rounded-2xl px-5 py-3 text-sm font-black shadow-soft transition hover:-translate-y-0.5 {% if usuario_objetivo.activo %}bg-danger text-white hover:bg-red-700{% else %}bg-success text-white hover:bg-emerald-700{% endif %}">
+                        {% if usuario_objetivo.activo %}Desactivar cuenta{% else %}Activar cuenta{% endif %}
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </article>
+
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <article class="rounded-[28px] bg-primary p-5 text-white shadow-soft">
+                <p class="text-xs font-black uppercase tracking-[0.18em] text-slate-300">Reportados</p>
+                <p class="mt-4 text-4xl font-black">{{ metricas_usuario.reportados }}</p>
+                <p class="mt-2 text-sm text-slate-300">Incidentes creados</p>
+            </article>
+            <article class="rounded-[28px] bg-[linear-gradient(135deg,_#0F3460,_#3B82F6)] p-5 text-white shadow-soft">
+                <p class="text-xs font-black uppercase tracking-[0.18em] text-blue-100">Activos</p>
+                <p class="mt-4 text-4xl font-black">{{ metricas_usuario.activos }}</p>
+                <p class="mt-2 text-sm text-blue-100">En seguimiento</p>
+            </article>
+            <article class="rounded-[28px] bg-success p-5 text-white shadow-soft">
+                <p class="text-xs font-black uppercase tracking-[0.18em] text-emerald-100">Resueltos</p>
+                <p class="mt-4 text-4xl font-black">{{ metricas_usuario.resueltos }}</p>
+                <p class="mt-2 text-sm text-emerald-100">Cerrados o resueltos</p>
+            </article>
+            <article class="rounded-[28px] bg-[linear-gradient(135deg,_#E94560,_#B91C1C)] p-5 text-white shadow-soft">
+                <p class="text-xs font-black uppercase tracking-[0.18em] text-rose-100">Atendidos</p>
+                <p class="mt-4 text-4xl font-black">{{ metricas_usuario.atendidos }}</p>
+                <p class="mt-2 text-sm text-rose-100">Como responsable</p>
+            </article>
+        </div>
+    </div>
+
+    <article class="rounded-[30px] border border-slate-200 bg-white p-6 shadow-soft">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h3 class="text-2xl font-black text-primary">Incidentes reportados</h3>
+                <p class="mt-1 text-sm text-slate-500">Últimos casos creados por este usuario.</p>
+            </div>
+            <a href="{% url 'panel_web:usuarios_lista' %}" class="inline-flex rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-black text-slate-600 transition hover:bg-slate-50">
+                Volver a usuarios
+            </a>
+        </div>
+
+        <div class="mt-6 overflow-hidden rounded-[24px] border border-slate-200">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-100 text-sm">
+                    <thead class="bg-slate-50">
+                        <tr class="text-left text-xs font-black uppercase tracking-[0.16em] text-slate-500">
+                            <th class="px-5 py-4">Incidente</th>
+                            <th class="px-5 py-4">Categoría</th>
+                            <th class="px-5 py-4">Prioridad</th>
+                            <th class="px-5 py-4">Estado</th>
+                            <th class="px-5 py-4">Evidencias</th>
+                            <th class="px-5 py-4">Fecha</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for incidente in incidentes_reportados %}
+                        <tr onclick="window.location.href='{% url 'panel_web:incidente_detalle' incidente.id %}'" class="cursor-pointer transition hover:bg-slate-50">
+                            <td class="px-5 py-4">
+                                <p class="font-black text-slate-900">{{ incidente.titulo }}</p>
+                                <p class="mt-1 line-clamp-2 text-xs text-slate-500">{{ incidente.ubicacion_referencia|default:"Sin ubicación adicional" }}</p>
+                            </td>
+                            <td class="px-5 py-4 text-slate-600">{{ incidente.get_categoria_display }}</td>
+                            <td class="px-5 py-4">
+                                <span class="inline-flex rounded-full px-3 py-1 text-xs font-black {% if incidente.prioridad == 'ALTA' %}bg-danger/10 text-danger{% elif incidente.prioridad == 'MEDIA' %}bg-amber-100 text-amber-700{% else %}bg-success/10 text-success{% endif %}">
+                                    {{ incidente.get_prioridad_display }}
+                                </span>
+                            </td>
+                            <td class="px-5 py-4">
+                                <span class="inline-flex rounded-full px-3 py-1 text-xs font-black {% if incidente.estado == 'REGISTRADO' %}bg-slate-100 text-slate-700{% elif incidente.estado == 'EN_PROCESO' %}bg-blue-100 text-blue-700{% elif incidente.estado == 'RESUELTO' %}bg-success/10 text-success{% else %}bg-slate-900 text-white{% endif %}">
+                                    {{ incidente.get_estado_display }}
+                                </span>
+                            </td>
+                            <td class="px-5 py-4 text-slate-600">{{ incidente.evidencias.count }}</td>
+                            <td class="px-5 py-4 text-slate-500">{{ incidente.fecha_reporte|date:"d/m/Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="px-5 py-10 text-center text-sm font-bold text-slate-500">
+                                Este usuario todavía no tiene incidentes reportados.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </article>
+
+    {% if evidencias_recientes %}
+    <article class="rounded-[30px] border border-slate-200 bg-white p-6 shadow-soft" x-data="{ evidenciasUsuario: [{% for evidencia in evidencias_recientes %}{ url: '{{ evidencia.imagen.url|escapejs }}', titulo: 'Evidencia de {{ evidencia.incidente.titulo|escapejs }}' }{% if not forloop.last %},{% endif %}{% endfor %}] }">
+        <div>
+            <h3 class="text-2xl font-black text-primary">Evidencias recientes</h3>
+            <p class="mt-1 text-sm text-slate-500">Imágenes adjuntas en incidentes reportados por este usuario.</p>
+        </div>
+        <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {% for evidencia in evidencias_recientes %}
+            <figure class="overflow-hidden rounded-[24px] border border-slate-200 bg-slate-50">
+                <a href="{{ evidencia.imagen.url }}" target="_blank" rel="noopener" @click.prevent="abrirImagen(evidenciasUsuario[{{ forloop.counter0 }}].url, evidenciasUsuario[{{ forloop.counter0 }}].titulo, evidenciasUsuario, {{ forloop.counter0 }})" class="group relative block h-44 overflow-hidden focus:outline-none focus:ring-4 focus:ring-accent/20">
+                    <img src="{{ evidencia.imagen.url }}" alt="Evidencia de {{ evidencia.incidente.titulo }}" class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.04]" onerror="this.parentElement.classList.add('hidden'); this.parentElement.nextElementSibling.classList.remove('hidden');">
+                    <span class="absolute inset-0 flex items-center justify-center bg-slate-950/50 text-xs font-black uppercase tracking-[0.18em] text-white opacity-0 transition group-hover:opacity-100">
+                        Ver evidencia
+                    </span>
+                </a>
+                <div class="hidden h-44 w-full items-center justify-center bg-slate-100 px-4 text-center text-xs font-bold text-slate-500 flex">
+                    Imagen no disponible.
+                </div>
+                <figcaption class="p-4">
+                    <a href="{% url 'panel_web:incidente_detalle' evidencia.incidente.id %}" class="line-clamp-2 text-sm font-black text-primary transition hover:text-accent">{{ evidencia.incidente.titulo }}</a>
+                    <p class="mt-1 text-xs text-slate-500">{{ evidencia.fecha_subida|date:"d/m/Y h:i a" }}</p>
+                </figcaption>
+            </figure>
+            {% endfor %}
+        </div>
+    </article>
+    {% endif %}
+
+    {% if incidentes_atendidos %}
+    <article class="rounded-[30px] border border-slate-200 bg-white p-6 shadow-soft">
+        <div>
+            <h3 class="text-2xl font-black text-primary">Incidentes atendidos</h3>
+            <p class="mt-1 text-sm text-slate-500">Casos donde este usuario figura como responsable operativo.</p>
+        </div>
+        <div class="mt-6 grid gap-3 md:grid-cols-2">
+            {% for incidente in incidentes_atendidos %}
+            <a href="{% url 'panel_web:incidente_detalle' incidente.id %}" class="rounded-[24px] border border-slate-200 bg-slate-50 p-5 transition hover:-translate-y-0.5 hover:border-primary/40 hover:bg-white hover:shadow-soft">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <p class="font-black text-slate-900">{{ incidente.titulo }}</p>
+                        <p class="mt-1 text-xs text-slate-500">Reportado por {{ incidente.reportado_por.nombre_completo }}</p>
+                    </div>
+                    <span class="shrink-0 rounded-full px-3 py-1 text-xs font-black {% if incidente.estado == 'REGISTRADO' %}bg-slate-100 text-slate-700{% elif incidente.estado == 'EN_PROCESO' %}bg-blue-100 text-blue-700{% elif incidente.estado == 'RESUELTO' %}bg-success/10 text-success{% else %}bg-slate-900 text-white{% endif %}">
+                        {{ incidente.get_estado_display }}
+                    </span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </article>
+    {% endif %}
+</section>
+{% endblock panel_content %}

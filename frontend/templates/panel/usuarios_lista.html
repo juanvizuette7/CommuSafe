@@ -42,11 +42,11 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100 bg-white">
                     {% for usuario in usuarios %}
-                    <tr class="transition hover:bg-slate-50/80">
+                    <tr onclick="window.location.href='{% url 'panel_web:usuario_detalle' usuario.id %}'" class="cursor-pointer transition hover:bg-slate-50/80">
                         <td class="px-5 py-4">
                             <div class="flex items-center gap-3">
                                 {% if usuario.foto_perfil %}
-                                <a href="{{ usuario.foto_perfil.url }}" target="_blank" rel="noopener" @click.prevent="abrirImagen('{{ usuario.foto_perfil.url }}', 'Foto de perfil de {{ usuario.nombre_completo|escapejs }}')" class="group relative shrink-0 overflow-hidden rounded-2xl focus:outline-none focus:ring-4 focus:ring-accent/20" aria-label="Ver foto de perfil de {{ usuario.nombre_completo }}">
+                                <a href="{{ usuario.foto_perfil.url }}" target="_blank" rel="noopener" @click.stop.prevent="abrirImagen('{{ usuario.foto_perfil.url }}', 'Foto de perfil de {{ usuario.nombre_completo|escapejs }}')" class="group relative shrink-0 overflow-hidden rounded-2xl focus:outline-none focus:ring-4 focus:ring-accent/20" aria-label="Ver foto de perfil de {{ usuario.nombre_completo }}">
                                     <img src="{{ usuario.foto_perfil.url }}" alt="Foto de perfil" class="h-12 w-12 rounded-2xl object-cover transition hover:brightness-105" onerror="this.parentElement.classList.add('hidden'); this.parentElement.nextElementSibling.classList.remove('hidden');">
                                     <span class="absolute inset-0 flex items-center justify-center rounded-2xl bg-primary/70 text-[10px] font-black uppercase tracking-wide text-white opacity-0 transition group-hover:opacity-100">
                                         Ver
@@ -82,10 +82,10 @@
                         <td class="px-5 py-4">
                             <div class="flex flex-wrap items-center justify-end gap-2">
                                 {% if request.user.es_administrador %}
-                                <a href="{% url 'panel_web:usuario_editar' usuario.id %}" class="inline-flex rounded-xl bg-accent px-3 py-2 text-xs font-bold text-white transition hover:bg-primary">
+                                <a href="{% url 'panel_web:usuario_editar' usuario.id %}" onclick="event.stopPropagation()" class="inline-flex rounded-xl bg-accent px-3 py-2 text-xs font-bold text-white transition hover:bg-primary">
                                     Editar
                                 </a>
-                                <form method="post" action="{% url 'panel_web:usuario_cambiar_rol' usuario.id %}" class="flex items-center gap-2">
+                                <form method="post" action="{% url 'panel_web:usuario_cambiar_rol' usuario.id %}" onclick="event.stopPropagation()" class="flex items-center gap-2">
                                     {% csrf_token %}
                                     <select name="nuevo_rol" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-600 outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/10">
                                         {% for value, label in roles %}
@@ -96,14 +96,14 @@
                                         Cambiar rol
                                     </button>
                                 </form>
-                                <form method="post" action="{% url 'panel_web:usuario_eliminar' usuario.id %}" onsubmit="return confirm('¿Eliminar definitivamente a {{ usuario.nombre_completo|escapejs }}? Esta acción no se puede deshacer.');">
+                                <form method="post" action="{% url 'panel_web:usuario_eliminar' usuario.id %}" onclick="event.stopPropagation()" onsubmit="return confirm('¿Eliminar definitivamente a {{ usuario.nombre_completo|escapejs }}? Esta acción no se puede deshacer.');">
                                     {% csrf_token %}
                                     <button type="submit" class="inline-flex rounded-xl border border-danger/20 bg-danger/10 px-3 py-2 text-xs font-bold text-danger transition hover:bg-danger hover:text-white">
                                         Eliminar
                                     </button>
                                 </form>
                                 {% endif %}
-                            <form method="post" action="{% url 'panel_web:usuario_toggle_activo' usuario.id %}">
+                            <form method="post" action="{% url 'panel_web:usuario_toggle_activo' usuario.id %}" onclick="event.stopPropagation()">
                                 {% csrf_token %}
                                 <button type="submit" class="inline-flex rounded-xl px-3 py-2 text-xs font-semibold transition {% if usuario.activo %}border border-danger/20 bg-danger/10 text-danger hover:bg-danger hover:text-white{% else %}border border-success/20 bg-success/10 text-success hover:bg-success hover:text-white{% endif %}">
                                     {% if usuario.activo %}Desactivar{% else %}Activar{% endif %}
