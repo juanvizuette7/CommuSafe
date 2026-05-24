@@ -19,24 +19,11 @@ from django.utils import timezone
 from incidentes.models import Incidente
 from notificaciones.models import Notificacion
 
+from .knowledge_base import render_knowledge_base
 from .models import ConversacionAsistente, MensajeAsistente
 
 
-CONOCIMIENTO_REMANSOS = """
-Conjunto residencial: Remansos del Norte.
-Administración: atención de lunes a viernes de 8:00 a. m. a 5:00 p. m. y sábados de 8:00 a. m. a 12:00 m.
-Portería y vigilancia: atención permanente 24/7.
-Horarios de áreas comunes: de 6:00 a. m. a 10:00 p. m.
-Normas de convivencia base: respetar horarios de descanso entre 10:00 p. m. y 6:00 a. m., recoger excrementos de mascotas, usar correa en zonas comunes, no obstruir pasillos ni escaleras, respetar el reglamento de uso de zonas comunes.
-Procedimiento de incidentes en CommuSafe: el residente reporta, vigilancia atiende, administración supervisa y puede cerrar el caso.
-Emergencias: contactar portería de inmediato y, si la situación es crítica, llamar a la línea 123.
-Cuotas de administración: se consultan y gestionan con administración; si el usuario requiere valores exactos o estado de cartera, debe contactar directamente a la administración.
-Uso de CommuSafe: permite iniciar sesión, reportar incidentes, ver notificaciones, consultar estados, recibir avisos y conversar con el asistente.
-Reporte de incidentes en la app móvil: el usuario ya está dentro de CommuSafe. Para reportar debe ir a la pestaña Incidentes, tocar el botón Nuevo, escribir un título claro, elegir categoría, describir lo ocurrido, agregar ubicación de referencia, adjuntar hasta 3 fotos si las tiene y tocar Reportar incidente. Luego puede abrir el detalle para revisar estado, historial y notificaciones.
-Avisos: administración y vigilancia pueden enviar avisos informativos o alertas a residentes o usuarios seleccionados. Administración también puede programar avisos recurrentes por días.
-El asistente puede explicar procedimientos, orientar sobre convivencia, uso de la plataforma, reportes, avisos, notificaciones, emergencias y preguntas frecuentes del conjunto.
-Si una pregunta sale de este alcance, el asistente debe decirlo claramente y sugerir contactar a administración.
-""".strip()
+CONOCIMIENTO_REMANSOS = render_knowledge_base()
 
 
 SYSTEM_PROMPT = f"""
@@ -48,11 +35,12 @@ Puedes orientar a residentes, vigilancia y administración sobre reportes, incid
 Solo puedes responder con base en esta información autorizada:
 {CONOCIMIENTO_REMANSOS}
 No inventes políticas, valores, multas, nombres de personas, sanciones, claves, datos privados ni decisiones administrativas.
-Si la información no está disponible o requiere confirmación humana, dilo con claridad y sugiere contactar a administración o portería.
+Si la información no está disponible o requiere confirmación humana, responde de forma natural indicando que no encuentras ese dato en CommuSafe y sugiere contactar a administración o portería.
 Si el usuario pregunta algo externo al conjunto o a CommuSafe, responde de forma amable que solo puedes apoyar consultas relacionadas con Remansos del Norte y CommuSafe.
 Usa respuestas concretas y estructuradas. Si hay pasos, enuméralos. Si hay riesgo o emergencia, prioriza seguridad y contacto con portería/línea 123.
 Cuando el usuario pregunte cómo reportar un incidente, explica pasos concretos dentro de CommuSafe, como si el usuario ya estuviera usando la aplicación.
 En preguntas sobre uso interno de la app, asume que el usuario ya inició sesión y está dentro de CommuSafe. No respondas con pasos genéricos como "descarga la app" o "inicia sesión" salvo que el usuario pregunte específicamente por acceso.
+Usa expresiones como "según la información registrada en CommuSafe", "de acuerdo con la información disponible en el sistema" o "puedes realizar este proceso desde el módulo correspondiente" cuando ayuden a contextualizar la respuesta.
 Mantén coherencia con el historial de la conversación y no contradigas mensajes anteriores salvo para corregir con claridad.
 """.strip()
 
@@ -178,7 +166,7 @@ def _respuesta_fallback(mensaje):
 
     if any(palabra in texto for palabra in ["horario", "horarios", "salon", "salón", "zona comun", "zona común", "zonas comunes"]):
         return (
-            "En Remansos del Norte, las áreas comunes funcionan de 6:00 a. m. a 10:00 p. m. "
+            "Según la información registrada en CommuSafe, las áreas comunes de Remansos del Norte funcionan de 6:00 a. m. a 10:00 p. m. "
             "La administración atiende de lunes a viernes de 8:00 a. m. a 5:00 p. m. y sábados de 8:00 a. m. a 12:00 m."
         )
     if any(palabra in texto for palabra in ["emergencia", "gas", "incendio", "ambulancia", "urgencia"]):
@@ -188,13 +176,33 @@ def _respuesta_fallback(mensaje):
         )
     if any(palabra in texto for palabra in ["cuota", "administracion", "administración", "cartera", "pago"]):
         return (
-            "Las cuotas de administración y el estado de cartera se gestionan directamente con la administración del conjunto. "
-            "Si necesitas el valor exacto o confirmar un pago, debes comunicarte con administración."
+            "De acuerdo con la información disponible en el sistema, las cuotas, recibos, paz y salvos y estados de cartera se validan con administración. "
+            "No encuentro un valor exacto registrado en CommuSafe para esa consulta; verifica directamente con administración para recibir la información actualizada."
+        )
+    if any(palabra in texto for palabra in ["visitante", "visitantes", "domiciliario", "domiciliarios", "proveedor", "proveedores", "ingreso"]):
+        return (
+            "Para gestionar visitantes, domiciliarios o proveedores, informa a portería los datos básicos: nombre, unidad a la que se dirige, motivo de visita, hora aproximada y placa si ingresa con vehículo. "
+            "Vigilancia puede solicitar confirmación cuando el visitante no esté anunciado o haya una novedad de seguridad."
+        )
+    if any(palabra in texto for palabra in ["parqueadero", "parqueaderos", "vehiculo", "vehículo", "placa", "carro", "moto"]):
+        return (
+            "Si hay una novedad en parqueaderos, registra un incidente con ubicación exacta, descripción, placa visible si aplica y evidencia fotográfica si es seguro tomarla. "
+            "Si un vehículo bloquea el paso, avisa también a portería para gestionar apoyo inmediato."
+        )
+    if any(palabra in texto for palabra in ["mascota", "mascotas", "perro", "gato", "excremento"]):
+        return (
+            "Según la información registrada en CommuSafe, las mascotas deben transitar con control o correa en zonas comunes y sus propietarios deben recoger los residuos. "
+            "Si hay ruido, agresividad, suciedad o una mascota extraviada, crea un reporte de convivencia respetuoso indicando lugar, hora, frecuencia y evidencia si la tienes."
         )
     if any(palabra in texto for palabra in ["norma", "convivencia", "ruido", "mascota", "reglamento"]):
         return (
             "Las normas básicas de convivencia incluyen respetar el horario de descanso entre 10:00 p. m. y 6:00 a. m., "
-            "usar correa para las mascotas en zonas comunes, recoger sus residuos y no obstruir pasillos o escaleras."
+            "mantener comunicación respetuosa, usar adecuadamente las zonas comunes, controlar el ruido y reportar conflictos recurrentes desde CommuSafe."
+        )
+    if any(palabra in texto for palabra in ["daño", "dano", "mantenimiento", "luz", "iluminacion", "iluminación", "cerradura", "citofono", "citófono", "puerta", "pasillo", "limpieza"]):
+        return (
+            "Para reportar mantenimiento o daños comunes, usa Incidentes > Nuevo y selecciona Infraestructura. "
+            "Incluye qué elemento falla, ubicación exacta, desde cuándo ocurre, si afecta seguridad o movilidad y hasta 3 fotos si las tienes."
         )
     if any(
         frase in texto
@@ -226,7 +234,12 @@ def _respuesta_fallback(mensaje):
     if any(palabra in texto for palabra in ["aviso", "alerta", "notificacion", "notificación"]):
         return (
             "Los avisos y alertas aparecen en la sección Alertas de CommuSafe. Allí puedes revisar comunicados de administración, "
-            "cambios de estado de incidentes y emergencias enviadas al conjunto."
+            "cambios de estado de incidentes y emergencias enviadas al conjunto. Algunos avisos pueden ser informativos y otros pueden requerir una acción concreta."
+        )
+    if any(palabra in texto for palabra in ["contraseña", "contrasena", "clave", "no puedo ingresar", "login", "sesion", "sesión"]):
+        return (
+            "Para ingresar a CommuSafe usa el correo registrado y la contraseña asignada. "
+            "Si no puedes acceder o necesitas restablecer la contraseña, solicita apoyo a administración para validar tu cuenta y actualizar el acceso."
         )
     if any(palabra in texto for palabra in ["app", "commusafe", "incidente", "reporte"]):
         return (
@@ -236,7 +249,7 @@ def _respuesta_fallback(mensaje):
 
     return (
         "Solo puedo apoyar consultas relacionadas con Remansos del Norte y el sistema CommuSafe. "
-        "Para información no disponible en el sistema, contacta directamente a administración."
+        "No encuentro un dato exacto registrado en CommuSafe para esa consulta; te recomiendo verificarlo directamente con administración."
     )
 
 

@@ -10,7 +10,9 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from .knowledge_base import KNOWLEDGE_BASE_SECTIONS, render_knowledge_base
 from .models import ConversacionAsistente, MensajeAsistente
+from .services import SYSTEM_PROMPT
 from .views import _api_llm_configurada, _extraer_texto_anthropic, _normalizar_historial, _respuesta_fallback
 
 
@@ -184,6 +186,25 @@ class ChatAsistenteHelpersTests(APITestCase):
     def test_respuesta_fallback_default(self):
         texto = _respuesta_fallback("consulta completamente desconocida")
         self.assertIn("solo puedo apoyar", normalizar_texto(texto))
+
+    def test_base_conocimiento_incluye_contexto_operativo(self):
+        contenido = normalizar_texto(render_knowledge_base())
+
+        self.assertGreaterEqual(len(KNOWLEDGE_BASE_SECTIONS), 10)
+        self.assertIn("pasto", contenido)
+        self.assertIn("narino", contenido)
+        self.assertIn("visitantes", contenido)
+        self.assertIn("parqueaderos", contenido)
+        self.assertIn("mascotas", contenido)
+        self.assertIn("conversaciones del asistente quedan guardadas", contenido)
+
+    def test_prompt_no_usa_marcadores_de_datos_no_reales(self):
+        contenido = normalizar_texto(SYSTEM_PROMPT)
+
+        self.assertIn("segun la informacion registrada en commusafe", contenido)
+        self.assertNotIn("informacion falsa", contenido)
+        self.assertNotIn("datos inventados", contenido)
+        self.assertNotIn("datos simulados", contenido)
 
 
 @override_settings(GEMINI_API_KEY="", LLM_PROVIDER="anthropic")

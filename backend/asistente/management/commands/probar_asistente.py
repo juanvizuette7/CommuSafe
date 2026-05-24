@@ -2,7 +2,7 @@
 
 from django.core.management.base import BaseCommand, CommandError
 
-from asistente.views import generar_respuesta_asistente
+from asistente.services import generar_respuesta_asistente
 
 
 class Command(BaseCommand):
