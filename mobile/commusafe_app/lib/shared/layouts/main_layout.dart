@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/constants/app_constants.dart';
 import '../../core/theme/app_theme.dart';
+import '../../features/asistente/providers/asistente_provider.dart';
 import '../../features/auth/providers/auth_provider.dart';
 import '../../features/incidentes/providers/incidente_provider.dart';
 import '../../features/notificaciones/providers/notificacion_provider.dart';
@@ -79,10 +80,12 @@ class _MainLayoutState extends State<MainLayout> {
     final authProvider = context.read<AuthProvider>();
     final incidenteProvider = context.read<IncidenteProvider>();
     final notificacionProvider = context.read<NotificacionProvider>();
+    final asistenteProvider = context.read<AsistenteProvider>();
 
     await authProvider.logout();
     incidenteProvider.reset();
     notificacionProvider.reset();
+    asistenteProvider.reset();
     if (!context.mounted) {
       return;
     }

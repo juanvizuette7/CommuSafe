@@ -7,6 +7,7 @@ import 'app.dart';
 import 'core/services/api_service.dart';
 import 'core/services/firebase_messaging_service.dart';
 import 'core/services/notification_service.dart';
+import 'features/asistente/providers/asistente_provider.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/incidentes/providers/incidente_provider.dart';
 import 'features/notificaciones/providers/notificacion_provider.dart';
@@ -29,6 +30,9 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider<NotificacionProvider>(
           create: (_) => NotificacionProvider(),
+        ),
+        ChangeNotifierProvider<AsistenteProvider>(
+          create: (_) => AsistenteProvider(),
         ),
       ],
       child: const CommuSafeApp(),

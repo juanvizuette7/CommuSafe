@@ -1,5 +1,6 @@
 ﻿"""Pruebas del modulo de asistente virtual."""
 
+import unicodedata
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -9,10 +10,17 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
+from .models import ConversacionAsistente, MensajeAsistente
 from .views import _api_llm_configurada, _extraer_texto_anthropic, _normalizar_historial, _respuesta_fallback
 
 
 Usuario = get_user_model()
+
+
+def normalizar_texto(texto):
+    """Normaliza acentos para que las pruebas no dependan de codificación de consola."""
+
+    return unicodedata.normalize("NFKD", texto).encode("ascii", "ignore").decode("ascii").lower()
 
 
 @override_settings(LLM_API_KEY="", GEMINI_API_KEY="", LLM_PROVIDER="gemini")
@@ -42,7 +50,7 @@ class ChatAsistenteFallbackTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["modo"], "fallback")
-        self.assertIn("areas comunes", response.data["respuesta"].lower())
+        self.assertIn("areas comunes", normalizar_texto(response.data["respuesta"]))
 
     def test_limita_historial_a_ultimos_ocho_mensajes(self):
         self.client.force_authenticate(self.usuario)
@@ -70,7 +78,7 @@ class ChatAsistenteFallbackTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertIn("administracion", response.data["respuesta"].lower())
+        self.assertIn("remansos del norte", normalizar_texto(response.data["respuesta"]))
 
     def test_acepta_historial_con_campo_mensaje_y_roles_alias(self):
         self.client.force_authenticate(self.usuario)
@@ -122,9 +130,9 @@ class ChatAsistenteFallbackTests(APITestCase):
             format="json",
         )
 
-        self.assertIn("cuotas", cuotas.data["respuesta"].lower())
-        self.assertIn("convivencia", normas.data["respuesta"].lower())
-        self.assertIn("reportar incidentes", app.data["respuesta"].lower())
+        self.assertIn("cuotas", normalizar_texto(cuotas.data["respuesta"]))
+        self.assertIn("convivencia", normalizar_texto(normas.data["respuesta"]))
+        self.assertIn("reportar incidentes", normalizar_texto(app.data["respuesta"]))
 
     def test_endpoint_requiere_autenticacion(self):
         response = self.client.post(
@@ -175,7 +183,7 @@ class ChatAsistenteHelpersTests(APITestCase):
 
     def test_respuesta_fallback_default(self):
         texto = _respuesta_fallback("consulta completamente desconocida")
-        self.assertIn("No tengo una respuesta", texto)
+        self.assertIn("solo puedo apoyar", normalizar_texto(texto))
 
 
 @override_settings(GEMINI_API_KEY="", LLM_PROVIDER="anthropic")
@@ -194,7 +202,7 @@ class ChatAsistenteIAModeTests(APITestCase):
         self.url = reverse("asistente:chat")
 
     @override_settings(LLM_API_KEY="clave-real")
-    @patch("asistente.views.Anthropic")
+    @patch("asistente.services.Anthropic")
     def test_modo_ia_cuando_modelo_responde_texto(self, anthropic_mock):
         cliente = SimpleNamespace(
             messages=SimpleNamespace(
@@ -218,7 +226,7 @@ class ChatAsistenteIAModeTests(APITestCase):
         self.assertIn("Respuesta IA", response.data["respuesta"])
 
     @override_settings(LLM_API_KEY="clave-real")
-    @patch("asistente.views.Anthropic")
+    @patch("asistente.services.Anthropic")
     def test_modo_fallback_si_modelo_devuelve_vacio(self, anthropic_mock):
         cliente = SimpleNamespace(
             messages=SimpleNamespace(
@@ -238,7 +246,7 @@ class ChatAsistenteIAModeTests(APITestCase):
         self.assertEqual(response.data["modo"], "fallback")
 
     @override_settings(LLM_API_KEY="clave-real")
-    @patch("asistente.views.Anthropic", side_effect=Exception("fallo"))
+    @patch("asistente.services.Anthropic", side_effect=Exception("fallo"))
     def test_modo_fallback_si_hay_excepcion_ia(self, _anthropic_mock):
         self.client.force_authenticate(self.usuario)
         response = self.client.post(
@@ -249,3 +257,113 @@ class ChatAsistenteIAModeTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["modo"], "fallback")
+
+
+@override_settings(LLM_API_KEY="", GEMINI_API_KEY="", LLM_PROVIDER="gemini")
+class ConversacionesAsistentePersistenteTests(APITestCase):
+    """Pruebas del historial persistente y aislamiento por usuario."""
+
+    def setUp(self):
+        self.usuario = Usuario.objects.create_user(
+            email="residente-chat@test.com",
+            password="Segura2026*",
+            nombre="Maria",
+            apellido="Lopez",
+            unidad_residencial="Apto 301 Torre A",
+            rol=Usuario.Rol.RESIDENTE,
+        )
+        self.otro_usuario = Usuario.objects.create_user(
+            email="otro-chat@test.com",
+            password="Segura2026*",
+            nombre="Pedro",
+            apellido="Garcia",
+            unidad_residencial="Portería",
+            rol=Usuario.Rol.VIGILANTE,
+        )
+        self.list_url = reverse("asistente:conversacion-list")
+
+    def test_crea_conversacion_y_persiste_mensajes(self):
+        self.client.force_authenticate(self.usuario)
+
+        creada = self.client.post(self.list_url, {}, format="json")
+        self.assertEqual(creada.status_code, status.HTTP_201_CREATED)
+
+        conversacion_id = creada.data["id"]
+        enviada = self.client.post(
+            reverse("asistente:conversacion-enviar", kwargs={"pk": conversacion_id}),
+            {"mensaje": "¿Cómo reporto un incidente de seguridad?"},
+            format="json",
+        )
+
+        self.assertEqual(enviada.status_code, status.HTTP_201_CREATED)
+        self.assertNotEqual(enviada.data["conversacion"]["titulo"], "Nueva conversación")
+        self.assertEqual(MensajeAsistente.objects.filter(conversacion_id=conversacion_id).count(), 2)
+        self.assertIn("mensaje_usuario", enviada.data)
+        self.assertIn("mensaje_asistente", enviada.data)
+
+        mensajes = self.client.get(
+            reverse("asistente:conversacion-mensajes", kwargs={"pk": conversacion_id})
+        )
+        self.assertEqual(mensajes.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(mensajes.data), 2)
+        self.assertEqual(mensajes.data[0]["rol"], MensajeAsistente.Rol.USUARIO)
+        self.assertEqual(mensajes.data[1]["rol"], MensajeAsistente.Rol.ASISTENTE)
+
+    def test_lista_solo_conversaciones_del_usuario_autenticado(self):
+        ConversacionAsistente.objects.create(usuario=self.usuario, titulo="Chat propio")
+        ConversacionAsistente.objects.create(usuario=self.otro_usuario, titulo="Chat ajeno")
+
+        self.client.force_authenticate(self.usuario)
+        response = self.client.get(self.list_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        resultados = response.data.get("results", response.data)
+        self.assertEqual(len(resultados), 1)
+        self.assertEqual(resultados[0]["titulo"], "Chat propio")
+
+    def test_no_permite_acceder_conversaciones_de_otro_usuario(self):
+        conversacion = ConversacionAsistente.objects.create(
+            usuario=self.usuario,
+            titulo="Conversación privada",
+        )
+
+        self.client.force_authenticate(self.otro_usuario)
+        detalle = self.client.get(
+            reverse("asistente:conversacion-detail", kwargs={"pk": conversacion.id})
+        )
+        eliminar = self.client.delete(
+            reverse("asistente:conversacion-detail", kwargs={"pk": conversacion.id})
+        )
+
+        self.assertEqual(detalle.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(eliminar.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertTrue(ConversacionAsistente.objects.filter(id=conversacion.id).exists())
+
+    def test_eliminar_conversacion_borra_mensajes(self):
+        conversacion = ConversacionAsistente.objects.create(usuario=self.usuario, titulo="Temporal")
+        MensajeAsistente.objects.create(
+            conversacion=conversacion,
+            rol=MensajeAsistente.Rol.USUARIO,
+            contenido="Hola",
+        )
+
+        self.client.force_authenticate(self.usuario)
+        response = self.client.delete(
+            reverse("asistente:conversacion-detail", kwargs={"pk": conversacion.id})
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(ConversacionAsistente.objects.filter(id=conversacion.id).exists())
+        self.assertEqual(MensajeAsistente.objects.count(), 0)
+
+    def test_rechaza_mensaje_vacio_en_conversacion(self):
+        conversacion = ConversacionAsistente.objects.create(usuario=self.usuario, titulo="Validación")
+
+        self.client.force_authenticate(self.usuario)
+        response = self.client.post(
+            reverse("asistente:conversacion-enviar", kwargs={"pk": conversacion.id}),
+            {"mensaje": "   "},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

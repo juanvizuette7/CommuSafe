@@ -1,13 +1,13 @@
-import 'dart:async';
-
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 
-import '../../../core/constants/app_constants.dart';
-import '../../../core/services/api_service.dart';
-import '../../../core/theme/app_theme.dart';
-import '../models/mensaje_model.dart';
+import '../models/conversacion_model.dart';
+import '../providers/asistente_provider.dart';
+import '../widgets/assistant_empty_state.dart';
+import '../widgets/chat_input_bar.dart';
+import '../widgets/chat_message_bubble.dart';
+import '../widgets/conversation_sidebar.dart';
+import '../widgets/typing_indicator.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -19,24 +19,21 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  final List<MensajeModel> _mensajes = <MensajeModel>[
-    MensajeModel(
-      contenido:
-          'Hola, soy CommuBot, el asistente virtual de Remansos del Norte. ¿En qué puedo ayudarte?',
-      esDelUsuario: false,
-      timestamp: DateTime.now(),
-      modo: 'fallback',
-    ),
-  ];
+  bool _loaded = false;
+  int _lastMessageCount = 0;
+  bool _lastSending = false;
 
-  bool _enviando = false;
-
-  static const List<String> _sugerencias = <String>[
-    'Horarios de áreas comunes',
-    '¿Cómo reporto un incidente?',
-    'Normas de convivencia',
-    'Contactos de la administración',
-  ];
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_loaded) {
+      return;
+    }
+    _loaded = true;
+    Future<void>.microtask(
+      context.read<AsistenteProvider>().cargarConversaciones,
+    );
+  }
 
   @override
   void dispose() {
@@ -52,564 +49,277 @@ class _ChatScreenState extends State<ChatScreen> {
       }
       _scrollController.animateTo(
         _scrollController.position.maxScrollExtent + 140,
-        duration: const Duration(milliseconds: 260),
+        duration: const Duration(milliseconds: 320),
         curve: Curves.easeOutCubic,
       );
     });
   }
 
-  List<Map<String, String>> _historialReciente() {
-    return _mensajes
-        .where((mensaje) => mensaje.contenido.trim().isNotEmpty)
-        .toList()
-        .reversed
-        .take(8)
-        .toList()
-        .reversed
-        .map(
-          (mensaje) => <String, String>{
-            'rol': mensaje.esDelUsuario ? 'usuario' : 'asistente',
-            'contenido': mensaje.contenido,
-          },
-        )
-        .toList();
-  }
+  Future<void> _confirmDelete(
+    BuildContext context,
+    ConversacionModel conversacion,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF0F172A),
+          title: const Text(
+            'Eliminar conversación',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
+          ),
+          content: Text(
+            'Se eliminará definitivamente "${conversacion.titulo}" y todos sus mensajes.',
+            style: const TextStyle(color: Color(0xFFCBD5E1)),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFE94560),
+              ),
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Eliminar'),
+            ),
+          ],
+        );
+      },
+    );
 
-  Future<void> _sendMessage([String? forcedText]) async {
-    final text = (forcedText ?? _controller.text).trim();
-    if (text.isEmpty || _enviando) {
-      return;
-    }
-
-    final historial = _historialReciente();
-    setState(() {
-      _mensajes.add(
-        MensajeModel(
-          contenido: text,
-          esDelUsuario: true,
-          timestamp: DateTime.now(),
-        ),
+    if (confirmed == true && context.mounted) {
+      await context.read<AsistenteProvider>().eliminarConversacion(
+        conversacion.id,
       );
-      _enviando = true;
-      _controller.clear();
-    });
-    _scrollToBottom();
-
-    try {
-      final response = await ApiService.post<Map<String, dynamic>>(
-        AppConstants.chatEndpoint,
-        data: <String, dynamic>{'mensaje': text, 'historial': historial},
-      ).timeout(const Duration(seconds: 8));
-      final respuesta = response.data?['respuesta']?.toString().trim();
-      final modo = response.data?['modo']?.toString().trim() ?? 'fallback';
-      setState(() {
-        _mensajes.add(
-          MensajeModel(
-            contenido: respuesta?.isNotEmpty == true
-                ? respuesta!
-                : 'No pude generar una respuesta en este momento.',
-            esDelUsuario: false,
-            timestamp: DateTime.now(),
-            modo: modo,
-          ),
-        );
-      });
-    } on TimeoutException {
-      setState(() {
-        _mensajes.add(
-          MensajeModel(
-            contenido:
-                'El asistente tardó demasiado en responder. ${_respuestaLocal(text)}',
-            esDelUsuario: false,
-            timestamp: DateTime.now(),
-            modo: 'fallback',
-          ),
-        );
-      });
-    } on DioException catch (error) {
-      final networkError = _isNetworkError(error);
-      final detail = error.response?.data is Map<String, dynamic>
-          ? (error.response!.data as Map<String, dynamic>)['detail']?.toString()
-          : null;
-      setState(() {
-        _mensajes.add(
-          MensajeModel(
-            contenido: networkError
-                ? 'No pude conectarme con el backend. ${_respuestaLocal(text)}'
-                : detail?.trim().isNotEmpty == true
-                ? detail!
-                : 'No pude conectarme con el asistente. Intenta nuevamente en unos segundos.',
-            esDelUsuario: false,
-            timestamp: DateTime.now(),
-            modo: 'fallback',
-          ),
-        );
-      });
-    } catch (_) {
-      setState(() {
-        _mensajes.add(
-          MensajeModel(
-            contenido:
-                'No pude procesar tu consulta. Verifica la conexión e intenta otra vez.',
-            esDelUsuario: false,
-            timestamp: DateTime.now(),
-            modo: 'fallback',
-          ),
-        );
-      });
-    } finally {
-      if (mounted) {
-        setState(() => _enviando = false);
-        _scrollToBottom();
-      }
     }
-  }
-
-  bool _isNetworkError(DioException error) {
-    return error.response == null ||
-        error.type == DioExceptionType.connectionTimeout ||
-        error.type == DioExceptionType.sendTimeout ||
-        error.type == DioExceptionType.receiveTimeout ||
-        error.type == DioExceptionType.connectionError;
-  }
-
-  String _respuestaLocal(String mensaje) {
-    final texto = mensaje.toLowerCase();
-
-    if (texto.contains('horario') ||
-        texto.contains('área') ||
-        texto.contains('area') ||
-        texto.contains('zonas comunes')) {
-      return 'Recuerda que las áreas comunes funcionan de 6:00 a. m. a 10:00 p. m.';
-    }
-    if (texto.contains('emergencia') ||
-        texto.contains('urgencia') ||
-        texto.contains('incendio') ||
-        texto.contains('ambulancia')) {
-      return 'Si hay una emergencia inminente, llama directamente a los servicios de emergencia y avisa a portería.';
-    }
-    if (texto.contains('incidente') || texto.contains('reporte')) {
-      return 'Para reportar un incidente entra a Incidentes, pulsa Nuevo, completa el formulario y adjunta evidencia si la tienes.';
-    }
-    if (texto.contains('convivencia') ||
-        texto.contains('norma') ||
-        texto.contains('ruido') ||
-        texto.contains('mascota')) {
-      return 'Las normas básicas incluyen respetar horarios de descanso, cuidar zonas comunes y reportar situaciones de convivencia desde CommuSafe.';
-    }
-    if (texto.contains('administración') ||
-        texto.contains('administracion') ||
-        texto.contains('cuota') ||
-        texto.contains('pago')) {
-      return 'Para valores de cuotas, cartera o trámites específicos debes contactar a la administración del conjunto.';
-    }
-
-    return 'Verifica que el backend esté encendido y vuelve a intentarlo.';
   }
 
   @override
   Widget build(BuildContext context) {
-    final showSuggestions = _mensajes
-        .where((mensaje) => mensaje.esDelUsuario)
-        .isEmpty;
-    final ultimoModo = _mensajes
-        .where((mensaje) => !mensaje.esDelUsuario && mensaje.modo != null)
-        .last
-        .modo;
+    return Consumer<AsistenteProvider>(
+      builder: (context, provider, _) {
+        if (_lastMessageCount != provider.mensajes.length ||
+            _lastSending != provider.isSending) {
+          _lastMessageCount = provider.mensajes.length;
+          _lastSending = provider.isSending;
+          _scrollToBottom();
+        }
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        titleSpacing: 12,
-        title: Row(
-          children: <Widget>[
-            Container(
-              height: 42,
-              width: 42,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.14),
-              ),
-              child: const Icon(Icons.smart_toy_rounded, color: Colors.white),
-            ),
-            const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text(
-                  'CommuBot',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
+        final isWide = MediaQuery.sizeOf(context).width >= 860;
+        final sidebar = ConversationSidebar(
+          conversaciones: provider.conversaciones,
+          activeConversationId: provider.conversacionActiva?.id,
+          isLoading: provider.isLoadingConversations,
+          onNewConversation: () {
+            provider.nuevaConversacion();
+            if (!isWide) {
+              Navigator.of(context).maybePop();
+            }
+          },
+          onSelectConversation: (conversation) async {
+            await provider.seleccionarConversacion(conversation);
+            if (!isWide && context.mounted) {
+              Navigator.of(context).maybePop();
+            }
+          },
+          onDeleteConversation: (conversation) =>
+              _confirmDelete(context, conversation),
+        );
+
+        return Scaffold(
+          backgroundColor: const Color(0xFF050812),
+          drawer: isWide ? null : Drawer(width: 320, child: sidebar),
+          appBar: AppBar(
+            backgroundColor: const Color(0xFF050812),
+            foregroundColor: Colors.white,
+            leading: isWide
+                ? null
+                : Builder(
+                    builder: (context) {
+                      return IconButton(
+                        icon: const Icon(Icons.menu_rounded),
+                        onPressed: () => Scaffold.of(context).openDrawer(),
+                      );
+                    },
                   ),
+            title: Row(
+              children: <Widget>[
+                Container(
+                  height: 38,
+                  width: 38,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: <Color>[Color(0xFF0F3460), Color(0xFFE94560)],
+                    ),
+                  ),
+                  child: const Icon(Icons.smart_toy_rounded, size: 20),
                 ),
-                Text(
-                  'Asistente Virtual',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.76),
-                    fontWeight: FontWeight.w600,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Text(
+                        provider.conversacionActiva?.titulo ?? 'CommuBot',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                        ),
+                      ),
+                      Text(
+                        provider.ultimoModo == 'ia'
+                            ? 'Modo IA real · memoria persistente'
+                            : 'Modo respuesta local · memoria persistente',
+                        style: const TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ],
-        ),
-      ),
-      body: Column(
-        children: <Widget>[
-          _AiModeIndicator(modo: ultimoModo),
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.fromLTRB(16, 18, 16, 18),
-              itemCount: _mensajes.length + (_enviando ? 1 : 0),
-              itemBuilder: (BuildContext context, int index) {
-                if (_enviando && index == _mensajes.length) {
-                  return const _BotTypingBubble();
-                }
-
-                final mensaje = _mensajes[index];
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    _ChatBubble(mensaje: mensaje),
-                    if (index == 0 && showSuggestions) ...<Widget>[
-                      const SizedBox(height: 12),
-                      _SuggestionChips(
-                        suggestions: _sugerencias,
-                        onSelected: _sendMessage,
-                      ),
-                    ],
-                    const SizedBox(height: 12),
-                  ],
-                );
-              },
-            ),
-          ),
-          _MessageInput(
-            controller: _controller,
-            enabled: !_enviando,
-            onSend: () => _sendMessage(),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AiModeIndicator extends StatelessWidget {
-  const _AiModeIndicator({required this.modo});
-
-  final String? modo;
-
-  @override
-  Widget build(BuildContext context) {
-    final iaReal = modo == 'ia';
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 6),
-      color: iaReal
-          ? AppColors.success.withValues(alpha: 0.08)
-          : AppColors.muted.withValues(alpha: 0.45),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Container(
-            height: 8,
-            width: 8,
-            decoration: BoxDecoration(
-              color: iaReal ? AppColors.success : AppColors.textSecondary,
-              shape: BoxShape.circle,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            iaReal ? 'Modo IA real' : 'Modo respuesta local',
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: iaReal ? AppColors.success : AppColors.textSecondary,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ChatBubble extends StatelessWidget {
-  const _ChatBubble({required this.mensaje});
-
-  final MensajeModel mensaje;
-
-  @override
-  Widget build(BuildContext context) {
-    final isUser = mensaje.esDelUsuario;
-    final time = DateFormat('hh:mm a', 'es_CO').format(mensaje.timestamp);
-
-    return Row(
-      mainAxisAlignment: isUser
-          ? MainAxisAlignment.end
-          : MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: <Widget>[
-        if (!isUser) ...<Widget>[
-          const CircleAvatar(
-            radius: 16,
-            backgroundColor: AppColors.accent,
-            child: Icon(Icons.smart_toy_rounded, color: Colors.white, size: 17),
-          ),
-          const SizedBox(width: 8),
-        ],
-        Flexible(
-          child: Column(
-            crossAxisAlignment: isUser
-                ? CrossAxisAlignment.end
-                : CrossAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                constraints: const BoxConstraints(maxWidth: 310),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 13,
-                ),
-                decoration: BoxDecoration(
-                  color: isUser ? AppColors.primary : const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.only(
-                    topLeft: const Radius.circular(18),
-                    topRight: const Radius.circular(18),
-                    bottomLeft: Radius.circular(isUser ? 18 : 4),
-                    bottomRight: Radius.circular(isUser ? 4 : 18),
-                  ),
-                  boxShadow: <BoxShadow>[
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 16,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
-                child: Text(
-                  mensaje.contenido,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: isUser ? Colors.white : AppColors.textPrimary,
-                    height: 1.45,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
+            actions: <Widget>[
+              IconButton(
+                tooltip: 'Nueva conversación',
+                onPressed: provider.nuevaConversacion,
+                icon: const Icon(Icons.add_comment_rounded),
               ),
-              const SizedBox(height: 4),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 4),
-                child: Text(
-                  time,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: AppColors.textSecondary,
-                    fontSize: 10,
-                  ),
+            ],
+          ),
+          body: Row(
+            children: <Widget>[
+              if (isWide) sidebar,
+              Expanded(
+                child: _ChatWorkspace(
+                  controller: _controller,
+                  scrollController: _scrollController,
+                  provider: provider,
                 ),
               ),
             ],
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 }
 
-class _BotTypingBubble extends StatefulWidget {
-  const _BotTypingBubble();
-
-  @override
-  State<_BotTypingBubble> createState() => _BotTypingBubbleState();
-}
-
-class _BotTypingBubbleState extends State<_BotTypingBubble> {
-  Timer? _timer;
-  int _dots = 1;
-
-  @override
-  void initState() {
-    super.initState();
-    _timer = Timer.periodic(const Duration(milliseconds: 420), (_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() => _dots = _dots == 3 ? 1 : _dots + 1);
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: <Widget>[
-        const CircleAvatar(
-          radius: 16,
-          backgroundColor: AppColors.accent,
-          child: Icon(Icons.smart_toy_rounded, color: Colors.white, size: 17),
-        ),
-        const SizedBox(width: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF1F5F9),
-            borderRadius: BorderRadius.circular(
-              18,
-            ).copyWith(bottomLeft: const Radius.circular(4)),
-          ),
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 180),
-            child: Text(
-              '.' * _dots,
-              key: ValueKey<int>(_dots),
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: AppColors.primary,
-                fontWeight: FontWeight.w900,
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SuggestionChips extends StatelessWidget {
-  const _SuggestionChips({required this.suggestions, required this.onSelected});
-
-  final List<String> suggestions;
-  final ValueChanged<String> onSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: 8,
-      runSpacing: 8,
-      children: suggestions
-          .map(
-            (suggestion) => ActionChip(
-              label: Text(suggestion),
-              avatar: const Icon(Icons.bolt_rounded, size: 16),
-              onPressed: () => onSelected(suggestion),
-              backgroundColor: Colors.white,
-              side: const BorderSide(color: Color(0xFFE2E8F0)),
-              labelStyle: const TextStyle(fontWeight: FontWeight.w700),
-            ),
-          )
-          .toList(),
-    );
-  }
-}
-
-class _MessageInput extends StatefulWidget {
-  const _MessageInput({
+class _ChatWorkspace extends StatelessWidget {
+  const _ChatWorkspace({
     required this.controller,
-    required this.enabled,
-    required this.onSend,
+    required this.scrollController,
+    required this.provider,
   });
 
   final TextEditingController controller;
-  final bool enabled;
-  final VoidCallback onSend;
-
-  @override
-  State<_MessageInput> createState() => _MessageInputState();
-}
-
-class _MessageInputState extends State<_MessageInput> {
-  bool _hasText = false;
-
-  @override
-  void initState() {
-    super.initState();
-    widget.controller.addListener(_syncTextState);
-  }
-
-  @override
-  void didUpdateWidget(covariant _MessageInput oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.controller != widget.controller) {
-      oldWidget.controller.removeListener(_syncTextState);
-      widget.controller.addListener(_syncTextState);
-      _syncTextState();
-    }
-  }
-
-  @override
-  void dispose() {
-    widget.controller.removeListener(_syncTextState);
-    super.dispose();
-  }
-
-  void _syncTextState() {
-    final hasText = widget.controller.text.trim().isNotEmpty;
-    if (hasText != _hasText) {
-      setState(() => _hasText = hasText);
-    }
-  }
+  final ScrollController scrollController;
+  final AsistenteProvider provider;
 
   @override
   Widget build(BuildContext context) {
-    final canSend = widget.enabled && _hasText;
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: RadialGradient(
+          center: Alignment.topRight,
+          radius: 1.2,
+          colors: <Color>[Color(0xFF101A2D), Color(0xFF050812)],
+        ),
+      ),
+      child: Column(
+        children: <Widget>[
+          if (provider.errorMessage != null)
+            _ErrorBanner(
+              message: provider.errorMessage!,
+              onRetry: provider.cargarConversaciones,
+            ),
+          Expanded(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 240),
+              child: provider.isLoadingMessages
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: Color(0xFF60A5FA),
+                      ),
+                    )
+                  : provider.mensajes.isEmpty
+                  ? AssistantEmptyState(
+                      onSuggestionSelected: provider.enviarMensaje,
+                    )
+                  : ListView.builder(
+                      key: ValueKey<int>(provider.mensajes.length),
+                      controller: scrollController,
+                      physics: const BouncingScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(18, 20, 18, 28),
+                      itemCount:
+                          provider.mensajes.length +
+                          (provider.isSending ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (provider.isSending &&
+                            index == provider.mensajes.length) {
+                          return const Padding(
+                            padding: EdgeInsets.only(top: 6),
+                            child: TypingIndicator(),
+                          );
+                        }
+                        return ChatMessageBubble(
+                          mensaje: provider.mensajes[index],
+                        );
+                      },
+                    ),
+            ),
+          ),
+          ChatInputBar(
+            controller: controller,
+            enabled: !provider.isSending,
+            onSend: provider.enviarMensaje,
+          ),
+        ],
+      ),
+    );
+  }
+}
 
-    return SafeArea(
-      top: false,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 10, 14, 14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              blurRadius: 20,
-              offset: const Offset(0, -8),
-            ),
-          ],
+class _ErrorBanner extends StatelessWidget {
+  const _ErrorBanner({required this.message, required this.onRetry});
+
+  final String message;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE94560).withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFFE94560).withValues(alpha: 0.35),
         ),
-        child: Row(
-          children: <Widget>[
-            Expanded(
-              child: TextField(
-                controller: widget.controller,
-                enabled: widget.enabled,
-                minLines: 1,
-                maxLines: 4,
-                textInputAction: TextInputAction.send,
-                onSubmitted: (_) {
-                  if (canSend) {
-                    widget.onSend();
-                  }
-                },
-                decoration: const InputDecoration(
-                  hintText: 'Escribe tu consulta...',
-                  prefixIcon: Icon(Icons.chat_bubble_outline_rounded),
-                ),
+      ),
+      child: Row(
+        children: <Widget>[
+          const Icon(Icons.error_outline_rounded, color: Color(0xFFE94560)),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Color(0xFFFFCDD2),
+                fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(width: 10),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              height: 52,
-              width: 52,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: canSend ? AppColors.primary : AppColors.muted,
-              ),
-              child: IconButton(
-                onPressed: canSend ? widget.onSend : null,
-                icon: const Icon(Icons.arrow_upward_rounded),
-                color: canSend ? Colors.white : AppColors.textSecondary,
-              ),
-            ),
-          ],
-        ),
+          ),
+          TextButton(onPressed: onRetry, child: const Text('Reintentar')),
+        ],
       ),
     );
   }

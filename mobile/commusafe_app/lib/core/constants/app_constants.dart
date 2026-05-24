@@ -34,4 +34,6 @@ class AppConstants {
   static const String unreadNotificationsCountEndpoint =
       '/api/notificaciones/no-leidas-count/';
   static const String chatEndpoint = '/api/asistente/chat/';
+  static const String assistantConversationsEndpoint =
+      '/api/asistente/conversaciones/';
 }

@@ -378,9 +378,10 @@ class TestAsistente:
         cliente = cliente_autenticado(residente)
 
         with (
-            patch("asistente.views._gemini_configurada", return_value=True),
+            patch("asistente.services._gemini_configurada", return_value=True),
+            patch("asistente.services._anthropic_configurada", return_value=False),
             patch(
-                "asistente.views._llamar_gemini",
+                "asistente.services._llamar_gemini",
                 return_value=(
                     "Las areas comunes de Remansos del Norte funcionan de "
                     "6:00 a. m. a 10:00 p. m."
