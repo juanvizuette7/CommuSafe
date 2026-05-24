@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import ProtectedError
-from django.db.models import Count, Max, Q
+from django.db.models import Case, Count, IntegerField, Max, Q, Value, When
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -19,11 +19,13 @@ from incidentes.models import EvidenciaIncidente, Incidente, IncidenteEliminado
 from incidentes.serializers import CambiarEstadoSerializer, EliminarIncidenteSerializer
 from incidentes.services import cambiar_estado_incidente
 from incidentes.services_eliminacion import eliminar_incidente_con_trazabilidad
-from notificaciones.models import Notificacion
+from notificaciones.models import AvisoProgramado, Notificacion
 from notificaciones.serializers import AvisoComunitarioSerializer
 from notificaciones.services import (
     AudienciaAviso,
+    crear_aviso_programado,
     notificar_aviso_comunitario,
+    procesar_avisos_programados,
     usuarios_disponibles_para_aviso,
 )
 from usuarios.models import Usuario
@@ -588,7 +590,15 @@ def usuarios_lista(request):
     """Lista los usuarios del sistema con filtro por rol."""
 
     rol = request.GET.get("rol", "").strip()
-    usuarios = Usuario.objects.all().order_by("nombre", "apellido")
+    usuarios = Usuario.objects.annotate(
+        orden_rol=Case(
+            When(rol=Usuario.Rol.ADMINISTRADOR, then=Value(0)),
+            When(rol=Usuario.Rol.VIGILANTE, then=Value(1)),
+            When(rol=Usuario.Rol.RESIDENTE, then=Value(2)),
+            default=Value(3),
+            output_field=IntegerField(),
+        )
+    ).order_by("orden_rol", "nombre", "apellido")
     if rol:
         usuarios = usuarios.filter(rol=rol)
 
@@ -781,20 +791,43 @@ def usuario_eliminar(request, usuario_id):
 def avisos_comunitarios(request):
     """Permite enviar avisos o alertas manuales a usuarios segmentados."""
 
+    procesar_avisos_programados()
+
     if request.method == "POST":
         datos = request.POST.copy()
         destinatarios_ids = request.POST.getlist("destinatarios_ids")
         if destinatarios_ids:
             datos.setlist("destinatarios_ids", destinatarios_ids)
+        dias_semana = request.POST.getlist("dias_semana")
+        if dias_semana:
+            datos.setlist("dias_semana", dias_semana)
+        if not datos.get("fecha_fin"):
+            datos.pop("fecha_fin", None)
         if request.user.es_vigilante and datos.get("audiencia") != AudienciaAviso.ESPECIFICOS:
             datos["audiencia"] = AudienciaAviso.RESIDENTES
 
         serializer = AvisoComunitarioSerializer(data=datos, context={"request": request})
         if serializer.is_valid():
-            resultado = notificar_aviso_comunitario(**serializer.validated_data)
+            datos_validados = serializer.validated_data.copy()
+            repetir = datos_validados.pop("repetir", False)
+            dias_semana = datos_validados.pop("dias_semana", [])
+            fecha_fin = datos_validados.pop("fecha_fin", None)
+            resultado = notificar_aviso_comunitario(**datos_validados)
+            if repetir:
+                crear_aviso_programado(
+                    **datos_validados,
+                    dias_semana=dias_semana,
+                    fecha_fin=fecha_fin,
+                    creado_por=request.user,
+                )
             messages.success(
                 request,
-                f"El aviso fue enviado a {resultado['total_destinatarios']} usuario(s).",
+                (
+                    f"El aviso fue enviado a {resultado['total_destinatarios']} usuario(s) "
+                    "y quedo programado."
+                    if repetir
+                    else f"El aviso fue enviado a {resultado['total_destinatarios']} usuario(s)."
+                ),
             )
             return redirect("panel_web:avisos")
 
@@ -831,6 +864,11 @@ def avisos_comunitarios(request):
         )
         .order_by("-fecha")[:10]
     )
+    avisos_programados = (
+        AvisoProgramado.objects.select_related("creado_por")
+        .prefetch_related("destinatarios")
+        .order_by("-activo", "titulo")
+    )
 
     contexto = _contexto_base_panel(
         request,
@@ -847,8 +885,26 @@ def avisos_comunitarios(request):
         residentes_destinatarios=residentes_destinatarios,
         vigilantes_destinatarios=vigilantes_destinatarios,
         administradores_destinatarios=administradores_destinatarios,
+        dias_semana=AvisoProgramado.DIAS_SEMANA,
+        avisos_programados=avisos_programados,
     )
     return render(request, "panel/avisos.html", contexto)
+
+
+@panel_login_required
+@require_POST
+def aviso_programado_desactivar(request, aviso_id):
+    """Desactiva una regla de aviso recurrente."""
+
+    aviso = get_object_or_404(AvisoProgramado, id=aviso_id)
+    if not request.user.es_administrador and aviso.creado_por_id != request.user.id:
+        messages.error(request, "No tienes permisos para desactivar este aviso programado.")
+        return redirect("panel_web:avisos")
+
+    aviso.activo = False
+    aviso.save(update_fields=["activo", "actualizado_en"])
+    messages.success(request, f"El aviso programado '{aviso.titulo}' fue desactivado.")
+    return redirect("panel_web:avisos")
 
 
 @panel_login_required

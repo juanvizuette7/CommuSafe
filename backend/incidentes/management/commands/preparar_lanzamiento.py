@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from incidentes.models import EvidenciaIncidente, HistorialEstado, Incidente, IncidenteEliminado
 from incidentes.services import cambiar_estado_incidente
-from notificaciones.models import Notificacion
+from notificaciones.models import AvisoProgramado, Notificacion
 from notificaciones.services import notificar_cambio_estado, notificar_incidente_nuevo
 from usuarios.models import Usuario
 
@@ -30,6 +30,7 @@ class Command(BaseCommand):
 
     def _limpiar_datos_operativos(self):
         modelos = [
+            ("avisos_programados", AvisoProgramado),
             ("notificaciones", Notificacion),
             ("historiales", HistorialEstado),
             ("evidencias", EvidenciaIncidente),
@@ -222,10 +223,10 @@ class Command(BaseCommand):
         creados = []
 
         convivencia = self._crear_incidente(
-            titulo="Musica a alto volumen en apartamento 302 Torre B",
+            titulo="Música a alto volumen de madrugada",
             descripcion=(
-                "Residentes reportan musica a alto volumen desde el apartamento 302 de la Torre B "
-                "hasta las 2:00 a. m. Se intento tocar la puerta en varias ocasiones y no atendieron."
+                "Residentes reportan música a alto volumen desde el apartamento 302 de la Torre B "
+                "hasta las 2:00 a. m. Se intentó tocar la puerta en varias ocasiones y no atendieron."
             ),
             categoria=Incidente.Categoria.CONVIVENCIA,
             ubicacion="Apartamento 302 Torre B",
@@ -254,10 +255,10 @@ class Command(BaseCommand):
         creados.append(convivencia.id)
 
         infraestructura = self._crear_incidente(
-            titulo="Postes de luz apagados en calle interna",
+            titulo="Falla de iluminación en calle interna",
             descripcion=(
                 "Se observan tres postes de luz seguidos apagados en la calle interna entre el "
-                "parqueadero y la Torre C, generando baja visibilidad para peatones y vehiculos."
+                "parqueadero y la Torre C, generando baja visibilidad para peatones y vehículos."
             ),
             categoria=Incidente.Categoria.INFRAESTRUCTURA,
             ubicacion="Calle interna entre parqueadero y Torre C",
@@ -267,10 +268,10 @@ class Command(BaseCommand):
         creados.append(infraestructura.id)
 
         seguridad = self._crear_incidente(
-            titulo="Cerraduras danadas en parqueadero cubierto Torre B",
+            titulo="Cerraduras vandalizadas",
             descripcion=(
-                "Se evidencian varias cerraduras danadas intencionalmente en los cuartos de deposito "
-                "del parqueadero cubierto de la Torre B. Se solicita revision preventiva."
+                "Se evidencian varias cerraduras dañadas intencionalmente en los cuartos de depósito "
+                "del parqueadero cubierto de la Torre B. Se solicita revisión preventiva."
             ),
             categoria=Incidente.Categoria.SEGURIDAD,
             ubicacion="Parqueadero cubierto Torre B",
@@ -280,10 +281,10 @@ class Command(BaseCommand):
         creados.append(seguridad.id)
 
         emergencia = self._crear_incidente(
-            titulo="Olor a gas en pasillo piso 2 Torre A",
+            titulo="Olor fuerte a gas",
             descripcion=(
                 "Se percibe olor a gas en el pasillo del piso 2 de la Torre A. El olor aumenta cerca "
-                "del ducto de servicios y varios residentes solicitan revision inmediata."
+                "del ducto de servicios y varios residentes solicitan revisión inmediata."
             ),
             categoria=Incidente.Categoria.EMERGENCIA,
             ubicacion="Pasillo piso 2 Torre A",

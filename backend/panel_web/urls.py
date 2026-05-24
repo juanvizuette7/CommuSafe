@@ -3,6 +3,7 @@
 from django.urls import path
 
 from .views import (
+    aviso_programado_desactivar,
     avisos_comunitarios,
     dashboard,
     incidente_eliminar,
@@ -51,6 +52,7 @@ urlpatterns = [
     path("incidentes-eliminados/", incidentes_eliminados, name="incidentes_eliminados"),
     path("panel/incidentes-eliminados/", incidentes_eliminados, name="incidentes_eliminados_alias"),
     path("avisos/", avisos_comunitarios, name="avisos"),
+    path("avisos/programados/<uuid:aviso_id>/desactivar/", aviso_programado_desactivar, name="aviso_programado_desactivar"),
     path("usuarios/", usuarios_lista, name="usuarios_lista"),
     path("usuarios/crear/", usuario_crear, name="usuario_crear"),
     path("usuarios/<uuid:usuario_id>/", usuario_detalle, name="usuario_detalle"),

@@ -58,6 +58,14 @@ class AvisoComunitarioSerializer(serializers.Serializer):
         ],
         default=Notificacion.Tipo.AVISO_ADMIN,
     )
+    repetir = serializers.BooleanField(required=False, default=False)
+    dias_semana = serializers.ListField(
+        child=serializers.IntegerField(min_value=0, max_value=6),
+        required=False,
+        allow_empty=True,
+        write_only=True,
+    )
+    fecha_fin = serializers.DateField(required=False, allow_null=True)
 
     def validate(self, attrs):
         usuario = self.context["request"].user
@@ -92,6 +100,11 @@ class AvisoComunitarioSerializer(serializers.Serializer):
 
         attrs["titulo"] = attrs["titulo"].strip()
         attrs["cuerpo"] = attrs["cuerpo"].strip()
+        attrs["dias_semana"] = sorted(set(attrs.get("dias_semana", [])))
+        if attrs.get("repetir") and not attrs["dias_semana"]:
+            raise serializers.ValidationError(
+                {"dias_semana": "Selecciona al menos un día para repetir el aviso."}
+            )
         return attrs
 
 

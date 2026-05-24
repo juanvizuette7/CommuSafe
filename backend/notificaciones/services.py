@@ -6,6 +6,7 @@ import logging
 import os
 
 from django.conf import settings
+from django.utils import timezone
 
 try:
     import firebase_admin
@@ -17,7 +18,7 @@ except ImportError:  # pragma: no cover - dependencia opcional en tiempo de ejec
 
 from usuarios.models import Usuario
 
-from .models import Notificacion
+from .models import AvisoProgramado, Notificacion
 
 
 logger = logging.getLogger(__name__)
@@ -252,3 +253,57 @@ def notificar_aviso_comunitario(
         "audiencia": audiencia,
         "tipo": tipo,
     }
+
+
+def crear_aviso_programado(
+    *,
+    titulo,
+    cuerpo,
+    audiencia,
+    tipo,
+    dias_semana,
+    creado_por,
+    fecha_fin=None,
+    destinatarios=None,
+):
+    """Guarda una regla de aviso recurrente para ejecutarla en dias especificos."""
+
+    aviso = AvisoProgramado.objects.create(
+        titulo=titulo,
+        cuerpo=cuerpo,
+        audiencia=audiencia,
+        tipo=tipo,
+        dias_semana=",".join(str(int(dia)) for dia in sorted(set(dias_semana))),
+        creado_por=creado_por,
+        fecha_fin=fecha_fin,
+    )
+    if destinatarios:
+        aviso.destinatarios.set(destinatarios)
+    return aviso
+
+
+def procesar_avisos_programados(fecha=None):
+    """Envia los avisos recurrentes pendientes para la fecha indicada."""
+
+    fecha = fecha or timezone.localdate()
+    procesados = 0
+    notificaciones = 0
+
+    for aviso in AvisoProgramado.objects.filter(activo=True).prefetch_related("destinatarios"):
+        if not aviso.debe_enviarse(fecha):
+            continue
+
+        destinatarios = list(aviso.destinatarios.all()) if aviso.audiencia == AudienciaAviso.ESPECIFICOS else None
+        resultado = notificar_aviso_comunitario(
+            titulo=aviso.titulo,
+            cuerpo=aviso.cuerpo,
+            audiencia=aviso.audiencia,
+            tipo=aviso.tipo,
+            destinatarios=destinatarios,
+        )
+        aviso.ultimo_envio = fecha
+        aviso.save(update_fields=["ultimo_envio", "actualizado_en"])
+        procesados += 1
+        notificaciones += resultado["total_destinatarios"]
+
+    return {"avisos_procesados": procesados, "notificaciones_creadas": notificaciones}

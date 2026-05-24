@@ -15,7 +15,7 @@ from .serializers import (
     DestinatarioAvisoSerializer,
     NotificacionSerializer,
 )
-from .services import notificar_aviso_comunitario, usuarios_disponibles_para_aviso
+from .services import crear_aviso_programado, notificar_aviso_comunitario, usuarios_disponibles_para_aviso
 
 
 class NotificacionViewSet(viewsets.ReadOnlyModelViewSet):
@@ -74,11 +74,23 @@ class NotificacionViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = AvisoComunitarioSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
 
-        resultado = notificar_aviso_comunitario(**serializer.validated_data)
+        datos = serializer.validated_data.copy()
+        repetir = datos.pop("repetir", False)
+        dias_semana = datos.pop("dias_semana", [])
+        fecha_fin = datos.pop("fecha_fin", None)
+        resultado = notificar_aviso_comunitario(**datos)
+        if repetir:
+            crear_aviso_programado(
+                **datos,
+                dias_semana=dias_semana,
+                fecha_fin=fecha_fin,
+                creado_por=request.user,
+            )
         return Response(
             {
                 "mensaje": "El aviso fue enviado correctamente.",
                 **resultado,
+                "programado": repetir,
             },
             status=status.HTTP_201_CREATED,
         )
