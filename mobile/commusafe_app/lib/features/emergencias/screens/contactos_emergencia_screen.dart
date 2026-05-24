@@ -8,39 +8,39 @@ class ContactosEmergenciaScreen extends StatelessWidget {
 
   static const List<_EmergencyContact> _contacts = <_EmergencyContact>[
     _EmergencyContact(
+      title: 'Línea única de emergencias',
+      phone: '123',
+      icon: Icons.emergency_share_rounded,
+      color: Color(0xFFB91C1C),
+    ),
+    _EmergencyContact(
       title: 'Policía Nacional',
       phone: '112',
       icon: Icons.local_police_rounded,
-      color: Color(0xFF991B1B),
+      color: Color(0xFF1D4ED8),
     ),
     _EmergencyContact(
-      title: 'Bomberos',
+      title: 'Bomberos Pasto',
       phone: '119',
       icon: Icons.local_fire_department_rounded,
       color: Color(0xFFF97316),
     ),
     _EmergencyContact(
-      title: 'Ambulancia',
-      phone: '132',
+      title: 'Ambulancias / Salud',
+      phone: '125',
       icon: Icons.emergency_rounded,
       color: Color(0xFFE11D48),
     ),
     _EmergencyContact(
-      title: 'Hospital',
-      phone: '6015551003',
-      icon: Icons.local_hospital_rounded,
+      title: 'Cruz Roja Colombiana',
+      phone: '132',
+      icon: Icons.health_and_safety_rounded,
       color: Color(0xFF7C3AED),
     ),
     _EmergencyContact(
-      title: 'Administración',
-      phone: '6015551002',
-      icon: Icons.apartment_rounded,
-      color: Color(0xFF2563EB),
-    ),
-    _EmergencyContact(
-      title: 'Portería',
-      phone: '6015551001',
-      icon: Icons.shield_rounded,
+      title: 'Defensa Civil',
+      phone: '144',
+      icon: Icons.volunteer_activism_rounded,
       color: Color(0xFF065F46),
     ),
   ];
@@ -90,7 +90,7 @@ class ContactosEmergenciaScreen extends StatelessWidget {
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    'En caso de emergencia inminente, llama directamente a los servicios.',
+                    'En caso de emergencia inminente en Pasto o Colombia, llama primero al 123. Las demás líneas son accesos rápidos por entidad.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: const Color(0xFF78350F),
                       fontWeight: FontWeight.w800,

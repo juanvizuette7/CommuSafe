@@ -420,17 +420,6 @@ class _LoginScreenState extends State<LoginScreen>
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(height: 14),
-                                    Center(
-                                      child: TextButton(
-                                        onPressed: isLoading
-                                            ? null
-                                            : () => context.go('/reset'),
-                                        child: const Text(
-                                          '¿Olvidaste tu contraseña?',
-                                        ),
-                                      ),
-                                    ),
                                   ],
                                 ),
                               ),
