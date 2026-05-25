@@ -1,7 +1,7 @@
 ﻿"""Pruebas del modulo de notificaciones."""
 
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from django.contrib.auth import get_user_model
 from django.test import override_settings
@@ -157,24 +157,37 @@ class NotificacionServicesTests(APITestCase):
             self.assertFalse(_configuracion_push_disponible())
 
         with override_settings(FIREBASE_CREDENTIALS_PATH="credenciales-firebase.json"):
-            with patch("notificaciones.services.os.path.exists", return_value=True):
-                self.assertTrue(_configuracion_push_disponible())
+            with patch("notificaciones.services.firebase_admin", object()):
+                with patch("notificaciones.services.credentials", object()):
+                    with patch("notificaciones.services.messaging", object()):
+                        with patch("notificaciones.services.os.path.exists", return_value=True):
+                            self.assertTrue(_configuracion_push_disponible())
 
     def test_crear_registro_marca_push_enviado_si_fcm_responde(self):
         self.residente_1.fcm_token = "token-fcm-valido"
         self.residente_1.save(update_fields=["fcm_token"])
 
-        with override_settings(FIREBASE_CREDENTIALS_PATH="credenciales-firebase.json"):
-            with patch("notificaciones.services.os.path.exists", return_value=True):
-                with patch("notificaciones.services._obtener_firebase_app", return_value=object()):
-                    with patch("notificaciones.services.messaging.send", return_value="message-id") as send_mock:
-                        notificacion = _crear_registro_y_enviar_push(
-                            destinatario=self.residente_1,
-                            titulo="Titulo push",
-                            cuerpo="Cuerpo push",
-                            tipo=Notificacion.Tipo.AVISO_ADMIN,
-                            incidente_relacionado=self.incidente,
-                        )
+        send_mock = Mock(return_value="message-id")
+        messaging_mock = SimpleNamespace(
+            Message=lambda **kwargs: SimpleNamespace(**kwargs),
+            Notification=lambda title, body: SimpleNamespace(title=title, body=body),
+            send=send_mock,
+        )
+        with (
+            override_settings(FIREBASE_CREDENTIALS_PATH="credenciales-firebase.json"),
+            patch("notificaciones.services.firebase_admin", object()),
+            patch("notificaciones.services.credentials", object()),
+            patch("notificaciones.services.messaging", messaging_mock),
+            patch("notificaciones.services.os.path.exists", return_value=True),
+            patch("notificaciones.services._obtener_firebase_app", return_value=object()),
+        ):
+            notificacion = _crear_registro_y_enviar_push(
+                destinatario=self.residente_1,
+                titulo="Titulo push",
+                cuerpo="Cuerpo push",
+                tipo=Notificacion.Tipo.AVISO_ADMIN,
+                incidente_relacionado=self.incidente,
+            )
 
         self.assertTrue(notificacion.enviada_push)
         send_mock.assert_called_once()
@@ -185,17 +198,26 @@ class NotificacionServicesTests(APITestCase):
         self.residente_1.fcm_token = "token-fcm-error"
         self.residente_1.save(update_fields=["fcm_token"])
 
-        with override_settings(FIREBASE_CREDENTIALS_PATH="credenciales-firebase.json"):
-            with patch("notificaciones.services.os.path.exists", return_value=True):
-                with patch("notificaciones.services._obtener_firebase_app", return_value=object()):
-                    with patch("notificaciones.services.messaging.send", side_effect=RuntimeError("FCM no disponible")):
-                        with self.assertLogs("notificaciones.services", level="WARNING"):
-                            enviado = _intentar_enviar_push(
-                                usuario=self.residente_1,
-                                titulo="Titulo push",
-                                cuerpo="Cuerpo push",
-                                incidente=self.incidente,
-                            )
+        messaging_mock = SimpleNamespace(
+            Message=lambda **kwargs: SimpleNamespace(**kwargs),
+            Notification=lambda title, body: SimpleNamespace(title=title, body=body),
+            send=Mock(side_effect=RuntimeError("FCM no disponible")),
+        )
+        with (
+            override_settings(FIREBASE_CREDENTIALS_PATH="credenciales-firebase.json"),
+            patch("notificaciones.services.firebase_admin", object()),
+            patch("notificaciones.services.credentials", object()),
+            patch("notificaciones.services.messaging", messaging_mock),
+            patch("notificaciones.services.os.path.exists", return_value=True),
+            patch("notificaciones.services._obtener_firebase_app", return_value=object()),
+        ):
+            with self.assertLogs("notificaciones.services", level="WARNING"):
+                enviado = _intentar_enviar_push(
+                    usuario=self.residente_1,
+                    titulo="Titulo push",
+                    cuerpo="Cuerpo push",
+                    incidente=self.incidente,
+                )
 
         self.assertFalse(enviado)
 

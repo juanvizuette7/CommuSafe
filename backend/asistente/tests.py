@@ -157,7 +157,12 @@ class ChatAsistenteHelpersTests(APITestCase):
         with override_settings(LLM_API_KEY="clave-real", GEMINI_API_KEY=""):
             self.assertTrue(_api_llm_configurada())
         with override_settings(LLM_API_KEY="", GEMINI_API_KEY="clave-real"):
-            self.assertTrue(_api_llm_configurada())
+            with patch("asistente.services.genai", object()):
+                self.assertTrue(_api_llm_configurada())
+
+        with override_settings(LLM_API_KEY="", GEMINI_API_KEY="clave-real"):
+            with patch("asistente.services.genai", None):
+                self.assertFalse(_api_llm_configurada())
 
     def test_normalizar_historial(self):
         historial = [
