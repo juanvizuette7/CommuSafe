@@ -65,6 +65,7 @@ class IncidenteListSerializer(serializers.ModelSerializer):
     prioridad_label = serializers.SerializerMethodField()
     estado_label = serializers.SerializerMethodField()
     reportado_por_nombre = serializers.SerializerMethodField()
+    reportado_por_id = serializers.SerializerMethodField()
     atendido_por_nombre = serializers.SerializerMethodField()
     total_evidencias = serializers.IntegerField(read_only=True)
 
@@ -82,6 +83,7 @@ class IncidenteListSerializer(serializers.ModelSerializer):
             "estado_label",
             "ubicacion_referencia",
             "reportado_por",
+            "reportado_por_id",
             "reportado_por_nombre",
             "atendido_por",
             "atendido_por_nombre",
@@ -104,6 +106,9 @@ class IncidenteListSerializer(serializers.ModelSerializer):
     def get_reportado_por_nombre(self, obj):
         return obj.reportado_por.nombre_completo
 
+    def get_reportado_por_id(self, obj):
+        return str(obj.reportado_por_id)
+
     def get_atendido_por_nombre(self, obj):
         if not obj.atendido_por:
             return ""
@@ -117,6 +122,9 @@ class IncidenteDetailSerializer(serializers.ModelSerializer):
     prioridad_label = serializers.SerializerMethodField()
     estado_label = serializers.SerializerMethodField()
     reportado_por = UsuarioIncidenteSerializer(read_only=True)
+    reportado_por_id = serializers.SerializerMethodField()
+    reportado_por_telefono = serializers.SerializerMethodField()
+    reportado_por_unidad = serializers.SerializerMethodField()
     atendido_por = UsuarioIncidenteSerializer(read_only=True)
     evidencias = EvidenciaIncidenteSerializer(many=True, read_only=True)
     historial = HistorialEstadoSerializer(many=True, read_only=True)
@@ -135,6 +143,9 @@ class IncidenteDetailSerializer(serializers.ModelSerializer):
             "estado_label",
             "ubicacion_referencia",
             "reportado_por",
+            "reportado_por_id",
+            "reportado_por_telefono",
+            "reportado_por_unidad",
             "atendido_por",
             "fecha_reporte",
             "fecha_actualizacion",
@@ -153,6 +164,15 @@ class IncidenteDetailSerializer(serializers.ModelSerializer):
 
     def get_estado_label(self, obj):
         return obj.get_estado_display()
+
+    def get_reportado_por_id(self, obj):
+        return str(obj.reportado_por_id)
+
+    def get_reportado_por_telefono(self, obj):
+        return obj.reportado_por.telefono or ""
+
+    def get_reportado_por_unidad(self, obj):
+        return obj.reportado_por.unidad_residencial or ""
 
 
 class IncidenteCreateSerializer(serializers.ModelSerializer):

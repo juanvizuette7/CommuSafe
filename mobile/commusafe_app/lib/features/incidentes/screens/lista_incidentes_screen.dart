@@ -117,10 +117,19 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
     final theme = CommuSafeThemeExtension.of(context);
     final canCreate =
         usuario?.esResidente == true || usuario?.esVigilante == true;
-    final highPriorityCount = provider.incidentes
+    final incidentesVisibles = usuario?.esResidente == true
+        ? provider.incidentes
+              .where(
+                (incidente) =>
+                    incidente.reportadoPorId == usuario?.id ||
+                    incidente.reportadoPorEmail == usuario?.email,
+              )
+              .toList()
+        : provider.incidentes;
+    final highPriorityCount = incidentesVisibles
         .where((incidente) => incidente.prioridad.toUpperCase() == 'ALTA')
         .length;
-    final activeCount = provider.incidentes
+    final activeCount = incidentesVisibles
         .where(
           (incidente) =>
               incidente.estado.toUpperCase() != 'RESUELTO' &&
@@ -199,7 +208,7 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
                           ),
                           const SizedBox(height: 18),
                           _IncidentCommandPanel(
-                            visibleCount: provider.incidentes.length,
+                            visibleCount: incidentesVisibles.length,
                             activeCount: activeCount,
                             highPriorityCount: highPriorityCount,
                             filtered: provider.tieneFiltrosActivos,
@@ -272,7 +281,7 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
                       ),
                     ),
                   ),
-                  if (provider.isLoading && provider.incidentes.isEmpty)
+                  if (provider.isLoading && incidentesVisibles.isEmpty)
                     SliverPadding(
                       padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                       sliver: SliverList.builder(
@@ -285,7 +294,7 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
                         },
                       ),
                     )
-                  else if (provider.incidentes.isEmpty)
+                  else if (incidentesVisibles.isEmpty)
                     SliverFillRemaining(
                       hasScrollBody: false,
                       child: Padding(
@@ -337,9 +346,9 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
                     SliverPadding(
                       padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
                       sliver: SliverList.builder(
-                        itemCount: provider.incidentes.length,
+                        itemCount: incidentesVisibles.length,
                         itemBuilder: (BuildContext context, int index) {
-                          final incidente = provider.incidentes[index];
+                          final incidente = incidentesVisibles[index];
                           return Padding(
                             padding: const EdgeInsets.only(bottom: 14),
                             child: TweenAnimationBuilder<double>(

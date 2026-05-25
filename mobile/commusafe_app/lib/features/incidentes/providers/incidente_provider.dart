@@ -97,7 +97,7 @@ class IncidenteProvider extends ChangeNotifier {
         '${AppConstants.incidentsEndpoint}$incidenteId/',
       );
       final incidente = IncidenteModel.fromJson(_normalizeMap(response.data));
-      _upsertIncidente(incidente);
+      _actualizarIncidenteVisible(incidente);
       _detalleCache[incidente.id] = incidente;
       _errorMessage = null;
       return incidente;
@@ -300,6 +300,13 @@ class IncidenteProvider extends ChangeNotifier {
 
     if (_coincideConFiltros(incidente)) {
       _incidentes.insert(0, incidente);
+    }
+  }
+
+  void _actualizarIncidenteVisible(IncidenteModel incidente) {
+    final index = _incidentes.indexWhere((item) => item.id == incidente.id);
+    if (index >= 0) {
+      _incidentes[index] = incidente;
     }
   }
 

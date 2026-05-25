@@ -16,6 +16,7 @@ class IncidenteModel {
     required this.estado,
     required this.estadoLabel,
     required this.ubicacionReferencia,
+    required this.reportadoPorId,
     required this.reportadoPorNombre,
     required this.fechaReporte,
     required this.totalEvidencias,
@@ -41,6 +42,7 @@ class IncidenteModel {
   final String estado;
   final String estadoLabel;
   final String ubicacionReferencia;
+  final String reportadoPorId;
   final String reportadoPorNombre;
   final DateTime? fechaReporte;
   final int totalEvidencias;
@@ -89,6 +91,7 @@ class IncidenteModel {
     String? estado,
     String? estadoLabel,
     String? ubicacionReferencia,
+    String? reportadoPorId,
     String? reportadoPorNombre,
     DateTime? fechaReporte,
     int? totalEvidencias,
@@ -114,6 +117,7 @@ class IncidenteModel {
       estado: estado ?? this.estado,
       estadoLabel: estadoLabel ?? this.estadoLabel,
       ubicacionReferencia: ubicacionReferencia ?? this.ubicacionReferencia,
+      reportadoPorId: reportadoPorId ?? this.reportadoPorId,
       reportadoPorNombre: reportadoPorNombre ?? this.reportadoPorNombre,
       fechaReporte: fechaReporte ?? this.fechaReporte,
       totalEvidencias: totalEvidencias ?? this.totalEvidencias,
@@ -133,6 +137,7 @@ class IncidenteModel {
   factory IncidenteModel.fromJson(Map<String, dynamic>? json) {
     final data = json ?? <String, dynamic>{};
     final reportadoPor = _readMap(data['reportado_por']);
+    final reportadoPorRaw = data['reportado_por'];
     final atendidoPor = _readMap(data['atendido_por']);
     final evidenciasRaw = _readList(data['evidencias']);
     final historialRaw = _readList(data['historial']);
@@ -143,6 +148,14 @@ class IncidenteModel {
         data['reportado_por_nombre']?.toString().trim().isNotEmpty == true
         ? data['reportado_por_nombre'].toString().trim()
         : reportadoPor['nombre_completo']?.toString().trim() ?? 'Sin autor';
+    final reportadoPorId =
+        reportadoPor['id']?.toString().trim().isNotEmpty == true
+        ? reportadoPor['id'].toString().trim()
+        : data['reportado_por_id']?.toString().trim().isNotEmpty == true
+        ? data['reportado_por_id'].toString().trim()
+        : reportadoPorRaw is String
+        ? reportadoPorRaw.trim()
+        : '';
 
     return IncidenteModel(
       id: data['id']?.toString() ?? '',
@@ -164,6 +177,7 @@ class IncidenteModel {
           : estadoDisplayForCode(estado),
       ubicacionReferencia:
           data['ubicacion_referencia']?.toString().trim() ?? '',
+      reportadoPorId: reportadoPorId,
       reportadoPorNombre: reportadoPorNombre,
       fechaReporte: DateTime.tryParse(data['fecha_reporte']?.toString() ?? ''),
       totalEvidencias: _asInt(data['total_evidencias']) ?? evidenciasRaw.length,
@@ -175,8 +189,14 @@ class IncidenteModel {
           .toList(),
       reportadoPorEmail: reportadoPor['email']?.toString().trim() ?? '',
       reportadoPorUnidad:
-          reportadoPor['unidad_residencial']?.toString().trim() ?? '',
-      reportadoPorTelefono: reportadoPor['telefono']?.toString().trim() ?? '',
+          reportadoPor['unidad_residencial']?.toString().trim().isNotEmpty ==
+              true
+          ? reportadoPor['unidad_residencial'].toString().trim()
+          : data['reportado_por_unidad']?.toString().trim() ?? '',
+      reportadoPorTelefono:
+          reportadoPor['telefono']?.toString().trim().isNotEmpty == true
+          ? reportadoPor['telefono'].toString().trim()
+          : data['reportado_por_telefono']?.toString().trim() ?? '',
       atendidoPorNombre:
           data['atendido_por_nombre']?.toString().trim().isNotEmpty == true
           ? data['atendido_por_nombre'].toString().trim()
@@ -190,7 +210,7 @@ class IncidenteModel {
       detalleCompleto:
           data.containsKey('historial') ||
           data.containsKey('evidencias') ||
-          data.containsKey('reportado_por') ||
+          reportadoPor.isNotEmpty ||
           data.containsKey('observaciones_cierre'),
     );
   }
