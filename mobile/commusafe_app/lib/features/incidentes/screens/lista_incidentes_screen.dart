@@ -114,6 +114,7 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
     final authProvider = context.watch<AuthProvider>();
     final usuario = authProvider.usuarioActual;
     final avisosVigentes = notificacionProvider.avisosVigentes;
+    final theme = CommuSafeThemeExtension.of(context);
     final canCreate =
         usuario?.esResidente == true || usuario?.esVigilante == true;
     final highPriorityCount = provider.incidentes
@@ -252,7 +253,7 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
                                           busqueda: _searchController.text,
                                         );
                                   },
-                                  selectedColor: AppColors.primary,
+                                  selectedColor: theme.primary,
                                   backgroundColor: Colors.white,
                                   side: const BorderSide(
                                     color: Color(0xFFE2E8F0),
@@ -390,7 +391,7 @@ class _ListaIncidentesScreenState extends State<ListaIncidentesScreen> {
                 bottom: 20,
                 child: FloatingActionButton.extended(
                   onPressed: _goToCreate,
-                  backgroundColor: AppColors.primary,
+                  backgroundColor: theme.primary,
                   foregroundColor: Colors.white,
                   icon: const Icon(Icons.add_rounded),
                   label: const Text('Nuevo'),
@@ -418,13 +419,15 @@ class _IncidentCommandPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
+
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(26),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: AppColors.primary.withValues(alpha: 0.22),
+            color: theme.primary.withValues(alpha: 0.22),
             blurRadius: 28,
             offset: const Offset(0, 18),
           ),
@@ -432,15 +435,15 @@ class _IncidentCommandPanel extends StatelessWidget {
       ),
       child: Stack(
         children: <Widget>[
-          const Positioned.fill(
+          Positioned.fill(
             child: DecoratedBox(
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: <Color>[
-                    AppColors.primary,
-                    AppColors.accent,
+                    theme.primary,
+                    theme.accent,
                     Color(0xFF3B0A1E),
                   ],
                 ),

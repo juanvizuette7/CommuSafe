@@ -186,6 +186,7 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<IncidenteProvider>();
+    final theme = CommuSafeThemeExtension.of(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -250,11 +251,11 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                                     categoria['value'] ?? 'SEGURIDAD';
                               });
                             },
-                            selectedColor: AppColors.primary,
+                            selectedColor: theme.primary,
                             backgroundColor: const Color(0xFFF1F5F9),
                             side: BorderSide(
                               color: isSelected
-                                  ? AppColors.primary
+                                  ? theme.primary
                                   : const Color(0xFFE2E8F0),
                             ),
                             labelStyle: TextStyle(
@@ -395,7 +396,7 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                                   borderRadius: BorderRadius.circular(18),
                                   border: Border.all(
                                     color: canAdd
-                                        ? AppColors.primary.withValues(
+                                        ? theme.primary.withValues(
                                             alpha: 0.2,
                                           )
                                         : const Color(0xFFE2E8F0),
@@ -407,7 +408,7 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                                     Icon(
                                       Icons.add_a_photo_outlined,
                                       color: canAdd
-                                          ? AppColors.primary
+                                          ? theme.primary
                                           : AppColors.textSecondary,
                                     ),
                                     const SizedBox(height: 10),
@@ -418,7 +419,7 @@ class _CrearIncidenteScreenState extends State<CrearIncidenteScreen> {
                                           .bodySmall
                                           ?.copyWith(
                                             color: canAdd
-                                                ? AppColors.primary
+                                                ? theme.primary
                                                 : AppColors.textSecondary,
                                             fontWeight: FontWeight.w700,
                                           ),

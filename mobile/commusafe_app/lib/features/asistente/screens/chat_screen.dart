@@ -172,9 +172,9 @@ class _ChatScreenState extends State<ChatScreen> {
                         ),
                       ),
                       Text(
-                        provider.ultimoModo == 'ia'
-                            ? 'Modo IA real · memoria persistente'
-                            : 'Modo respuesta local · memoria persistente',
+                        provider.ultimoModo == 'error'
+                            ? 'IA temporalmente no disponible'
+                            : 'CommuBot IA · memoria persistente',
                         style: const TextStyle(
                           color: Color(0xFF94A3B8),
                           fontSize: 11,

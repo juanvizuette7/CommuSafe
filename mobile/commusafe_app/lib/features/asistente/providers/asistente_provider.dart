@@ -13,7 +13,7 @@ class AsistenteProvider extends ChangeNotifier {
   bool _isLoadingMessages = false;
   bool _isSending = false;
   String? _errorMessage;
-  String _ultimoModo = 'fallback';
+  String _ultimoModo = 'ia';
 
   List<ConversacionModel> get conversaciones =>
       List<ConversacionModel>.unmodifiable(_conversaciones);
@@ -48,7 +48,7 @@ class AsistenteProvider extends ChangeNotifier {
     _conversacionActiva = null;
     _mensajes.clear();
     _errorMessage = null;
-    _ultimoModo = 'fallback';
+    _ultimoModo = 'ia';
     notifyListeners();
   }
 
@@ -123,7 +123,7 @@ class AsistenteProvider extends ChangeNotifier {
           contenido: _errorMessage!,
           esDelUsuario: false,
           timestamp: DateTime.now(),
-          modo: 'fallback',
+          modo: 'error',
         ),
       );
     } finally {
@@ -174,7 +174,7 @@ class AsistenteProvider extends ChangeNotifier {
     _isLoadingMessages = false;
     _isSending = false;
     _errorMessage = null;
-    _ultimoModo = 'fallback';
+    _ultimoModo = 'ia';
     notifyListeners();
   }
 

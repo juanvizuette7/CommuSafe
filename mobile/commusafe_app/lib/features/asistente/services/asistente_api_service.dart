@@ -106,8 +106,8 @@ class EnviarMensajeResponse {
         (json['mensaje_asistente'] as Map?)?.cast<String, dynamic>() ??
             <String, dynamic>{},
       ).copyWith(modo: json['modo']?.toString()),
-      modo: json['modo']?.toString() ?? 'fallback',
-      proveedor: json['proveedor']?.toString() ?? 'fallback',
+      modo: json['modo']?.toString() ?? 'ia',
+      proveedor: json['proveedor']?.toString() ?? 'gemini',
       modeloUsado: json['modelo_usado']?.toString() ?? '',
     );
   }

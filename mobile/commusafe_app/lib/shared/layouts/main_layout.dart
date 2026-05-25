@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../core/constants/app_constants.dart';
+import '../../core/localization/app_localizations.dart';
 import '../../core/theme/app_theme.dart';
 import '../../features/asistente/providers/asistente_provider.dart';
 import '../../features/auth/providers/auth_provider.dart';
@@ -45,10 +46,16 @@ class _MainLayoutState extends State<MainLayout> {
     if (location.startsWith('/perfil')) {
       return 3;
     }
+    if (location.startsWith('/ajustes')) {
+      return 3;
+    }
     return 0;
   }
 
   String _titleForLocation(String location) {
+    if (location.startsWith('/ajustes')) {
+      return 'Ajustes';
+    }
     if (location.startsWith('/perfil')) {
       return 'Perfil';
     }
@@ -56,7 +63,7 @@ class _MainLayoutState extends State<MainLayout> {
   }
 
   bool _showTopAppBar(String location) {
-    return location.startsWith('/perfil');
+    return location.startsWith('/perfil') || location.startsWith('/ajustes');
   }
 
   void _onNavigationTap(BuildContext context, int index) {
@@ -101,6 +108,8 @@ class _MainLayoutState extends State<MainLayout> {
     final usuario = authProvider.usuarioActual;
     final currentIndex = _currentIndexForLocation(currentLocation);
     final unreadCount = notificationsProvider.noLeidasCount;
+    final theme = CommuSafeThemeExtension.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: _showTopAppBar(currentLocation)
@@ -118,8 +127,8 @@ class _MainLayoutState extends State<MainLayout> {
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(24),
-                    gradient: const LinearGradient(
-                      colors: <Color>[AppColors.primary, AppColors.accent],
+                    gradient: LinearGradient(
+                      colors: <Color>[theme.primary, theme.accent],
                     ),
                   ),
                   child: Column(
@@ -187,6 +196,23 @@ class _MainLayoutState extends State<MainLayout> {
                   ),
                 ),
                 const SizedBox(height: 24),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.tune_rounded),
+                  title: Text(
+                    l10n.tr('Ajustes de experiencia', 'Experience settings'),
+                  ),
+                  subtitle: Text(
+                    l10n.tr(
+                      'Contraste, color, letra e idioma',
+                      'Contrast, color, text and language',
+                    ),
+                  ),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    context.push('/ajustes');
+                  },
+                ),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: const Icon(Icons.contact_phone_rounded),

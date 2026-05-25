@@ -7,6 +7,7 @@ import 'app.dart';
 import 'core/services/api_service.dart';
 import 'core/services/firebase_messaging_service.dart';
 import 'core/services/notification_service.dart';
+import 'features/ajustes/providers/app_settings_provider.dart';
 import 'features/asistente/providers/asistente_provider.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/incidentes/providers/incidente_provider.dart';
@@ -24,6 +25,9 @@ Future<void> main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider<AppSettingsProvider>(
+          create: (_) => AppSettingsProvider()..load(),
+        ),
         ChangeNotifierProvider<AuthProvider>(create: (_) => AuthProvider()),
         ChangeNotifierProvider<IncidenteProvider>(
           create: (_) => IncidenteProvider(),
