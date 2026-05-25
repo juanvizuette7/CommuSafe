@@ -55,9 +55,12 @@ class IncidenteViewSet(viewsets.ModelViewSet):
 
         usuario = self.request.user
         if usuario.es_residente:
-            queryset = queryset.filter(
-                Q(reportado_por=usuario) | Q(prioridad=Incidente.Prioridad.ALTA)
-            )
+            if self.action == "retrieve":
+                queryset = queryset.filter(
+                    Q(reportado_por=usuario) | Q(prioridad=Incidente.Prioridad.ALTA)
+                )
+            else:
+                queryset = queryset.filter(reportado_por=usuario)
 
         return queryset.order_by("-fecha_reporte")
 

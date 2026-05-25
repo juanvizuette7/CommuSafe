@@ -404,19 +404,6 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                                             ),
                                       ),
                                       const SizedBox(height: 4),
-                                      Text(
-                                        incidente.reportadoPorEmail
-                                                .trim()
-                                                .isEmpty
-                                            ? 'Sin correo disponible'
-                                            : incidente.reportadoPorEmail,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall
-                                            ?.copyWith(
-                                              color: AppColors.textSecondary,
-                                            ),
-                                      ),
                                       if (incidente.reportadoPorUnidad
                                           .trim()
                                           .isNotEmpty)
@@ -424,59 +411,99 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                                           padding: const EdgeInsets.only(
                                             top: 4,
                                           ),
-                                          child: Text(
-                                            incidente.reportadoPorUnidad,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall
-                                                ?.copyWith(
-                                                  color:
-                                                      AppColors.textSecondary,
+                                          child: Row(
+                                            children: <Widget>[
+                                              const Icon(
+                                                Icons.location_city_rounded,
+                                                size: 15,
+                                                color: AppColors.textSecondary,
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Expanded(
+                                                child: Text(
+                                                  incidente.reportadoPorUnidad,
+                                                  style: Theme.of(context)
+                                                      .textTheme
+                                                      .bodySmall
+                                                      ?.copyWith(
+                                                        color: AppColors
+                                                            .textSecondary,
+                                                      ),
                                                 ),
+                                              ),
+                                            ],
                                           ),
                                         ),
-                                      if (incidente.reportadoPorTelefono
-                                          .trim()
-                                          .isNotEmpty)
-                                        Padding(
-                                          padding: const EdgeInsets.only(
-                                            top: 10,
-                                          ),
-                                          child: TextButton.icon(
-                                            onPressed: () => _callPhone(
-                                              incidente.reportadoPorTelefono,
-                                            ),
-                                            style: TextButton.styleFrom(
-                                              foregroundColor:
-                                                  AppColors.primary,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 10,
-                                                    vertical: 8,
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 10),
+                                        child:
+                                            incidente.reportadoPorTelefono
+                                                .trim()
+                                                .isEmpty
+                                            ? Row(
+                                                children: <Widget>[
+                                                  const Icon(
+                                                    Icons
+                                                        .phone_disabled_rounded,
+                                                    size: 17,
+                                                    color:
+                                                        AppColors.textSecondary,
                                                   ),
-                                              minimumSize: Size.zero,
-                                              tapTargetSize:
-                                                  MaterialTapTargetSize
-                                                      .shrinkWrap,
-                                              backgroundColor: AppColors.primary
-                                                  .withValues(alpha: 0.08),
-                                              shape: RoundedRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(14),
+                                                  const SizedBox(width: 6),
+                                                  Text(
+                                                    'Teléfono no registrado',
+                                                    style: Theme.of(context)
+                                                        .textTheme
+                                                        .bodySmall
+                                                        ?.copyWith(
+                                                          color: AppColors
+                                                              .textSecondary,
+                                                          fontWeight:
+                                                              FontWeight.w700,
+                                                        ),
+                                                  ),
+                                                ],
+                                              )
+                                            : TextButton.icon(
+                                                onPressed: () => _callPhone(
+                                                  incidente
+                                                      .reportadoPorTelefono,
+                                                ),
+                                                style: TextButton.styleFrom(
+                                                  foregroundColor:
+                                                      AppColors.primary,
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 10,
+                                                        vertical: 8,
+                                                      ),
+                                                  minimumSize: Size.zero,
+                                                  tapTargetSize:
+                                                      MaterialTapTargetSize
+                                                          .shrinkWrap,
+                                                  backgroundColor: AppColors
+                                                      .primary
+                                                      .withValues(alpha: 0.08),
+                                                  shape: RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          14,
+                                                        ),
+                                                  ),
+                                                ),
+                                                icon: const Icon(
+                                                  Icons.phone_rounded,
+                                                  size: 17,
+                                                ),
+                                                label: Text(
+                                                  incidente
+                                                      .reportadoPorTelefono,
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.w800,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                            icon: const Icon(
-                                              Icons.phone_rounded,
-                                              size: 17,
-                                            ),
-                                            label: Text(
-                                              incidente.reportadoPorTelefono,
-                                              style: const TextStyle(
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -807,12 +834,12 @@ class _HighPriorityBanner extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: <Color>[AppColors.danger, AppColors.warning],
+          colors: <Color>[AppColors.warning, AppColors.primary],
         ),
         borderRadius: BorderRadius.circular(24),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: AppColors.danger.withValues(alpha: 0.22),
+            color: AppColors.warning.withValues(alpha: 0.18),
             blurRadius: 28,
             offset: const Offset(0, 14),
           ),
@@ -829,7 +856,7 @@ class _HighPriorityBanner extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: const Icon(
-              Icons.priority_high_rounded,
+              Icons.info_outline_rounded,
               color: Colors.white,
               size: 30,
             ),
@@ -840,7 +867,7 @@ class _HighPriorityBanner extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 Text(
-                  'ALERTA DE ALTA PRIORIDAD',
+                  'Prioridad alta',
                   style: Theme.of(context).textTheme.labelLarge?.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w900,
@@ -849,7 +876,7 @@ class _HighPriorityBanner extends StatelessWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Este incidente se comparte como alerta comunitaria por su impacto en seguridad o emergencia.',
+                  'Este reporte requiere atención preferente por su posible impacto en la comunidad.',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: Colors.white.withValues(alpha: 0.92),
                     height: 1.35,

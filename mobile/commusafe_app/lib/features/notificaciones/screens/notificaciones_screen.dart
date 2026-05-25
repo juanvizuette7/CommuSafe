@@ -326,21 +326,21 @@ class _NotificationTile extends StatelessWidget {
         child: Ink(
           decoration: BoxDecoration(
             color: isCritical
-                ? AppColors.danger.withValues(alpha: item.leida ? 0.07 : 0.12)
+                ? AppColors.warning.withValues(alpha: item.leida ? 0.07 : 0.12)
                 : item.leida
                 ? Colors.white
                 : AppColors.inProgress.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(isCritical ? 24 : 20),
             border: Border.all(
               color: isCritical
-                  ? AppColors.danger.withValues(alpha: 0.32)
+                  ? AppColors.warning.withValues(alpha: 0.34)
                   : Colors.transparent,
               width: isCritical ? 1.3 : 1,
             ),
             boxShadow: isCritical
                 ? <BoxShadow>[
                     BoxShadow(
-                      color: AppColors.danger.withValues(alpha: 0.16),
+                      color: AppColors.warning.withValues(alpha: 0.14),
                       blurRadius: 28,
                       offset: const Offset(0, 14),
                     ),
@@ -356,7 +356,7 @@ class _NotificationTile extends StatelessWidget {
                     left: 0,
                     top: 0,
                     bottom: 0,
-                    child: Container(width: 6, color: AppColors.danger),
+                    child: Container(width: 6, color: AppColors.warning),
                   ),
                 Padding(
                   padding: EdgeInsets.fromLTRB(
@@ -376,8 +376,8 @@ class _NotificationTile extends StatelessWidget {
                           gradient: isCritical
                               ? const LinearGradient(
                                   colors: <Color>[
-                                    AppColors.danger,
                                     AppColors.warning,
+                                    AppColors.primary,
                                   ],
                                 )
                               : null,
@@ -402,15 +402,15 @@ class _NotificationTile extends StatelessWidget {
                                   vertical: 5,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: AppColors.danger.withValues(
-                                    alpha: 0.14,
+                                  color: AppColors.warning.withValues(
+                                    alpha: 0.10,
                                   ),
                                   borderRadius: BorderRadius.circular(999),
                                 ),
                                 child: const Text(
-                                  'ALTA PRIORIDAD',
+                                  'Prioridad alta',
                                   style: TextStyle(
-                                    color: AppColors.danger,
+                                    color: AppColors.warning,
                                     fontWeight: FontWeight.w900,
                                     fontSize: 11,
                                     letterSpacing: 0.5,

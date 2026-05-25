@@ -145,7 +145,7 @@ class TestControlAcceso:
         assert respuesta.status_code == 200
         assert respuesta.data["count"] == 2
 
-    def test_residente_ve_propios_y_alertas_alta_prioridad(self):
+    def test_residente_lista_propios_y_puede_abrir_alerta_alta(self):
         residente = crear_usuario("residente-propios@test.com")
         otro = crear_usuario("residente-ajeno@test.com", unidad_residencial="Apto 303 Torre C")
         Incidente.objects.create(
@@ -166,8 +166,13 @@ class TestControlAcceso:
 
         assert respuesta.status_code == 200
         titulos = {item["titulo"] for item in respuesta.data["results"]}
-        assert respuesta.data["count"] == 2
-        assert titulos == {"Propio", incidente_alta.titulo}
+        assert respuesta.data["count"] == 1
+        assert titulos == {"Propio"}
+
+        detalle_alerta = cliente.get(f"/api/incidentes/{incidente_alta.id}/")
+
+        assert detalle_alerta.status_code == 200
+        assert detalle_alerta.data["id"] == str(incidente_alta.id)
 
     def test_solo_administrador_puede_eliminar_incidentes(self):
         residente = crear_usuario("residente-delete@test.com")

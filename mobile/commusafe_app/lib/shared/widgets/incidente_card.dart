@@ -108,20 +108,20 @@ class _IncidenteCardState extends State<IncidenteCard> {
                                     vertical: 5,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.danger.withValues(
+                                    color: AppColors.warning.withValues(
                                       alpha: 0.10,
                                     ),
                                     borderRadius: BorderRadius.circular(999),
                                     border: Border.all(
-                                      color: AppColors.danger.withValues(
+                                      color: AppColors.warning.withValues(
                                         alpha: 0.18,
                                       ),
                                     ),
                                   ),
                                   child: const Text(
-                                    'ALERTA COMUNITARIA',
+                                    'PRIORIDAD ALTA',
                                     style: TextStyle(
-                                      color: AppColors.danger,
+                                      color: AppColors.warning,
                                       fontWeight: FontWeight.w900,
                                       fontSize: 10.5,
                                       letterSpacing: 0.5,
