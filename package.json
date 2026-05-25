@@ -1,0 +1,10 @@
+{
+  "name": "commusafe",
+  "private": true,
+  "scripts": {
+    "lighthouse:login": "powershell -ExecutionPolicy Bypass -File ./scripts/lighthouse-login.ps1"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
+  }
+}

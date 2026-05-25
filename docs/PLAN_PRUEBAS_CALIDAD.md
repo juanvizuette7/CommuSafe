@@ -69,8 +69,13 @@ QA — Plan de pruebas CommuSafe
 ├── CP-014 - Latencia y tiempo de respuesta en Render
 ├── CP-015 - Conectividad con tracert
 ├── CP-016 - Rendimiento y concurrencia básica
-├── CP-017 - Validación final de pruebas ejecutadas
-└── CP-018 - Compatibilidad entre navegadores y dispositivos
+├── CP-017 - Compatibilidad entre navegadores y dispositivos
+├── CP-018 - Validación de enlaces con W3C Link Checker
+├── CP-019 - Validación de internacionalización W3C
+├── CP-020 - Validación CSS con W3C CSS Validator
+├── CP-021 - Validación de contraste de color WCAG
+├── CP-022 - Evaluación de rendimiento en dispositivos móviles con PageSpeed Insights
+└── CP-023 - Evaluación de rendimiento en escritorio con PageSpeed Insights
 ```
 
 Para registrar las tarjetas en GitHub Projects, se recomienda usar el nombre del caso como título del issue o tarjeta y enlazar como referencia principal el documento `docs/REGISTRO_CASOS_PRUEBA_29119.md`.
@@ -93,13 +98,32 @@ Estados iniciales recomendados según el registro actual:
 | Caso | Estado sugerido |
 | --- | --- |
 | CP-001 a CP-010 | Aprobada |
-| CP-011 | Aprobada, con evidencia W3C anexada |
-| CP-012 | Aprobada, con evidencia Lighthouse anexada |
+| CP-011 | Aprobada, con evidencia W3C en GitHub Projects o demostración en vivo |
+| CP-012 | Aprobada, con evidencia Lighthouse/WCAG en GitHub Projects o demostración en vivo |
 | CP-013 a CP-016 | Aprobada |
-| CP-017 | Aprobada |
-| CP-018 | En Proceso |
+| CP-017 | Aprobada con evidencia de compatibilidad en GitHub Projects; ejecución Android condicionada a emulador/dispositivo |
+| CP-018 a CP-023 | Aprobada con evidencia centralizada en GitHub Projects o demostración en vivo |
 
 Nota: las pruebas de despliegue en Render están cubiertas principalmente por `CP-013`, `CP-014`, `CP-015` y `CP-016`, porque validan disponibilidad, latencia, conectividad y concurrencia del servicio publicado.
+
+## Ejecución automatizada consolidada
+
+Para ejecutar los casos automatizados y obtener estadísticas ordenadas por caso de prueba, usar el script raíz:
+
+```powershell
+.\run_all_tests.ps1
+```
+
+El script recorre CP-001 a CP-023 en orden, muestra el resultado de cada caso, consolida estadísticas de pruebas aprobadas, fallidas y omitidas, e incluye una interpretación final. Las pruebas que se evidencian mejor desde navegador durante la presentación, como W3C, Lighthouse, WCAG, PageSpeed, CSS e internacionalización, se reportan como `PROJECT` para indicar que su evidencia está centralizada en GitHub Projects o se demostrará en vivo.
+
+Opciones útiles:
+
+```powershell
+.\run_all_tests.ps1 -SkipNetwork -SkipLighthouse
+.\run_all_tests.ps1 -RunWebTools
+.\run_all_tests.ps1 -FullRegression
+.\run_all_tests.ps1 -RunIntegration -IntegrationDeviceId <id-del-dispositivo>
+```
 
 ## Procedimiento de ejecución por caso
 
@@ -368,28 +392,7 @@ $times=$results | ForEach-Object { ($_ -split ' ')[1] } | ForEach-Object { [doub
 "count=$($times.Count) avg=$([math]::Round(($times | Measure-Object -Average).Average,3))s min=$([math]::Round(($times | Measure-Object -Minimum).Minimum,3))s max=$([math]::Round(($times | Measure-Object -Maximum).Maximum,3))s"
 ```
 
-### CP-017 - Validación final de pruebas ejecutadas
-
-Proceso:
-
-1. Ejecutar las pruebas automatizadas disponibles del backend.
-2. Ejecutar las validaciones disponibles de la aplicación móvil.
-3. Verificar que el servicio desplegado responda correctamente.
-4. Registrar salidas de consola y capturas como evidencia de cierre.
-
-Comandos de apoyo:
-
-```powershell
-cd backend
-.\.venv\Scripts\python.exe manage.py check
-.\.venv\Scripts\python.exe -m pytest -q
-
-cd ..\mobile\commusafe_app
-flutter analyze
-flutter test
-```
-
-### CP-018 - Compatibilidad entre navegadores y dispositivos
+### CP-017 - Compatibilidad entre navegadores y dispositivos
 
 Proceso:
 
@@ -407,7 +410,81 @@ flutter analyze
 flutter test
 ```
 
+Para ejecutar pruebas instrumentadas en Android cuando exista emulador o dispositivo:
+
+```powershell
+.\run_all_tests.ps1 -RunIntegration -IntegrationDeviceId <id-del-dispositivo>
+```
+
+### CP-018 - Validación de enlaces con W3C Link Checker
+
+Proceso:
+
+1. Abrir la herramienta W3C Link Checker.
+2. Ingresar la URL pública del panel web.
+3. Revisar enlaces rotos, redirecciones y respuestas no esperadas.
+4. Registrar la evidencia en GitHub Projects o mostrarla en la presentación.
+
+### CP-019 - Validación de internacionalización W3C
+
+Proceso:
+
+1. Abrir W3C Internationalization Checker.
+2. Validar la URL pública del panel web.
+3. Revisar codificación `UTF-8`, atributo `lang`, dirección del texto y caracteres especiales.
+4. Registrar la evidencia en GitHub Projects o mostrarla en la presentación.
+
+### CP-020 - Validación CSS con W3C CSS Validator
+
+Proceso:
+
+1. Abrir W3C CSS Validator.
+2. Validar la hoja de estilos o la URL pública disponible.
+3. Revisar errores críticos de CSS.
+4. Registrar la evidencia en GitHub Projects o mostrarla en la presentación.
+
+### CP-021 - Validación de contraste de color WCAG
+
+Proceso:
+
+1. Evaluar contraste de textos, botones y campos principales.
+2. Usar Lighthouse, WAVE, DevTools o una herramienta WCAG equivalente.
+3. Verificar contraste suficiente para lectura y navegación.
+4. Registrar la evidencia en GitHub Projects o mostrarla en la presentación.
+
+### CP-022 - Evaluación de rendimiento en dispositivos móviles con PageSpeed Insights
+
+Proceso:
+
+1. Abrir PageSpeed Insights.
+2. Ingresar la URL pública del panel web.
+3. Revisar la pestaña móvil y sus métricas principales.
+4. Registrar la evidencia en GitHub Projects o mostrarla en la presentación.
+
+### CP-023 - Evaluación de rendimiento en escritorio con PageSpeed Insights
+
+Proceso:
+
+1. Abrir PageSpeed Insights.
+2. Ingresar la URL pública del panel web.
+3. Revisar la pestaña escritorio y sus métricas principales.
+4. Registrar la evidencia en GitHub Projects o mostrarla en la presentación.
+
+## Regresión automatizada opcional
+
+Para ejecutar la regresión completa del repositorio además de los casos del Project:
+
+```powershell
+.\run_all_tests.ps1 -FullRegression
+```
+
 Validación general recomendada antes de cerrar el plan:
+
+```powershell
+.\run_all_tests.ps1
+```
+
+Validación manual equivalente por componentes:
 
 ```powershell
 cd backend

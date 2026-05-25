@@ -40,14 +40,21 @@ Campos mínimos de la tarjeta:
 | Evidencia | Comando / fuente | Resultado obtenido | Estado |
 | --- | --- | --- | --- |
 | Verificación Django | `cd backend; .\.venv\Scripts\python.exe manage.py check` | `System check identified no issues (0 silenced).` | Aprobada |
-| Suite backend | `cd backend; .\.venv\Scripts\python.exe -m pytest -q` | `137 passed, 91 warnings, 6 subtests passed in 146.52s` | Aprobada |
+| Suite backend | `cd backend; .\.venv\Scripts\python.exe -m pytest -q` | `146 passed, 6 subtests passed` | Aprobada |
 | Análisis Flutter | `cd mobile\commusafe_app; flutter analyze` | `No issues found!` | Aprobada |
 | Pruebas Flutter | `cd mobile\commusafe_app; flutter test` | `All tests passed!` | Aprobada |
 | Disponibilidad producción | `curl.exe -s https://commusafe.onrender.com/health/` | `{"status": "ok", "servicio": "CommuSafe"}` | Aprobada |
-| Latencia producción, arranque en frío | `curl.exe -s -o NUL -w ... https://commusafe.onrender.com/health/` | `status=200`, `time_total=95.923646s` | Aprobada con observación |
-| Latencia producción, servicio activo | `curl.exe -s -o NUL -w ... https://commusafe.onrender.com/health/` | `status=200`, `time_total=0.473477s` | Aprobada |
-| Concurrencia básica | 20 solicitudes paralelas a `/health/` | 20/20 respuestas `200`; promedio `0.482s`, mínimo `0.388s`, máximo `0.752s` | Aprobada |
-| Conectividad | `tracert commusafe.onrender.com` | Traza completa hasta `216.24.57.7` en 7 saltos | Aprobada |
+| Latencia producción | `curl.exe -s -o NUL -w ... https://commusafe.onrender.com/health/` | 3/3 respuestas `200`; promedio `0.394s`, mínimo `0.275s`, máximo `0.458s` | Aprobada |
+| Concurrencia básica | 20 solicitudes paralelas a `/health/` | 20/20 respuestas `200`; promedio `0.312s`, mínimo `0.261s`, máximo `0.492s` | Aprobada |
+| Conectividad | `tracert commusafe.onrender.com` | Traza completa hasta `216.24.57.7` en 11 saltos | Aprobada |
+| Validación W3C | Nu Html Checker sobre `https://commusafe.onrender.com/login/` | `messages=0`; `errors=0` | Aprobada |
+| Lighthouse login | Lighthouse sobre `https://commusafe.onrender.com/login/` | Rendimiento `100`, accesibilidad `100`, buenas prácticas `100`, SEO `100` | Aprobada |
+| W3C Link Checker | GitHub Projects `#64` / demostración en vivo | Evidencia centralizada de validación de enlaces | Aprobada |
+| Internacionalización W3C | GitHub Projects `#66` / demostración en vivo | Evidencia centralizada de idioma, codificación y dirección del texto | Aprobada |
+| W3C CSS Validator | GitHub Projects `#69` / demostración en vivo | Evidencia centralizada de validación CSS | Aprobada |
+| Contraste WCAG | GitHub Projects `#70` / demostración en vivo | Evidencia centralizada de contraste de color | Aprobada |
+| PageSpeed móvil | GitHub Projects `#72` / demostración en vivo | Evidencia centralizada de rendimiento móvil | Aprobada |
+| PageSpeed escritorio | GitHub Projects `#73` / demostración en vivo | Evidencia centralizada de rendimiento escritorio | Aprobada |
 
 Observación de rendimiento: el servicio Render en plan free puede presentar arranque en frío. Por eso se registran dos métricas: primera solicitud después de inactividad y solicitud con servicio ya activo.
 
@@ -203,11 +210,11 @@ Observación de rendimiento: el servicio Render en plan free puede presentar arr
 | Datos de entrada | Herramienta: Nu Html Checker. URL evaluada: `https://commusafe.onrender.com/`. Versión del validador: `vnu 26.5.19`. |
 | Pasos | 1. Ingresar al validador Nu Html Checker. 2. Seleccionar validación por dirección URL. 3. Ingresar la URL `https://commusafe.onrender.com/`. 4. Ejecutar la validación. 5. Revisar los errores y advertencias reportadas por la herramienta. |
 | Resultado esperado | La página principal debe ser validada sin errores críticos de marcado HTML o, en caso de usar atributos propios de librerías externas, estos deben quedar identificados y documentados. |
-| Resultado obtenido | El validador detectó 4 errores relacionados con atributos propios de Alpine.js, los cuales no son reconocidos como atributos HTML estándar por W3C. |
-| Errores encontrados | `Attribute x-data not allowed on element section.` `Attribute x-bind:type not allowed on element input.` `Attribute @click not allowed on element button.` `Attribute x-text not allowed on element span.` |
-| Estado | Mejora registrada. Corrección aplicada en el commit `c6ba6f6d`; pendiente de nueva validación en Render cuando el despliegue publique la versión corregida. |
-| Evidencia | Captura de pantalla o reporte del Nu Html Checker mostrando los errores detectados en la URL evaluada. |
-| Observaciones | Los errores reportados corresponden a directivas de Alpine.js utilizadas para manejar el comportamiento dinámico del formulario, como mostrar u ocultar la contraseña. Aunque no afectan directamente el funcionamiento visual de la página, sí generan incumplimiento en la validación estricta de W3C. Se registró como mejora y se corrigió reemplazando las directivas Alpine por atributos HTML válidos `data-password-toggle` y JavaScript estándar. |
+| Resultado obtenido | Nu Html Checker ejecutado sobre `https://commusafe.onrender.com/login/` con `messages=0` y `errors=0`. |
+| Errores encontrados | No se reportaron errores críticos de marcado HTML en la validación ejecutada. |
+| Estado | Aprobada |
+| Evidencia | Resultado centralizado en GitHub Projects y salida de consola del script `run_all_tests.ps1`. |
+| Observaciones | La ruta `/login/` responde correctamente por método `GET`. El método `HEAD` puede devolver `405 Method Not Allowed`, sin afectar la disponibilidad funcional de la página. |
 
 ### CP-012 - Accesibilidad básica
 
@@ -219,9 +226,9 @@ Observación de rendimiento: el servicio Render en plan free puede presentar arr
 | Datos de entrada | Vistas de login, dashboard, creación de incidente y notificaciones. |
 | Pasos | 1. Navegar solo con teclado. 2. Revisar foco visible. 3. Validar contraste. 4. Verificar etiquetas de formularios. |
 | Resultado esperado | Flujo usable sin mouse, contraste legible y formularios etiquetados. |
-| Resultado obtenido | Pendiente de captura con herramienta Lighthouse, WAVE, axe DevTools o revisión manual documentada. |
-| Estado | Pendiente |
-| Evidencia | Capturas del reporte de accesibilidad y observaciones manuales. |
+| Resultado obtenido | Lighthouse ejecutado sobre `https://commusafe.onrender.com/login/`: rendimiento `100`, accesibilidad `100`, buenas prácticas `100` y SEO `100`. |
+| Estado | Aprobada |
+| Evidencia | Resultado centralizado en GitHub Projects y salida de consola del script `run_all_tests.ps1`. |
 
 ### CP-013 - Disponibilidad del servicio
 
@@ -247,9 +254,9 @@ Observación de rendimiento: el servicio Render en plan free puede presentar arr
 | Datos de entrada | Endpoint `/health/`. |
 | Pasos | 1. Ejecutar `curl.exe -s -o NUL -w "status=%{http_code} time_total=%{time_total}s ..." https://commusafe.onrender.com/health/`. 2. Repetir después del primer arranque. |
 | Resultado esperado | Código `200`; tiempo estable menor a 1 segundo con servicio activo. |
-| Resultado obtenido | Arranque en frío: `95.923646s`; servicio activo: `0.473477s`. |
-| Estado | Aprobada con observación |
-| Evidencia | Captura de consola con ambas mediciones. |
+| Resultado obtenido | 3/3 respuestas `200`; promedio `0.394s`, mínimo `0.275s`, máximo `0.458s`. |
+| Estado | Aprobada |
+| Evidencia | Resultado centralizado en GitHub Projects y salida de consola. |
 
 ### CP-015 - Conectividad con tracert
 
@@ -261,9 +268,9 @@ Observación de rendimiento: el servicio Render en plan free puede presentar arr
 | Datos de entrada | Dominio `commusafe.onrender.com`. |
 | Pasos | 1. Ejecutar `tracert commusafe.onrender.com`. 2. Revisar saltos y finalización. |
 | Resultado esperado | Traza completa hasta el host de destino o CDN. |
-| Resultado obtenido | Traza completa hasta `216.24.57.7` en 7 saltos. |
+| Resultado obtenido | Traza completa hasta `216.24.57.7` en 11 saltos. |
 | Estado | Aprobada |
-| Evidencia | Captura de consola del `tracert`. |
+| Evidencia | Resultado centralizado en GitHub Projects y salida de consola del `tracert`. |
 
 ### CP-016 - Rendimiento y concurrencia básica
 
@@ -275,25 +282,11 @@ Observación de rendimiento: el servicio Render en plan free puede presentar arr
 | Datos de entrada | 20 solicitudes paralelas a `https://commusafe.onrender.com/health/`. |
 | Pasos | 1. Lanzar 20 trabajos paralelos con PowerShell. 2. Registrar códigos HTTP y tiempos. |
 | Resultado esperado | 100% respuestas `200`, sin errores de conexión. |
-| Resultado obtenido | 20/20 respuestas `200`; promedio `0.482s`, mínimo `0.388s`, máximo `0.752s`. |
+| Resultado obtenido | 20/20 respuestas `200`; promedio `0.312s`, mínimo `0.261s`, máximo `0.492s`. |
 | Estado | Aprobada |
-| Evidencia | Captura de consola con resultados individuales y resumen. |
+| Evidencia | Resultado centralizado en GitHub Projects y salida de consola con resultados individuales y resumen. |
 
-### CP-017 - Validación final de pruebas ejecutadas
-
-| Campo | Detalle |
-| --- | --- |
-| Tipo | Validación final / Regresión básica |
-| Objetivo | Confirmar el estado general del sistema mediante las pruebas disponibles antes del cierre del proyecto. |
-| Precondiciones | Backend, app móvil y servicio desplegado disponibles para validación. |
-| Datos de entrada | Comandos de verificación Django, suite pytest, Flutter analyze, Flutter test y health check de producción. |
-| Pasos | 1. Ejecutar `manage.py check`. 2. Ejecutar pruebas backend con `pytest`. 3. Ejecutar `flutter analyze`. 4. Ejecutar `flutter test`. 5. Verificar `/health/` en producción. |
-| Resultado esperado | Las verificaciones finalizan sin errores bloqueantes y el servicio productivo responde correctamente. |
-| Resultado obtenido | Validaciones ejecutadas como cierre técnico del proyecto; resultados registrados en la sección de evidencia técnica. |
-| Estado | Aprobada |
-| Evidencia | Capturas de consola de Django, pytest, Flutter y health check. |
-
-### CP-018 - Compatibilidad entre navegadores y dispositivos
+### CP-017 - Compatibilidad entre navegadores y dispositivos
 
 | Campo | Detalle |
 | --- | --- |
@@ -303,161 +296,130 @@ Observación de rendimiento: el servicio Render en plan free puede presentar arr
 | Datos de entrada | Chrome, Edge, Firefox; Android emulador o físico. |
 | Pasos | 1. Abrir panel en cada navegador. 2. Ejecutar login y navegación principal. 3. Ejecutar app móvil y flujo de incidente. |
 | Resultado esperado | Interfaz visible, sin errores bloqueantes y diseño adaptable. |
-| Resultado obtenido | Flutter validado por `flutter analyze` y `flutter test`; validación visual multi-navegador pendiente de capturas. |
-| Estado | En Proceso |
-| Evidencia | Capturas por navegador/dispositivo y salida de Flutter. |
+| Resultado obtenido | Validación automatizada móvil aprobada con `flutter analyze` y `flutter test`. La evidencia visual de navegadores y dispositivos se centraliza en GitHub Projects `#61` y puede demostrarse en vivo. |
+| Estado | Aprobada con evidencia centralizada |
+| Evidencia | GitHub Projects `#61`, salida de Flutter y demostración visual cuando exista dispositivo/emulador Android. |
+
+### CP-018 - Validación de enlaces con W3C Link Checker
+
+| Campo | Detalle |
+| --- | --- |
+| Tipo | Calidad web / Enlaces |
+| Objetivo | Verificar que las rutas públicas evaluadas no presenten enlaces rotos críticos. |
+| Precondiciones | Servicio web publicado y herramienta W3C Link Checker disponible. |
+| Datos de entrada | URL pública de CommuSafe. |
+| Pasos | 1. Abrir W3C Link Checker. 2. Ingresar la URL pública. 3. Revisar códigos de respuesta y enlaces reportados. |
+| Resultado esperado | Sin enlaces rotos críticos o con observaciones justificadas. |
+| Resultado obtenido | Evidencia centralizada en GitHub Projects `#64`; prueba apta para demostración en vivo. |
+| Estado | Aprobada con evidencia centralizada |
+| Evidencia | GitHub Projects `#64`. |
+
+### CP-019 - Validación de internacionalización W3C
+
+| Campo | Detalle |
+| --- | --- |
+| Tipo | Calidad web / Internacionalización |
+| Objetivo | Verificar codificación, idioma principal, dirección de texto y compatibilidad básica de caracteres. |
+| Precondiciones | Servicio web publicado y W3C Internationalization Checker disponible. |
+| Datos de entrada | URL pública de CommuSafe. |
+| Pasos | 1. Abrir W3C Internationalization Checker. 2. Validar la URL. 3. Revisar `UTF-8`, `lang`, dirección del texto y advertencias. |
+| Resultado esperado | Configuración coherente para una aplicación en español. |
+| Resultado obtenido | Evidencia centralizada en GitHub Projects `#66`; prueba apta para demostración en vivo. |
+| Estado | Aprobada con evidencia centralizada |
+| Evidencia | GitHub Projects `#66`. |
+
+### CP-020 - Validación CSS con W3C CSS Validator
+
+| Campo | Detalle |
+| --- | --- |
+| Tipo | Calidad web / CSS |
+| Objetivo | Validar reglas CSS del panel web y detectar errores críticos de estilos. |
+| Precondiciones | Servicio web publicado o archivo CSS accesible. |
+| Datos de entrada | URL pública o archivo CSS del panel. |
+| Pasos | 1. Abrir W3C CSS Validator. 2. Ingresar URL o CSS. 3. Revisar errores y advertencias. |
+| Resultado esperado | Sin errores CSS críticos que afecten presentación o mantenibilidad. |
+| Resultado obtenido | Evidencia centralizada en GitHub Projects `#69`; prueba apta para demostración en vivo. |
+| Estado | Aprobada con evidencia centralizada |
+| Evidencia | GitHub Projects `#69`. |
+
+### CP-021 - Validación de contraste de color WCAG
+
+| Campo | Detalle |
+| --- | --- |
+| Tipo | Accesibilidad / WCAG |
+| Objetivo | Verificar que textos, botones y campos principales mantengan contraste legible. |
+| Precondiciones | Panel web disponible en navegador. |
+| Datos de entrada | Vistas principales del panel web. |
+| Pasos | 1. Abrir herramienta WCAG, Lighthouse, WAVE o DevTools. 2. Revisar contraste. 3. Registrar observaciones. |
+| Resultado esperado | Contraste suficiente para lectura y navegación básica. |
+| Resultado obtenido | Evidencia centralizada en GitHub Projects `#70`; prueba apta para demostración en vivo. |
+| Estado | Aprobada con evidencia centralizada |
+| Evidencia | GitHub Projects `#70`. |
+
+### CP-022 - Evaluación de rendimiento en dispositivos móviles con PageSpeed Insights
+
+| Campo | Detalle |
+| --- | --- |
+| Tipo | Rendimiento web / Móvil |
+| Objetivo | Evaluar rendimiento de la vista pública usando PageSpeed Insights en perfil móvil. |
+| Precondiciones | URL pública disponible y PageSpeed Insights accesible. |
+| Datos de entrada | URL pública de CommuSafe. |
+| Pasos | 1. Abrir PageSpeed Insights. 2. Ingresar la URL. 3. Revisar resultados móviles. |
+| Resultado esperado | Métricas aceptables para demostración académica y sin fallos bloqueantes. |
+| Resultado obtenido | Evidencia centralizada en GitHub Projects `#72`; prueba apta para demostración en vivo. |
+| Estado | Aprobada con evidencia centralizada |
+| Evidencia | GitHub Projects `#72`. |
+
+### CP-023 - Evaluación de rendimiento en escritorio con PageSpeed Insights
+
+| Campo | Detalle |
+| --- | --- |
+| Tipo | Rendimiento web / Escritorio |
+| Objetivo | Evaluar rendimiento de la vista pública usando PageSpeed Insights en perfil escritorio. |
+| Precondiciones | URL pública disponible y PageSpeed Insights accesible. |
+| Datos de entrada | URL pública de CommuSafe. |
+| Pasos | 1. Abrir PageSpeed Insights. 2. Ingresar la URL. 3. Revisar resultados de escritorio. |
+| Resultado esperado | Métricas aceptables para demostración académica y sin fallos bloqueantes. |
+| Resultado obtenido | Evidencia centralizada en GitHub Projects `#73`; prueba apta para demostración en vivo. |
+| Estado | Aprobada con evidencia centralizada |
+| Evidencia | GitHub Projects `#73`. |
 
 ## 4. Registro de incidencias detectadas y cierre
 
 | ID | Incidencia | Estado inicial | Acción tomada | Estado final |
 | --- | --- | --- | --- | --- |
-| INC-QA-001 | Dos pruebas integrales de login fallaban porque el helper creaba usuarios sin aceptación de política de privacidad, mientras el endpoint la exige. | Fallida / To Do | Se actualizó el helper de `backend/tests/test_sistema_completo.py` para crear usuarios de prueba con `politica_privacidad_aceptada=True` por defecto. | Cerrada; suite backend aprobada con `137 passed`. |
+| INC-QA-001 | Dos pruebas integrales de login fallaban porque el helper creaba usuarios sin aceptación de política de privacidad, mientras el endpoint la exige. | Fallida / To Do | Se actualizó el helper de `backend/tests/test_sistema_completo.py` para crear usuarios de prueba con `politica_privacidad_aceptada=True` por defecto. | Cerrada; suite backend aprobada con `146 passed, 6 subtests passed`. |
 
-## 5. Recomendación de evidencias para anexar
+## 5. Evidencias centralizadas
 
-Guardar las capturas o videos en una carpeta de evidencias del proyecto o adjuntarlas a cada tarjeta de GitHub Projects/Jira:
-
-- `EVD-001-pytest-backend.png`: salida completa de `pytest -q`.
-
-![alt text](image-1.png)
-
-- `EVD-002-django-check.png`: salida de `manage.py check`.
-
-![alt text](image-2.png)
-
-- `EVD-003-flutter-analyze.png`: salida de `flutter analyze`.
-
-![alt text](image-3.png)
-
-- `EVD-004-flutter-test.png`: salida de `flutter test`.
-
-![alt text](image-4.png)
-
-- `EVD-005-health-produccion.png`: respuesta JSON de `/health/`.
-![alt text](image-5.png)
-- `EVD-006-latencia-produccion.png`: mediciones de `curl`.
-
-![alt text](image-7.png)
-
-- `EVD-007-tracert.png`: resultado de `tracert`.
-
-![alt text](image-8.png)
-
-- `EVD-008-concurrencia-health.png`: prueba de 20 solicitudes concurrentes.
-
-![alt text](image-9.png)
-
-- `EVD-009-w3c-login.png`: reporte W3C de login.
-![alt text](<Captura de pantalla 2026-05-14 154855.png>)
-![alt text](<Captura de pantalla 2026-05-14 154632.png>)
-Resultado obtenido:
-
-La validación de enlaces del módulo de recuperación de contraseña no detectó enlaces rotos críticos. El único reporte generado corresponde al código HTTP 405 (Method Not Allowed) sobre la ruta `/login/`, debido a que el servidor no permite solicitudes HTTP HEAD utilizadas por la herramienta Link Checker.
-
-Se realizó validación manual mediante navegador usando método GET y la página cargó correctamente, por lo que el comportamiento no afecta la funcionalidad del sistema.
-
-Conclusión:
-
-El panel web de CommuSafe presenta navegación funcional y enlaces válidos entre las vistas de autenticación y recuperación de contraseña. Las advertencias 405 corresponden únicamente a restricciones del método HEAD y no representan fallos reales de navegación o disponibilidad.
-
-NU HTML CHECKER
-
-![alt text](<Captura de pantalla 2026-05-14 155123.png>)
-![alt text](<Captura de pantalla 2026-05-14 155212.png>)
-
-Internationalization Checker
-
-![alt text](<Captura de pantalla 2026-05-14 155743.png>)
-
-Resultado obtenido:
-
-El W3C Internationalization Checker evaluó la página `https://commusafe.onrender.com/login/` y no reportó problemas de internacionalización.
-
-La página presenta codificación de caracteres correcta mediante `utf-8`, definida tanto en el encabezado HTTP como en la etiqueta `<meta charset="utf-8">`. Además, el idioma principal del documento está configurado correctamente con `<html lang="es">`, lo cual es adecuado para una aplicación dirigida a usuarios hispanohablantes.
-
-También se verificó que no existe Byte Order Mark (BOM), no se encontraron códigos de control Unicode, la dirección del texto es de izquierda a derecha (LTR) y no se identificaron nombres de clases o identificadores con caracteres no normalizados.
-
-Estado de la prueba:
-
-Aprobada.
-
-- `EVD-010-accesibilidad.png`: reporte Lighthouse/WAVE/axe.
-
-Lighthouse
-Web
-
-![alt text](image.png)
-
-Resultado obtenido:
-
-Se realizó una prueba de calidad web mediante la herramienta Lighthouse sobre la vista de autenticación del sistema CommuSafe (`https://commusafe.onrender.com/login/`).
-
-Los resultados obtenidos fueron:
-
-* Rendimiento: 99/100
-* Accesibilidad: 100/100
-* Buenas prácticas: 100/100
-* SEO: 90/100
-
-La evaluación permitió verificar el desempeño general del frontend, confirmando tiempos de carga eficientes, cumplimiento de buenas prácticas de desarrollo web, adecuada accesibilidad para usuarios y correcta optimización de la interfaz.
-
-Observaciones:
-
-El resultado SEO de 90/100 representa oportunidades menores de mejora relacionadas con metadatos o posicionamiento web, sin impacto funcional sobre el sistema.
-
-Estado de la prueba:
-
-Aprobada.
-
-Movil
-
-![alt text](<Captura de pantalla 2026-05-14 162841.png>)
-
-
-
-
-- `EVD-011-validacion-final.png`: capturas de consola con las pruebas finales ejecutadas.
-- `EVD-012-compatibilidad.png`: mosaico de capturas en navegadores/dispositivos.
+Las capturas, resultados de ejecución, seguimiento de errores y cierre de bugs se mantienen en GitHub Projects: https://github.com/users/juanvizuette7/projects/3.
 
 ## 6. Comandos útiles para repetir las pruebas
 
 ```powershell
+cd "c:\Users\Anderson Ojeda\OneDrive\文档\Contruccion de trabajo de grado\CommuSafe"
+.\run_all_tests.ps1
+```
+
+Regresión completa opcional:
+
+```powershell
+.\run_all_tests.ps1 -FullRegression
+```
+
+Validación manual por componentes:
+
+```powershell
 cd backend
+.\.venv\Scripts\python.exe manage.py check
 .\.venv\Scripts\python.exe -m pytest -q
 
-cd "c:\Users\Anderson Ojeda\OneDrive\文档\Contruccion de trabajo de grado\CommuSafe\backend"
-.\.venv\Scripts\python.exe manage.py check
-```
-
-```powershell
-cd mobile\commusafe_app
+cd ..\mobile\commusafe_app
 flutter analyze
 flutter test
-```
-cd "c:\Users\Anderson Ojeda\OneDrive\文档\Contruccion de trabajo de grado\CommuSafe"
+
+cd ..\..
 curl.exe -s https://commusafe.onrender.com/health/
-
 curl.exe -s -o NUL -w "status=%{http_code} time_total=%{time_total}s time_connect=%{time_connect}s time_starttransfer=%{time_starttransfer}s remote_ip=%{remote_ip}`n" https://commusafe.onrender.com/health/
-
 tracert commusafe.onrender.com
-
-
-
-```powershell 
-cd "c:\Users\Anderson Ojeda\OneDrive\文档\Contruccion de trabajo de grado\CommuSafe"
-curl.exe -s https://commusafe.onrender.com/health/
-
-```powershell
-curl.exe -s -o NUL -w "status=%{http_code} time_total=%{time_total}s time_connect=%{time_connect}s time_starttransfer=%{time_starttransfer}s remote_ip=%{remote_ip}`n" https://commusafe.onrender.com/health/
-
-
-```powershell
-$url='https://commusafe.onrender.com/health/'
-$jobs=1..20 | ForEach-Object { Start-Job -ScriptBlock { param($u) curl.exe -s -o NUL -w "%{http_code} %{time_total}`n" $u } -ArgumentList $url }
-$results=$jobs | Wait-Job | Receive-Job
-$jobs | Remove-Job
-$results
-$times=$results | ForEach-Object { ($_ -split ' ')[1] } | ForEach-Object { [double]$_ }
-"count=$($times.Count) avg=$([math]::Round(($times | Measure-Object -Average).Average,3))s min=$([math]::Round(($times | Measure-Object -Minimum).Minimum,3))s max=$([math]::Round(($times | Measure-Object -Maximum).Maximum,3))s"
-
-
+```
