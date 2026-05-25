@@ -95,17 +95,17 @@
             <article class="rounded-[28px] p-5 text-white shadow-soft" style="background: linear-gradient(135deg, #0F3460 0%, #2563EB 100%);">
                 <p class="text-xs font-black uppercase tracking-[0.18em] text-white/80">Activos</p>
                 <p class="mt-4 text-4xl font-black">{{ metricas_usuario.activos }}</p>
-                <p class="mt-2 text-sm text-white/80">En seguimiento</p>
+                <p class="mt-2 text-sm text-white/80">{{ metricas_labels.activos }}</p>
             </article>
             <article class="rounded-[28px] p-5 text-white shadow-soft" style="background: linear-gradient(135deg, #059669 0%, #10B981 100%);">
                 <p class="text-xs font-black uppercase tracking-[0.18em] text-white/80">Resueltos</p>
                 <p class="mt-4 text-4xl font-black">{{ metricas_usuario.resueltos }}</p>
-                <p class="mt-2 text-sm text-white/80">Cerrados o resueltos</p>
+                <p class="mt-2 text-sm text-white/80">{{ metricas_labels.resueltos }}</p>
             </article>
             <article class="rounded-[28px] p-5 text-white shadow-soft" style="background: linear-gradient(135deg, #E94560 0%, #B91C1C 100%);">
                 <p class="text-xs font-black uppercase tracking-[0.18em] text-white/80">Atendidos</p>
                 <p class="mt-4 text-4xl font-black">{{ metricas_usuario.atendidos }}</p>
-                <p class="mt-2 text-sm text-white/80">Como responsable</p>
+                <p class="mt-2 text-sm text-white/80">{{ metricas_labels.atendidos }}</p>
             </article>
         </div>
     </div>
@@ -204,13 +204,13 @@
         </div>
         <div class="mt-6 grid gap-3 md:grid-cols-2">
             {% for incidente in incidentes_atendidos %}
-            <a href="{% url 'panel_web:incidente_detalle' incidente.id %}" class="rounded-[24px] border border-slate-200 bg-slate-50 p-5 transition hover:-translate-y-0.5 hover:border-primary/40 hover:bg-white hover:shadow-soft">
+            <a href="{% url 'panel_web:incidente_detalle' incidente.id %}" class="rounded-[24px] border border-slate-200 bg-slate-50 p-5 transition hover:-translate-y-0.5 hover:border-primary/40 hover:bg-white hover:shadow-soft {% if incidente.estado == 'RESUELTO' %}border-l-4 border-l-success{% elif incidente.estado == 'EN_PROCESO' %}border-l-4 border-l-blue-500{% elif incidente.estado == 'CERRADO' %}border-l-4 border-l-slate-900{% else %}border-l-4 border-l-slate-400{% endif %}">
                 <div class="flex items-start justify-between gap-3">
                     <div>
                         <p class="font-black text-slate-900">{{ incidente.titulo }}</p>
                         <p class="mt-1 text-xs text-slate-500">Reportado por {{ incidente.reportado_por.nombre_completo }}</p>
                     </div>
-                    <span class="shrink-0 rounded-full px-3 py-1 text-xs font-black {% if incidente.estado == 'REGISTRADO' %}bg-slate-100 text-slate-700{% elif incidente.estado == 'EN_PROCESO' %}bg-blue-100 text-blue-700{% elif incidente.estado == 'RESUELTO' %}bg-success/10 text-success{% else %}bg-slate-900 text-white{% endif %}">
+                    <span class="shrink-0 rounded-full px-3 py-1.5 text-xs font-black shadow-sm {% if incidente.estado == 'REGISTRADO' %}bg-slate-200 text-slate-800{% elif incidente.estado == 'EN_PROCESO' %}bg-blue-600 text-white{% elif incidente.estado == 'RESUELTO' %}bg-success text-white{% else %}bg-slate-900 text-white{% endif %}">
                         {{ incidente.get_estado_display }}
                     </span>
                 </div>

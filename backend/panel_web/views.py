@@ -636,6 +636,18 @@ def usuario_detalle(request, usuario_id):
         .select_related("incidente")
         .order_by("-fecha_subida")[:8]
     )
+    base_metricas_estado = incidentes_reportados if usuario.es_residente else incidentes_atendidos
+    incidentes_activos_usuario = base_metricas_estado.filter(
+        estado__in=[Incidente.Estado.REGISTRADO, Incidente.Estado.EN_PROCESO]
+    )
+    incidentes_resueltos_usuario = base_metricas_estado.filter(
+        estado__in=[Incidente.Estado.RESUELTO, Incidente.Estado.CERRADO]
+    )
+    metricas_labels = {
+        "activos": "Mis casos activos" if usuario.es_residente else "Atendidos activos",
+        "resueltos": "Mis casos finalizados" if usuario.es_residente else "Atendidos resueltos",
+        "atendidos": "Como responsable",
+    }
 
     contexto = _contexto_base_panel(
         request,
@@ -645,12 +657,11 @@ def usuario_detalle(request, usuario_id):
         usuario_objetivo=usuario,
         metricas_usuario={
             "reportados": incidentes_reportados.count(),
-            "activos": incidentes_reportados.exclude(estado=Incidente.Estado.CERRADO).count(),
-            "resueltos": incidentes_reportados.filter(
-                estado__in=[Incidente.Estado.RESUELTO, Incidente.Estado.CERRADO]
-            ).count(),
+            "activos": incidentes_activos_usuario.count(),
+            "resueltos": incidentes_resueltos_usuario.count(),
             "atendidos": incidentes_atendidos.count(),
         },
+        metricas_labels=metricas_labels,
         incidentes_reportados=incidentes_reportados[:10],
         incidentes_atendidos=incidentes_atendidos[:10],
         evidencias_recientes=evidencias_recientes,
