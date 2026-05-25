@@ -1,6 +1,6 @@
 # CommuSafe
 
-**Plataforma integral de seguridad, convivencia y organización comunitaria para el conjunto residencial Remansos del Norte.**
+**Plataforma integral de seguridad, convivencia y organizacion comunitaria para el conjunto residencial Remansos del Norte.**
 
 ![Estado](https://img.shields.io/badge/estado-lanzamiento-10B981)
 ![Backend](https://img.shields.io/badge/backend-Django%204.2-1A1A2E)
@@ -8,203 +8,377 @@
 ![Mobile](https://img.shields.io/badge/mobile-Flutter%20Android-E94560)
 ![Deploy](https://img.shields.io/badge/deploy-Render%20%2B%20PostgreSQL-16213E)
 
-CommuSafe es un sistema hiperlocal diseñado para centralizar el reporte, atención, seguimiento y cierre de incidentes dentro de Remansos del Norte. La plataforma conecta a residentes, personal de vigilancia y administración mediante una aplicación móvil Android, un panel web administrativo, una API REST segura y un módulo de notificaciones.
+CommuSafe es un sistema hiperlocal para apoyar la gestion de seguridad, convivencia y organizacion operativa del conjunto residencial Remansos del Norte. El producto permite registrar incidentes, adjuntar evidencias fotograficas, hacer seguimiento por estados, notificar a los actores correspondientes, emitir avisos comunitarios y consultar informacion mediante un asistente virtual especializado.
 
-El sistema fue construido como producto de software completo: backend en Django, panel web con plantillas y Tailwind, aplicación móvil Flutter, autenticación JWT, control de acceso por roles, notificaciones push con Firebase Cloud Messaging, asistente virtual con IA y despliegue HTTPS en Render con PostgreSQL. La gestión de usuarios se realiza por administración; el acceso público de registro y recuperación de contraseña está deshabilitado en interfaz para mantener control operativo interno.
+El sistema esta construido como una solucion cliente-servidor: un backend Django expone una API REST segura, un panel web administrativo permite gestionar la operacion desde navegador y una aplicacion movil Flutter Android facilita el uso diario por residentes, vigilantes y administracion. El despliegue de produccion se realiza en Render con PostgreSQL y HTTPS automatico.
 
-## Estado Del Producto
+## Que Es CommuSafe
 
-CommuSafe se encuentra preparado para operación controlada y presentación académica. El flujo funcional cubre autenticación, gestión de usuarios, reporte de incidentes, evidencias fotográficas, historial de estados, avisos comunitarios, notificaciones, asistente virtual, contactos de emergencia y panel administrativo.
+CommuSafe centraliza informacion que normalmente se pierde en llamadas, chats informales o reportes verbales. Cada incidente queda registrado con responsable, fecha, categoria, prioridad, estado, evidencia, historial y cierre. Esto mejora la trazabilidad y permite que administracion y vigilancia tengan una vista clara de lo que ocurre en el conjunto.
 
-No incluye módulo de cámaras de vigilancia ni integración con CCTV. La cámara del dispositivo se usa únicamente para adjuntar evidencias fotográficas a los reportes de incidentes.
+El sistema no reemplaza la labor humana de vigilancia o administracion. Su objetivo es ordenar la informacion, acelerar la comunicacion y dejar evidencia verificable de cada proceso operativo.
 
-## Problema Que Resuelve
+## Caracteristicas Principales
 
-En una comunidad residencial, los reportes de seguridad, convivencia e infraestructura suelen gestionarse por canales dispersos como llamadas, mensajes informales o comunicación verbal. Esto dificulta conocer quién reportó, cuándo se atendió, qué evidencia existe, quién hizo seguimiento y cuál fue el cierre del caso.
+### Gestion De Usuarios Y Seguridad
 
-CommuSafe resuelve ese problema centralizando el ciclo completo del incidente: registro, clasificación, evidencia, atención, historial, notificación y cierre. El sistema no reemplaza a la administración ni a la vigilancia; les entrega una herramienta trazable para operar con información ordenada, consultar historial y comunicar avisos de forma segmentada.
+- Usuario personalizado con inicio de sesion por correo electronico.
+- Roles diferenciados: residente, vigilante y administrador.
+- Autenticacion JWT para la API movil.
+- Sesiones protegidas para el panel web.
+- Control de acceso por rol en backend, app movil y panel web.
+- Perfil con datos de contacto, foto, unidad o referencia operativa.
+- Gestion administrativa de usuarios: crear, editar, activar, desactivar, cambiar rol y eliminar.
 
-## Alcance Funcional Cumplido
+### Gestion De Incidentes
 
-El alcance implementado corresponde al núcleo operativo del producto:
+- Registro de incidentes desde la app movil.
+- Campos principales: titulo, descripcion, categoria, ubicacion y evidencia.
+- Categorias: seguridad, convivencia, infraestructura y emergencia.
+- Prioridad calculada automaticamente en backend.
+- Estados: registrado, en proceso, resuelto y cerrado.
+- Historial inmutable de cambios de estado.
+- Evidencias fotograficas con limite de hasta tres imagenes por incidente.
+- Eliminacion de incidentes con trazabilidad, responsable, fecha y motivo.
+- Exportacion del historial a Excel y PDF desde el panel web.
 
-- Administración de cuentas por rol: residente, vigilante y administrador.
-- Inicio de sesión seguro con JWT en la app móvil y sesión protegida en panel web.
-- Reporte de incidentes con título, descripción, categoría, ubicación y evidencia fotográfica.
-- Clasificación automática de prioridad por reglas de negocio.
-- Seguimiento del ciclo de vida del incidente: registrado, en proceso, resuelto y cerrado.
-- Historial inmutable de cambios de estado con responsable, fecha y comentario.
-- Consulta diferenciada por rol: residentes ven sus propios incidentes; vigilancia y administración ven el conjunto operativo.
-- Panel web para dashboard, usuarios, incidentes, perfil de usuarios, avisos, notificaciones, auditoría y exportaciones.
-- App móvil Android para reportar, consultar, recibir alertas, usar asistente y llamar líneas de emergencia.
-- Notificaciones internas y push con Firebase Cloud Messaging.
-- Avisos comunitarios segmentados por audiencia o usuarios específicos.
-- Asistente virtual con IA/fallback para consultas de uso y orientación comunitaria.
-- Despliegue backend HTTPS en Render con PostgreSQL.
+### Notificaciones Y Avisos
 
-Quedan explícitamente fuera del alcance actual cámaras de vigilancia, integración con hardware de acceso físico, pagos de administración, votaciones de asamblea y analítica avanzada. Esas funcionalidades pueden plantearse como evolución futura sin afectar el núcleo ya entregado.
+- Notificaciones internas consultables desde app movil y panel web.
+- Push real mediante Firebase Cloud Messaging.
+- Avisos comunitarios emitidos por administracion o vigilancia.
+- Seleccion de destinatarios por rol o usuarios especificos.
+- Avisos vigentes destacados en la pantalla principal movil.
+- Conteo de notificaciones no leidas.
 
-## Stack Tecnológico
+### Panel Web Administrativo
 
-| Capa | Tecnología | Propósito |
-|---|---|---|
-| Backend | Python 3.11, Django 4.2 | API, lógica de negocio, ORM, panel web y seguridad |
-| API REST | Django REST Framework | Endpoints consumidos por Flutter y clientes autenticados |
-| Autenticación | SimpleJWT | Access token, refresh token y control de sesión |
-| Base de datos local | SQLite | Desarrollo local |
-| Base de datos producción | PostgreSQL en Render | Persistencia operativa |
-| Panel web | Django Templates, Tailwind CSS, Alpine.js | Administración, vigilancia, usuarios, incidentes y avisos |
-| App móvil | Flutter Android | Interfaz para residentes, vigilantes y administradores |
-| Estado móvil | Provider | Manejo de sesión, incidentes y notificaciones |
-| Navegación móvil | GoRouter | Rutas protegidas y navegación declarativa |
-| HTTP móvil | Dio | Cliente API con JWT y refresh automático |
-| Notificaciones | Firebase Cloud Messaging, firebase-admin | Push real y alertas internas |
-| IA | Google Gemini API con alternativa Anthropic/fallback | Asistente virtual acotado al conjunto |
-| Archivos | WhiteNoise, media storage local/Render | Estáticos y evidencias |
-| Pruebas | Pytest, coverage, flutter analyze/test | Validación backend y móvil |
-| Despliegue | Render, Gunicorn, HTTPS automático | Publicación del backend |
+- Dashboard con metricas operativas.
+- Listado de incidentes con filtros, busqueda y badges visuales.
+- Detalle completo de incidente con evidencias, historial y cambio de estado.
+- Gestion de usuarios con perfil individual.
+- Visualizacion ordenada de fotos de perfil y evidencias.
+- Modulo de avisos y notificaciones.
+- Auditoria de incidentes eliminados.
+- Exportacion de reportes administrativos.
 
-## Arquitectura
+### Aplicacion Movil Android
 
-CommuSafe usa una arquitectura cliente-servidor modular:
+- Login seguro con JWT.
+- Lista de incidentes segun rol.
+- Creacion de reportes con camara o galeria para evidencias.
+- Detalle de incidente con informacion, reportante, historial y evidencias.
+- Alertas y notificaciones.
+- Asistente virtual conversacional.
+- Contactos de emergencia.
+- Perfil editable con foto y telefono.
+- Ajustes visuales: color principal, contraste, tamano de texto e idioma.
+
+### Asistente Virtual
+
+- Asistente conversacional orientado al contexto de Remansos del Norte.
+- Integracion con Gemini como proveedor principal de IA.
+- Soporte alternativo para Anthropic.
+- Modo local de respaldo si no existe API key o si el proveedor no responde.
+- Conversaciones persistentes por usuario.
+- Historial de mensajes almacenado en base de datos.
+- Base de conocimiento mantenible para normas, procedimientos, avisos, uso de CommuSafe y preguntas frecuentes.
+
+## Arquitectura Usada
+
+CommuSafe usa una arquitectura cliente-servidor con backend modular y API REST.
 
 ```text
-App Flutter Android
-  -> HTTPS / JSON / Multipart
-  -> Django REST API
+Aplicacion Flutter Android
+  -> HTTPS
+  -> JSON / Multipart
+  -> Django REST Framework
   -> PostgreSQL
 
-Panel Web Django
-  -> Vistas protegidas por sesión
-  -> Misma lógica de dominio
+Panel Web Administrativo
+  -> Django Templates
+  -> Sesion protegida
+  -> Servicios internos del backend
   -> PostgreSQL
 
-Django Backend
-  -> Usuarios y roles
-  -> Incidentes, evidencias e historial
-  -> Notificaciones internas y FCM
-  -> Asistente IA
+Backend Django
+  -> Usuarios y autenticacion
+  -> Incidentes y evidencias
+  -> Historial y auditoria
+  -> Notificaciones y Firebase
+  -> Asistente virtual e IA
+  -> Panel web administrativo
 ```
 
-Los residentes reportan incidentes desde la app móvil. Vigilantes y administradores pueden consultar todos los casos autorizados, cambiar estados y generar trazabilidad. La administración gestiona usuarios, incidentes, avisos y auditoría desde el panel web. El asistente virtual responde consultas frecuentes del conjunto y deriva a administración cuando la consulta está fuera del alcance.
+La arquitectura se organiza como un monolito modular. Cada app de Django tiene una responsabilidad clara: usuarios, incidentes, notificaciones, asistente y panel web. Esto simplifica el despliegue y mantiene separada la logica de negocio.
 
-## Flujo Operativo Principal
+## Flujo Principal Del Sistema
 
-El flujo principal del sistema es el ciclo de vida de un incidente:
-
-1. El residente o vigilante inicia sesión en la app móvil.
-2. El usuario crea un incidente seleccionando categoría, descripción, ubicación y hasta tres evidencias.
-3. El backend guarda el incidente y calcula la prioridad automáticamente.
-4. El sistema genera notificaciones para los roles correspondientes.
-5. Vigilancia o administración revisa el caso desde la app o el panel web.
-6. El responsable cambia el estado agregando un comentario obligatorio.
-7. Cada cambio se registra en el historial del incidente.
-8. El residente recibe notificación del avance.
-9. La administración puede cerrar el incidente cuando el caso queda finalizado.
-10. El historial queda disponible para consulta, auditoría y exportación.
-
-Este flujo garantiza trazabilidad: el sistema conserva quién reportó, quién atendió, qué evidencia se adjuntó, cuándo cambió cada estado y cuál fue el comentario operativo de cada transición.
-
-## Roles Del Sistema
-
-| Rol | Acceso móvil | Acceso web | Responsabilidades |
-|---|---|---|---|
-| Residente | Sí | No | Reportar incidentes, adjuntar evidencia, consultar sus casos, recibir avisos |
-| Vigilante | Sí | Sí | Ver incidentes, atender casos, cambiar estado, emitir avisos operativos |
-| Administrador | Sí | Sí | Gestionar usuarios, roles, incidentes, avisos, auditoría y métricas |
-
-## Módulos Implementados
-
-- Autenticación con correo, contraseña, JWT, refresh token y política de tratamiento de datos.
-- Usuario personalizado con roles, datos de contacto, foto de perfil y token FCM.
-- Gestión completa de incidentes con categoría, prioridad automática, estado, responsable y cierre.
-- Evidencias fotográficas con límite de hasta tres imágenes por incidente.
-- Historial inmutable de cambios de estado.
-- Eliminación física de incidentes con registro de trazabilidad y motivo.
-- Exportación de historial de incidentes a Excel y PDF desde el panel web.
-- Notificaciones internas y push segmentadas por rol.
-- Avisos administrativos dirigidos a todos, grupos o usuarios específicos.
-- Banner móvil para avisos vigentes.
-- Panel web administrativo con dashboard, filtros, usuarios, notificaciones y detalle visual.
-- Aplicación móvil con login, incidentes, creación, detalle, alertas, asistente, perfil, ajustes y emergencias.
-- Perfil móvil con edición de datos personales, teléfono colombiano y foto.
-- Ajustes de experiencia móvil: color, contraste, tamaño de letra e idioma español/inglés.
-- Asistente virtual con IA real si existe API key configurada y modo local si no existe.
-- Contactos de emergencia reales para Colombia/Pasto.
+1. Un residente o vigilante inicia sesion en la app movil.
+2. El usuario registra un incidente con categoria, descripcion, ubicacion y evidencias.
+3. El backend guarda el reporte y calcula la prioridad automaticamente.
+4. El sistema genera notificaciones segun rol, categoria y prioridad.
+5. Vigilancia o administracion revisa el caso desde la app o el panel web.
+6. El responsable cambia el estado agregando comentario obligatorio.
+7. El sistema crea un registro inmutable en el historial.
+8. El residente recibe notificacion del avance.
+9. El caso puede quedar resuelto o cerrado.
+10. La informacion queda disponible para consulta, auditoria y exportacion.
 
 ## Reglas De Negocio Principales
 
-La prioridad del incidente no se define manualmente desde la app ni con IA. Se calcula en el backend mediante reglas determinísticas para garantizar consistencia, trazabilidad y control operativo:
+La prioridad no se decide desde la interfaz ni por IA. Se calcula en backend con reglas auditables:
 
-| Categoría | Prioridad automática | Justificación |
+| Categoria | Prioridad | Criterio |
 |---|---|---|
-| Emergencia | Alta | Puede comprometer seguridad o integridad inmediata |
-| Seguridad | Alta | Requiere atención prioritaria de vigilancia/administración |
-| Convivencia | Media | Afecta convivencia, pero normalmente no implica riesgo inmediato |
-| Infraestructura | Baja | Requiere gestión, pero suele permitir programación de atención |
-
-La IA se usa en el asistente virtual para consultas informativas, no para tomar decisiones críticas sobre prioridad o atención de incidentes. Esta separación es intencional: las decisiones operativas sensibles quedan bajo reglas auditables y bajo responsabilidad humana.
+| Emergencia | Alta | Puede afectar seguridad o integridad inmediata |
+| Seguridad | Alta | Requiere atencion prioritaria de vigilancia |
+| Convivencia | Media | Afecta la convivencia, sin riesgo inmediato habitual |
+| Infraestructura | Baja | Requiere gestion, pero normalmente puede programarse |
 
 Otras reglas implementadas:
 
-- Un incidente puede tener máximo tres evidencias fotográficas.
-- El historial de estado es inmutable: se crea, pero no se edita.
-- Solo administración puede eliminar incidentes, y la eliminación exige motivo de trazabilidad.
-- Residentes no acceden al panel web.
-- Vigilantes pueden atender incidentes y emitir avisos operativos según permisos.
-- Administradores gestionan usuarios, roles, incidentes, avisos y auditoría.
-- Las cuentas son creadas por administración; la recuperación pública de contraseña está oculta en interfaz.
+- Un incidente acepta maximo tres evidencias fotograficas.
+- El historial de estado no se edita ni se elimina desde la API.
+- Solo administracion puede eliminar incidentes.
+- Toda eliminacion de incidente exige motivo de trazabilidad.
+- Residentes ven sus propios incidentes en la lista principal.
+- Alertas de prioridad alta de otros residentes llegan por notificacion, pero no se mezclan en la lista principal.
+- Vigilantes y administradores pueden consultar y atender incidentes segun permisos.
 
-## Correspondencia Con Requerimientos
+## Roles Del Sistema
 
-| Requerimiento | Estado | Evidencia en el sistema |
+| Rol | App movil | Panel web | Responsabilidades |
+|---|---|---|---|
+| Residente | Si | No | Reportar incidentes, consultar sus casos, recibir avisos y alertas |
+| Vigilante | Si | Si | Atender incidentes, cambiar estados y emitir avisos operativos |
+| Administrador | Si | Si | Gestionar usuarios, incidentes, avisos, auditoria y metricas |
+
+## Tecnologias Utilizadas
+
+| Capa | Tecnologia | Uso |
 |---|---|---|
-| Autenticación con correo y contraseña | Cumplido | JWT, login móvil, login panel |
-| Roles de usuario | Cumplido | Residente, vigilante, administrador |
-| Reporte de incidentes | Cumplido | App móvil y API REST |
-| Evidencia fotográfica | Cumplido | ImageField, subida multipart, visor web |
-| Clasificación automática | Cumplido | Regla en modelo `Incidente.save()` |
-| Seguimiento de estados | Cumplido | Cambios con comentario e historial |
-| Notificaciones | Cumplido | Internas, conteo, avisos, FCM |
-| Panel administrativo | Cumplido | Dashboard, incidentes, usuarios, avisos |
-| Gestión de usuarios | Cumplido | Crear, editar, rol, activar, eliminar, perfil |
-| Asistente virtual | Cumplido | Chat IA/fallback y health check |
-| Contactos de emergencia | Cumplido | Líneas públicas de Colombia/Pasto |
-| Exportación de historial | Cumplido | Excel y PDF desde panel |
-| Auditoría de eliminación | Cumplido | Modelo `IncidenteEliminado` |
-| Despliegue HTTPS | Cumplido | Render con PostgreSQL |
+| Lenguaje backend | Python 3.11 | Desarrollo del servidor |
+| Framework backend | Django 4.2 | Modelos, ORM, seguridad, panel y configuracion |
+| API REST | Django REST Framework | Endpoints consumidos por Flutter |
+| Autenticacion | SimpleJWT | Access token y refresh token |
+| Base local | SQLite | Desarrollo local |
+| Base produccion | PostgreSQL en Render | Persistencia real |
+| Variables de entorno | python-decouple | Configuracion segura |
+| CORS | django-cors-headers | Acceso desde app movil y clientes externos |
+| Filtros API | django-filter | Filtros avanzados en endpoints |
+| Archivos | Pillow, ImageField | Fotos de perfil y evidencias |
+| Estaticos | WhiteNoise | Servicio de archivos estaticos |
+| Produccion | Gunicorn | Servidor WSGI en Render |
+| DB URL | dj-database-url | Conexion PostgreSQL por `DATABASE_URL` |
+| Push backend | firebase-admin | Envio de FCM desde Django |
+| IA | google-genai, Anthropic | Asistente virtual |
+| Exportaciones | openpyxl, reportlab | Excel y PDF |
+| Pruebas backend | pytest, pytest-django, coverage, factory-boy | Validacion automatizada |
+| Panel web | Django Templates | Interfaz administrativa |
+| Estilos web | Tailwind CSS, Alpine.js | Diseno moderno e interactividad ligera |
+| App movil | Flutter 3.x / Dart | Aplicacion Android |
+| Estado movil | Provider | Manejo de estado |
+| Navegacion movil | GoRouter | Rutas protegidas |
+| HTTP movil | Dio | Cliente API e interceptores JWT |
+| Storage movil | Flutter Secure Storage | Almacenamiento seguro de tokens |
+| Imagenes movil | image_picker, cached_network_image | Camara, galeria y cache |
+| Notificaciones movil | firebase_messaging, flutter_local_notifications | Push y notificaciones locales |
+| Utilidades movil | intl, url_launcher, shimmer, badges, google_fonts | Fechas, llamadas, UI y carga visual |
+| Despliegue | Render | Backend HTTPS y PostgreSQL |
 
-## Metodología Incremental
+## Modulos Del Backend
 
-El desarrollo se organizó bajo el **Modelo de Desarrollo Incremental**. En GitHub Projects se trabajó con 5 sprints macro; cada sprint entregó una parte funcional verificable y se integró sobre el incremento anterior.
+| App Django | Responsabilidad |
+|---|---|
+| `commusafe_backend` | Configuracion general, rutas principales, settings local y produccion |
+| `usuarios` | Usuario personalizado, roles, permisos, JWT, perfil y FCM token |
+| `incidentes` | Incidentes, evidencias, historial, auditoria, exportaciones y reglas de negocio |
+| `notificaciones` | Notificaciones internas, avisos, FCM y segmentacion |
+| `asistente` | Conversaciones, mensajes, base de conocimiento e integracion IA |
+| `panel_web` | Dashboard, vistas web, formularios, usuarios, incidentes, avisos y notificaciones |
+| `tests` | Pruebas integrales del sistema |
 
-| Sprint | Incremento | Resultado funcional |
-|---|---|---|
-| Sprint 1 | Núcleo del sistema y autenticación | Backend Django, usuario personalizado, roles, JWT, permisos y estructura API |
-| Sprint 2 | Gestión de incidentes | Modelos, serializers, endpoints, evidencias, historial, reglas de prioridad y control por rol |
-| Sprint 3 | Panel web y notificaciones | Dashboard, usuarios, incidentes, avisos, notificaciones internas y push |
-| Sprint 4 | Aplicación móvil e integraciones | Flutter Android, login, incidentes, alertas, perfil, IA, Firebase y contactos de emergencia |
-| Sprint 5 | Calidad, despliegue y documentación | Pruebas, correcciones visuales, Render, PostgreSQL, README y preparación de lanzamiento |
+## Modulos De La App Movil
 
-Este enfoque permitió validar el producto por incrementos, reducir riesgos técnicos y mantener trazabilidad entre requerimientos, implementación y pruebas.
+| Carpeta | Responsabilidad |
+|---|---|
+| `core/constants` | URLs, endpoints y constantes globales |
+| `core/services` | API, storage seguro, Firebase, navegacion y notificaciones |
+| `core/theme` | Tema visual, colores, tipografia y configuracion dinamica |
+| `core/localization` | Soporte de idioma en la interfaz |
+| `features/auth` | Login, perfil, edicion de datos y sesion |
+| `features/incidentes` | Lista, creacion, detalle y cambio de estado |
+| `features/notificaciones` | Alertas, avisos y conteo de no leidas |
+| `features/asistente` | Chat conversacional persistente |
+| `features/emergencias` | Contactos de emergencia |
+| `features/ajustes` | Preferencias visuales y accesibilidad |
+| `shared/layouts` | Layout principal con navegacion |
+| `shared/widgets` | Componentes reutilizables |
 
-Cada incremento tuvo un criterio de cierre funcional: debía poder ejecutarse, integrarse con el trabajo anterior y verificarse mediante pruebas o revisión operativa. Por eso el proyecto no se construyó como una entrega monolítica al final, sino como una evolución progresiva: primero el núcleo de autenticación, luego incidentes, después panel y notificaciones, posteriormente app móvil e IA, y finalmente despliegue, pruebas y documentación.
+## Estructura De Carpetas
 
-## Decisiones Técnicas Relevantes
+```text
+CommuSafe/
+  README.md
+  render.yaml
+  run_all_tests.ps1
+  package.json
+  tailwind.config.js
+  .gitignore
+  .gitattributes
+  backend/
+    manage.py
+    requirements.txt
+    Procfile
+    pytest.ini
+    commusafe_backend/
+      settings.py
+      settings_prod.py
+      urls.py
+      wsgi.py
+      asgi.py
+    usuarios/
+      models.py
+      serializers.py
+      views.py
+      permissions.py
+      urls.py
+      admin.py
+      forms.py
+      services.py
+      management/
+      migrations/
+    incidentes/
+      models.py
+      serializers.py
+      views.py
+      services.py
+      services_eliminacion.py
+      exporters.py
+      filters.py
+      permissions.py
+      urls.py
+      admin.py
+      management/
+      migrations/
+    notificaciones/
+      models.py
+      serializers.py
+      views.py
+      services.py
+      urls.py
+      admin.py
+      migrations/
+    asistente/
+      models.py
+      serializers.py
+      views.py
+      services.py
+      knowledge_base.py
+      urls.py
+      admin.py
+      management/
+      migrations/
+    panel_web/
+      views.py
+      urls.py
+      forms.py
+      context_processors.py
+      decorators.py
+      templatetags/
+      migrations/
+    tests/
+      test_sistema_completo.py
+    media/
+      incidentes/
+      usuarios/
+    staticfiles/
+  frontend/
+    templates/
+      base.html
+      panel/
+        base.html
+        login.html
+        dashboard.html
+        incidentes_lista.html
+        incidente_detalle.html
+        incidentes_eliminados.html
+        usuarios_lista.html
+        usuario_detalle.html
+        usuario_form.html
+        avisos.html
+        notificaciones.html
+        notificacion_detalle.html
+        politica_privacidad.html
+  mobile/
+    commusafe_app/
+      pubspec.yaml
+      android/
+      assets/
+      lib/
+        main.dart
+        app.dart
+        core/
+          constants/
+          localization/
+          services/
+          theme/
+        features/
+          ajustes/
+          asistente/
+          auth/
+          emergencias/
+          incidentes/
+          notificaciones/
+        shared/
+          layouts/
+          widgets/
+      test/
+      integration_test/
+  docs/
+    ARQUITECTURA.md
+    MODELO_DATOS.md
+    MODELO_INCREMENTAL.md
+    PLAN_DESARROLLO.md
+    DISENO.md
+    DESPLIEGUE.md
+    CHECKLIST_ENTREGA.md
+    GUION_DEMO.md
+    MATRIZ_CUMPLIMIENTO.md
+    PLAN_PRUEBAS_CALIDAD.md
+    INSTRUMENTO_USABILIDAD.md
+    VERIFICACION_PRODUCCION.md
+```
 
-- Django se eligió porque permite integrar API REST, ORM, autenticación, panel web y administración de archivos en un mismo backend mantenible.
-- Flutter se eligió para construir una app Android con interfaz moderna, navegación protegida y consumo directo de la API.
-- PostgreSQL se usa en producción por estabilidad, integridad y compatibilidad con Render.
-- JWT se usa en móvil porque permite autenticación stateless y refresh controlado.
-- Las reglas de prioridad se implementan en backend para impedir manipulación desde clientes.
-- Las evidencias se manejan como archivos asociados al incidente para mantener relación directa entre reporte y soporte visual.
-- Firebase Cloud Messaging se usa para push real; si el dispositivo no recibe push, el sistema conserva notificaciones internas consultables.
-- El asistente virtual tiene fallback local para que el módulo no falle si no hay API key o si el proveedor IA no responde.
-- La recuperación de contraseña existe a nivel técnico, pero está oculta en interfaz porque la operación actual usa cuentas creadas por administración.
+## Endpoints Principales
 
-## Producción
+| Metodo | Ruta | Descripcion | Acceso |
+|---|---|---|---|
+| `POST` | `/api/auth/login/` | Inicio de sesion JWT | Publico controlado |
+| `POST` | `/api/auth/refresh/` | Renovar access token | Usuario autenticado |
+| `GET/PUT` | `/api/auth/perfil/` | Perfil propio | Usuario autenticado |
+| `POST` | `/api/auth/fcm/` | Actualizar token FCM | Usuario autenticado |
+| `GET/POST` | `/api/auth/usuarios/` | Gestion de usuarios | Administrador |
+| `GET/POST` | `/api/incidentes/` | Listar o crear incidentes | Segun rol |
+| `GET` | `/api/incidentes/{id}/` | Detalle con evidencias e historial | Segun rol |
+| `POST` | `/api/incidentes/{id}/cambiar-estado/` | Cambiar estado | Administrador, vigilante |
+| `POST` | `/api/incidentes/{id}/agregar-evidencia/` | Adjuntar evidencia | Segun rol |
+| `DELETE` | `/api/incidentes/{id}/` | Eliminar con trazabilidad | Administrador |
+| `GET` | `/api/notificaciones/` | Notificaciones propias | Usuario autenticado |
+| `GET` | `/api/notificaciones/no-leidas-count/` | Conteo de no leidas | Usuario autenticado |
+| `POST` | `/api/notificaciones/avisos/` | Crear aviso segmentado | Administrador, vigilante |
+| `GET` | `/api/notificaciones/avisos-vigentes/` | Avisos pendientes recientes | Usuario autenticado |
+| `POST` | `/api/asistente/chat/` | Mensaje rapido al asistente | Usuario autenticado |
+| `GET` | `/api/asistente/conversaciones/` | Listar conversaciones | Usuario autenticado |
+| `POST` | `/api/asistente/conversaciones/` | Crear conversacion | Usuario autenticado |
+| `GET` | `/api/asistente/conversaciones/{id}/mensajes/` | Mensajes de una conversacion | Usuario autenticado |
+| `POST` | `/api/asistente/conversaciones/{id}/enviar/` | Enviar mensaje y recibir respuesta | Usuario autenticado |
+| `GET` | `/api/asistente/health/` | Estado del proveedor IA | Usuario autenticado |
 
-Backend publicado con HTTPS:
+## Produccion
+
+Backend publicado:
 
 ```text
 https://commusafe.onrender.com
@@ -216,68 +390,54 @@ Health check:
 GET https://commusafe.onrender.com/health/
 ```
 
-La configuración de producción está en:
+Configuracion de produccion:
 
 ```text
 backend/commusafe_backend/settings_prod.py
 ```
 
-Render usa:
+Comando de arranque en Render:
 
 ```bash
-cd backend && gunicorn commusafe_backend.wsgi:application --bind 0.0.0.0:$PORT --worker-class gthread --workers 1 --threads 4 --timeout 120 --access-logfile - --error-logfile -
+cd backend && gunicorn commusafe_backend.wsgi:application --bind 0.0.0.0:$PORT
 ```
 
-La aplicación móvil de producción se compila con:
+La app Android de produccion se compila con:
 
 ```powershell
+cd mobile\commusafe_app
 flutter build apk --release --dart-define=PROD=true
 ```
 
-Con ese parámetro la app usa la URL pública de Render. En desarrollo, sin `PROD=true`, usa `10.0.2.2:8000` para conectarse al backend local desde el emulador Android.
-
 ## Variables De Entorno
 
-El archivo real `backend/.env` no se versiona. Para producción se configuran variables seguras en Render:
+El archivo real `backend/.env` no debe versionarse. En produccion las variables se configuran en Render.
 
-| Variable | Uso |
+| Variable | Proposito |
 |---|---|
-| `DJANGO_SETTINGS_MODULE` | `commusafe_backend.settings_prod` |
+| `DJANGO_SETTINGS_MODULE` | Usar `commusafe_backend.settings_prod` |
 | `SECRET_KEY` | Clave secreta de Django |
-| `DEBUG` | `False` en producción |
+| `DEBUG` | `False` en produccion |
 | `ALLOWED_HOSTS` | Dominios permitidos |
-| `CSRF_TRUSTED_ORIGINS` | Orígenes HTTPS confiables |
-| `DATABASE_URL` | Conexión PostgreSQL administrada por Render |
-| `GEMINI_API_KEY` | IA real para asistente virtual |
-| `GEMINI_MODEL` | Modelo Gemini configurado |
-| `LLM_PROVIDER` | Proveedor activo de IA |
-| `FIREBASE_CREDENTIALS_JSON_BASE64` | Configuración segura de Firebase Admin codificada |
-| `EMAIL_HOST_USER` | Correo emisor si se reactiva envío SMTP |
-| `EMAIL_HOST_PASSWORD` | Contraseña de aplicación SMTP |
+| `CSRF_TRUSTED_ORIGINS` | Origenes HTTPS confiables |
+| `DATABASE_URL` | Conexion PostgreSQL de Render |
+| `GEMINI_API_KEY` | IA real para el asistente |
+| `GEMINI_MODEL` | Modelo Gemini activo |
+| `LLM_PROVIDER` | Proveedor IA configurado |
+| `LLM_API_KEY` | Alternativa Anthropic |
+| `FIREBASE_CREDENTIALS_JSON_BASE64` | Credenciales Firebase Admin codificadas |
+| `EMAIL_HOST_USER` | Correo emisor si se activa SMTP |
+| `EMAIL_HOST_PASSWORD` | Password de aplicacion SMTP |
 | `DEFAULT_FROM_EMAIL` | Remitente del sistema |
 
-Los archivos sensibles como `.env`, `google-services.json` y credenciales de Firebase Admin están excluidos por `.gitignore`.
+Archivos sensibles como `.env`, credenciales Firebase y `google-services.json` no deben exponerse en el repositorio publico.
 
-## Instalación Local Del Backend
-
-Desde la raíz del repositorio:
+## Instalacion Local Del Backend
 
 ```powershell
 cd backend
 python -m venv venv
 .\venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-python manage.py migrate
-python manage.py createsuperuser
-python manage.py runserver
-```
-
-En Linux/macOS:
-
-```bash
-cd backend
-python3 -m venv venv
-source venv/bin/activate
 pip install -r requirements.txt
 python manage.py migrate
 python manage.py createsuperuser
@@ -290,136 +450,22 @@ Panel web local:
 http://127.0.0.1:8000/login/
 ```
 
-Los usuarios operativos se crean desde el panel web por un administrador autorizado.
-
-## Instalación Local De La App Android
+## Instalacion Local De La App Movil
 
 ```powershell
 cd mobile\commusafe_app
-C:\Users\juanv\flutter\bin\flutter.bat pub get
-C:\Users\juanv\flutter\bin\flutter.bat run
-```
-
-Si Flutter está en el PATH:
-
-```bash
-cd mobile/commusafe_app
 flutter pub get
 flutter run
 ```
 
-En entorno local, la app usa:
+En desarrollo, la app usa `http://10.0.2.2:8000` para conectarse al backend local desde el emulador Android.
 
-```text
-http://10.0.2.2:8000
-```
-
-Para compilar contra producción:
-
-```powershell
-cd mobile\commusafe_app
-C:\Users\juanv\flutter\bin\flutter.bat build apk --release --dart-define=PROD=true
-```
-
-APK generado:
-
-```text
-mobile/commusafe_app/build/app/outputs/flutter-apk/app-release.apk
-```
-
-## Firebase Cloud Messaging
-
-App Android registrada:
-
-```text
-com.commusafe.commusafe_app
-```
-
-Archivo requerido en entorno local:
-
-```text
-mobile/commusafe_app/android/app/google-services.json
-```
-
-Configuración Firebase para el backend:
-
-```text
-Firebase Console > Project settings > Service accounts > Generate new private key
-```
-
-En producción se recomienda usar `FIREBASE_CREDENTIALS_JSON_BASE64` en Render para no almacenar archivos sensibles en el servidor.
-
-## IA Del Asistente Virtual
-
-El asistente se ejecuta con proveedor configurable:
-
-```text
-LLM_PROVIDER=gemini
-GEMINI_MODEL=gemini-2.5-flash-lite
-GEMINI_API_KEY=<clave real>
-```
-
-Si no hay clave, el sistema responde con modo local para preguntas frecuentes sin romper la aplicación. El asistente está limitado a información del conjunto, uso de CommuSafe, normas de convivencia, procedimientos, contactos y orientación operativa.
-
-Información adicional que puede mejorar la precisión del asistente:
-
-- Horarios oficiales de zonas comunes.
-- Normas internas de convivencia.
-- Procedimiento real para visitantes, domicilios y mudanzas.
-- Teléfonos reales de administración y portería.
-- Correos o canales oficiales del conjunto.
-- Reglamento resumido de mascotas, ruido, parqueaderos y reservas.
-
-El asistente tiene límites definidos: no reemplaza a administración, vigilancia, servicios de emergencia ni asesoría jurídica. Si una consulta excede el conocimiento configurado, debe orientar al usuario a contactar administración o usar las líneas de emergencia según corresponda.
-
-## Contactos De Emergencia En La App
-
-La pantalla móvil de emergencias usa líneas públicas reales para Colombia y operación en Pasto:
-
-| Servicio | Número |
-|---|---:|
-| Línea única de emergencias | `123` |
-| Policía Nacional | `112` |
-| Bomberos Pasto / Colombia | `119` |
-| Ambulancias / Secretaría de Salud | `125` |
-| Cruz Roja Colombiana | `132` |
-| Defensa Civil | `144` |
-
-Para emergencias inminentes se prioriza `123`, ya que centraliza la atención de seguridad y emergencia.
-
-## Endpoints Principales
-
-| Método | Ruta | Descripción | Rol |
-|---|---|---|---|
-| POST | `/api/auth/login/` | Inicio de sesión JWT | Público controlado |
-| POST | `/api/auth/refresh/` | Renovación de token | Usuario autenticado |
-| GET/PUT | `/api/auth/perfil/` | Consulta y actualización de perfil propio | Usuario autenticado |
-| POST | `/api/auth/fcm/` | Registro de token FCM | Usuario autenticado |
-| GET/POST | `/api/auth/usuarios/` | Gestión de usuarios | Administrador |
-| POST | `/api/auth/usuarios/{id}/activar/` | Activar cuenta | Administrador |
-| POST | `/api/auth/usuarios/{id}/desactivar/` | Desactivar cuenta | Administrador |
-| POST | `/api/auth/usuarios/{id}/cambiar-rol/` | Cambiar rol | Administrador |
-| GET/POST | `/api/incidentes/` | Listar y crear incidentes | Según rol |
-| GET | `/api/incidentes/{id}/` | Detalle con evidencias e historial | Según rol |
-| DELETE | `/api/incidentes/{id}/` | Eliminar con motivo y trazabilidad | Administrador |
-| POST | `/api/incidentes/{id}/cambiar-estado/` | Cambiar estado e historial | Administrador, vigilante |
-| POST | `/api/incidentes/{id}/agregar-evidencia/` | Adjuntar evidencia | Según rol |
-| GET | `/api/notificaciones/` | Notificaciones propias | Usuario autenticado |
-| GET | `/api/notificaciones/no-leidas-count/` | Conteo de no leídas | Usuario autenticado |
-| POST | `/api/notificaciones/{id}/leer/` | Marcar como leída | Usuario autenticado |
-| POST | `/api/notificaciones/leer-todas/` | Marcar todas como leídas | Usuario autenticado |
-| POST | `/api/notificaciones/avisos/` | Crear aviso segmentado | Administrador, vigilante |
-| GET | `/api/notificaciones/avisos-vigentes/` | Avisos recientes pendientes | Usuario autenticado |
-| POST | `/api/asistente/chat/` | Chat con IA o respuesta local | Usuario autenticado |
-| GET | `/api/asistente/health/` | Estado del proveedor IA | Usuario autenticado |
-
-## Pruebas Y Calidad
+## Pruebas Y Verificacion
 
 Backend:
 
 ```powershell
 cd backend
-.\venv\Scripts\Activate.ps1
 python manage.py check
 pytest -q
 coverage run -m pytest -q
@@ -430,72 +476,87 @@ Flutter:
 
 ```powershell
 cd mobile\commusafe_app
-C:\Users\juanv\flutter\bin\flutter.bat analyze
-C:\Users\juanv\flutter\bin\flutter.bat test
-C:\Users\juanv\flutter\bin\flutter.bat build apk --release --dart-define=PROD=true
+flutter analyze
+flutter test
+flutter build apk --release --dart-define=PROD=true
 ```
 
-Validaciones aplicadas:
+Validaciones cubiertas:
 
+- Autenticacion y refresh token.
 - Control de acceso por rol.
-- Autenticación JWT.
-- Reglas de prioridad automática por categoría.
-- Historial de cambios de estado.
-- Límite de evidencias.
-- Notificaciones por rol.
-- Renderizado del panel web.
-- Compilación Android.
-- Pruebas de interfaz móvil base.
+- Creacion y consulta de incidentes.
+- Reglas de prioridad automatica.
+- Historial de estados.
+- Limite de evidencias.
+- Notificaciones segmentadas.
+- Asistente virtual.
+- Panel web y rutas protegidas.
+- Compilacion Android.
 
-Además, la calidad del software se evaluó con base en atributos prácticos alineados con ISO/IEC 25010:
+## Calidad Del Software
 
-| Atributo | Cómo se cumple en CommuSafe |
+CommuSafe se construyo considerando atributos de calidad alineados con ISO/IEC 25010:
+
+| Atributo | Aplicacion en CommuSafe |
 |---|---|
-| Funcionalidad | Flujos completos de login, incidentes, avisos, notificaciones y perfiles |
-| Seguridad | Roles, JWT, sesiones protegidas, HTTPS y variables fuera del repo |
-| Usabilidad | App móvil con navegación inferior, panel visual, badges, filtros y estados claros |
-| Mantenibilidad | Apps Django separadas, providers Flutter, servicios reutilizables y documentación |
-| Confiabilidad | Historial inmutable, reglas backend y PostgreSQL en producción |
-| Portabilidad | Backend desplegable en Render y app Android instalable por APK |
-| Eficiencia | Consultas paginadas, filtros server-side y endpoints específicos por módulo |
+| Funcionalidad | Flujos completos de incidentes, usuarios, avisos, notificaciones e IA |
+| Seguridad | JWT, roles, sesiones protegidas, HTTPS y variables externas |
+| Usabilidad | App movil con navegacion clara, panel visual, filtros y estados visibles |
+| Mantenibilidad | Apps Django separadas, providers Flutter y servicios reutilizables |
+| Confiabilidad | Historial inmutable, reglas backend y PostgreSQL |
+| Portabilidad | Backend desplegable en Render y APK Android instalable |
+| Eficiencia | Paginacion, filtros y endpoints por modulo |
 
-## Estructura Del Repositorio
+## Metodologia Incremental
 
-```text
-CommuSafe/
-  backend/
-    commusafe_backend/     Configuración Django y producción
-    usuarios/              Usuario personalizado, roles, JWT y permisos
-    incidentes/            Incidentes, evidencias, historial y auditoría
-    notificaciones/        Alertas internas, avisos y Firebase
-    asistente/             IA, health check y respuestas locales
-    panel_web/             Vistas y formularios del panel
-    tests/                 Pruebas automatizadas
-  frontend/
-    templates/             Plantillas HTML del panel web
-    static/                CSS y JavaScript del panel
-  mobile/
-    commusafe_app/         Aplicación Flutter Android
-  docs/
-    ARQUITECTURA.md
-    MODELO_DATOS.md
-    MODELO_INCREMENTAL.md
-    MATRIZ_CUMPLIMIENTO.md
-    PLAN_PRUEBAS_CALIDAD.md
-    INSTRUMENTO_USABILIDAD.md
-    DESPLIEGUE.md
-```
+El proyecto se desarrollo bajo el Modelo de Desarrollo Incremental. El sistema no se construyo como una entrega unica al final, sino como una evolucion por incrementos funcionales.
 
-## Seguridad
+| Incremento | Resultado |
+|---|---|
+| 1. Nucleo y autenticacion | Proyecto Django, usuario personalizado, roles, JWT y permisos |
+| 2. Incidentes | Modelos, API, evidencias, historial y reglas de prioridad |
+| 3. Panel web y notificaciones | Dashboard, gestion web, avisos, notificaciones y FCM |
+| 4. App movil e IA | Flutter Android, perfil, incidentes, alertas, asistente y emergencias |
+| 5. Calidad y despliegue | Pruebas, refinamiento visual, Render, PostgreSQL y documentacion |
 
-- Contraseñas cifradas mediante el sistema de autenticación de Django.
-- Autenticación JWT para API móvil.
-- Refresh token y expiración controlada.
-- Control de acceso por rol en backend, panel y app.
-- HTTPS automático en Render.
-- Variables sensibles fuera del repositorio.
-- Evidencias fotográficas servidas bajo rutas de medios controladas.
-- Gestión de usuarios centralizada por administración.
+Cada incremento paso por analisis, diseno, implementacion, pruebas e integracion con lo ya construido. Esto permite demostrar avance verificable, trazabilidad tecnica y coherencia con la metodologia seleccionada para el trabajo de grado.
+
+## Seguridad Y Privacidad
+
+- Las contrasenas se gestionan mediante el sistema seguro de Django.
+- La API movil usa JWT.
+- El panel web usa sesion autenticada.
+- El backend valida permisos por rol.
+- HTTPS esta activo en produccion.
+- Las variables sensibles no se documentan con valores reales.
+- Las evidencias quedan asociadas a incidentes y usuarios autenticados.
+- La politica de tratamiento de datos esta contemplada en el flujo del sistema.
+
+## Alcance Actual Y Limites
+
+Implementado:
+
+- Usuarios por rol.
+- Reporte y seguimiento de incidentes.
+- Evidencias fotograficas.
+- Notificaciones y avisos.
+- Panel web administrativo.
+- App movil Android.
+- Asistente virtual.
+- Contactos de emergencia.
+- Despliegue HTTPS.
+- PostgreSQL en produccion.
+
+Fuera del alcance actual:
+
+- Camaras de vigilancia o CCTV.
+- Integracion con hardware de acceso fisico.
+- Pagos de administracion.
+- Votaciones de asamblea.
+- Analitica avanzada con graficas predictivas.
+
+La camara del celular solo se usa para adjuntar evidencias fotograficas a reportes de incidentes.
 
 ## Datos Del Proyecto
 
@@ -504,15 +565,16 @@ CommuSafe/
 | Sistema | CommuSafe |
 | Comunidad objetivo | Remansos del Norte |
 | Tipo de proyecto | Trabajo de grado universitario |
-| Programa | Ingeniería de Software |
-| Año | 2026 |
-| Metodología | Modelo de Desarrollo Incremental |
-| Despliegue backend | Render con PostgreSQL y HTTPS |
-| Aplicación móvil | Android |
+| Programa | Ingenieria de Software |
+| Metodologia | Modelo de Desarrollo Incremental |
+| Backend | Django REST Framework |
+| App movil | Flutter Android |
+| Panel web | Django Templates, Tailwind CSS y Alpine.js |
+| Produccion | Render, PostgreSQL y HTTPS |
+| Ano | 2026 |
 
-## Notas Operativas
+## Cierre
 
-- La recuperación de contraseña está oculta en web y móvil porque las cuentas son gestionadas por administración.
-- Para crear o modificar usuarios se debe ingresar al panel web con una cuenta administradora.
-- Render puede tardar algunos segundos en responder si el servicio estuvo en reposo.
-- Los porcentajes de lenguaje en GitHub pueden mostrar HTML por las plantillas del panel web; esto es esperado.
+CommuSafe fue desarrollado como una solucion academica y funcional para demostrar como la ingenieria de software puede aportar orden, trazabilidad y comunicacion efectiva a una comunidad residencial real.
+
+**👨‍💻 Desarrollado por Juan Vizuette y el equipo del proyecto CommuSafe.**
