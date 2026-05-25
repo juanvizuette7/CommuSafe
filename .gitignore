@@ -16,10 +16,12 @@ backend/staticfiles/
 backend/*.report.html
 backend/lighthouse*.html
 backend/evidencia-lighthouse*.html
+backend/evidencia-lighthouse*.png
 evidencia-lighthouse*.report.html
 evidencia-lighthouse*.report.json
 commusafe.onrender.com_*.report.html
 reports/lighthouse/
+docs/*.png
 backend/.venv/
 backend/.venv-local/
 backend/venv/
