@@ -9,8 +9,8 @@
                     {% if usuario_objetivo.foto_perfil %}
                     <a href="{{ usuario_objetivo.foto_perfil.url }}" target="_blank" rel="noopener" @click.prevent="abrirImagen('{{ usuario_objetivo.foto_perfil.url }}', 'Foto de perfil de {{ usuario_objetivo.nombre_completo|escapejs }}')" class="group relative h-28 w-28 shrink-0 overflow-hidden rounded-[30px] border border-white/20 bg-white/10 shadow-glass focus:outline-none focus:ring-4 focus:ring-white/20">
                         <img src="{{ usuario_objetivo.foto_perfil.url }}" alt="Foto de perfil de {{ usuario_objetivo.nombre_completo }}" class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.04]" onerror="this.parentElement.classList.add('hidden'); this.parentElement.nextElementSibling.classList.remove('hidden');">
-                        <span class="absolute inset-0 flex items-center justify-center bg-slate-950/50 text-xs font-black uppercase tracking-[0.18em] text-white opacity-0 transition group-hover:opacity-100">
-                            Ver foto
+                        <span class="absolute bottom-2 right-2 rounded-full bg-slate-950/65 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.12em] text-white opacity-0 backdrop-blur-md transition group-hover:opacity-100">
+                            Ampliar
                         </span>
                     </a>
                     <div class="hidden h-28 w-28 shrink-0 items-center justify-center rounded-[30px] border border-white/20 bg-white/10 text-3xl font-black text-white flex">
@@ -179,8 +179,8 @@
             <figure class="overflow-hidden rounded-[24px] border border-slate-200 bg-slate-50">
                 <a href="{{ evidencia.imagen.url }}" target="_blank" rel="noopener" @click.prevent="abrirImagen(evidenciasUsuario[{{ forloop.counter0 }}].url, evidenciasUsuario[{{ forloop.counter0 }}].titulo, evidenciasUsuario, {{ forloop.counter0 }})" class="group relative block h-44 overflow-hidden focus:outline-none focus:ring-4 focus:ring-accent/20">
                     <img src="{{ evidencia.imagen.url }}" alt="Evidencia de {{ evidencia.incidente.titulo }}" class="h-full w-full object-cover transition duration-300 group-hover:scale-[1.04]" onerror="this.parentElement.classList.add('hidden'); this.parentElement.nextElementSibling.classList.remove('hidden');">
-                    <span class="absolute inset-0 flex items-center justify-center bg-slate-950/50 text-xs font-black uppercase tracking-[0.18em] text-white opacity-0 transition group-hover:opacity-100">
-                        Ver evidencia
+                    <span class="absolute bottom-3 right-3 rounded-full bg-slate-950/65 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.14em] text-white opacity-0 backdrop-blur-md transition group-hover:opacity-100">
+                        Ampliar
                     </span>
                 </a>
                 <div class="hidden h-44 w-full items-center justify-center bg-slate-100 px-4 text-center text-xs font-bold text-slate-500 flex">

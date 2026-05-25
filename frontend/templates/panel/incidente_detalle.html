@@ -46,13 +46,13 @@
                 <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     {% for evidencia in evidencias %}
                     <figure class="overflow-hidden rounded-[24px] border border-slate-200 bg-slate-50">
-                        <a href="{{ evidencia.imagen.url }}" target="_blank" rel="noopener" @click.prevent="abrirImagen(evidenciasIncidente[{{ forloop.counter0 }}].url, evidenciasIncidente[{{ forloop.counter0 }}].titulo, evidenciasIncidente, {{ forloop.counter0 }})" class="group relative block w-full overflow-hidden text-left focus:outline-none focus:ring-4 focus:ring-accent/20" aria-label="Ver evidencia {{ forloop.counter }}">
-                            <img src="{{ evidencia.imagen.url }}" alt="Evidencia {{ forloop.counter }}" class="h-56 w-full object-cover transition duration-300 hover:scale-[1.03]" onerror="this.parentElement.classList.add('hidden'); this.parentElement.nextElementSibling.classList.remove('hidden');">
-                            <span class="absolute inset-0 flex items-center justify-center bg-slate-950/55 text-sm font-black uppercase tracking-[0.18em] text-white opacity-0 transition group-hover:opacity-100">
-                                Ver evidencia
+                        <a href="{{ evidencia.imagen.url }}" target="_blank" rel="noopener" @click.prevent="abrirImagen(evidenciasIncidente[{{ forloop.counter0 }}].url, evidenciasIncidente[{{ forloop.counter0 }}].titulo, evidenciasIncidente, {{ forloop.counter0 }})" class="group relative block h-44 w-full overflow-hidden text-left focus:outline-none focus:ring-4 focus:ring-accent/20" aria-label="Ver evidencia {{ forloop.counter }}">
+                            <img src="{{ evidencia.imagen.url }}" alt="Evidencia {{ forloop.counter }}" class="h-full w-full object-cover transition duration-300 hover:scale-[1.03]" onerror="this.parentElement.classList.add('hidden'); this.parentElement.nextElementSibling.classList.remove('hidden');">
+                            <span class="absolute bottom-3 right-3 rounded-full bg-slate-950/65 px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.14em] text-white opacity-0 backdrop-blur-md transition group-hover:opacity-100">
+                                Ampliar
                             </span>
                         </a>
-                        <div class="hidden h-56 w-full items-center justify-center bg-slate-100 px-6 text-center text-sm font-bold text-slate-500 flex">
+                        <div class="hidden h-44 w-full items-center justify-center bg-slate-100 px-6 text-center text-sm font-bold text-slate-500 flex">
                             Archivo de evidencia no disponible en el servidor.
                         </div>
                         <figcaption class="p-4">

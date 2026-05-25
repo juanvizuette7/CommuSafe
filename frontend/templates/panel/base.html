@@ -241,25 +241,30 @@
         @keydown.escape.window="cerrarImagen()"
         @keydown.arrow-left.window="cambiarImagen(-1)"
         @keydown.arrow-right.window="cambiarImagen(1)"
-        class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/95 p-3"
+        class="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/85 p-4 backdrop-blur-sm"
         style="display: none;"
     >
-        <div @click.away="cerrarImagen()" class="relative flex h-full w-full items-center justify-center">
-            <div class="absolute left-4 top-4 z-10 max-w-[calc(100vw-6rem)] rounded-2xl bg-white/10 px-4 py-3 text-white backdrop-blur-md">
-                <p class="truncate text-sm font-black" x-text="visorImagen.titulo"></p>
-                <p x-show="visorImagen.galeria.length > 1" class="mt-1 text-xs font-bold text-white/70" x-text="`${visorImagen.indice + 1} de ${visorImagen.galeria.length}`"></p>
+        <button type="button" @click="cerrarImagen()" class="absolute inset-0 cursor-zoom-out" aria-label="Cerrar visor"></button>
+        <section class="relative z-10 flex max-h-[92vh] w-full max-w-5xl flex-col overflow-hidden rounded-[28px] border border-white/10 bg-slate-950/80 shadow-glass">
+            <header class="flex items-center justify-between gap-4 border-b border-white/10 px-4 py-3 text-white sm:px-5">
+                <div class="min-w-0">
+                    <p class="truncate text-sm font-black" x-text="visorImagen.titulo || 'Imagen ampliada'"></p>
+                    <p x-show="visorImagen.galeria.length > 1" class="mt-0.5 text-xs font-bold text-white/60" x-text="`${visorImagen.indice + 1} de ${visorImagen.galeria.length}`"></p>
+                </div>
+                <button type="button" @click="cerrarImagen()" class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white/10 text-lg font-black text-white transition hover:bg-white/20" aria-label="Cerrar imagen">
+                    &#10005;
+                </button>
+            </header>
+            <div class="relative flex min-h-[320px] items-center justify-center bg-black/35 p-3 sm:p-5">
+                <button x-cloak x-show="visorImagen.galeria.length > 1" type="button" @click.stop="cambiarImagen(-1)" class="absolute left-3 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-slate-950/60 text-3xl font-black text-white backdrop-blur-md transition hover:bg-slate-950/80" aria-label="Imagen anterior">
+                    &#8249;
+                </button>
+                <img :src="visorImagen.url" :alt="visorImagen.titulo" class="max-h-[72vh] max-w-full rounded-2xl object-contain shadow-2xl">
+                <button x-cloak x-show="visorImagen.galeria.length > 1" type="button" @click.stop="cambiarImagen(1)" class="absolute right-3 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-slate-950/60 text-3xl font-black text-white backdrop-blur-md transition hover:bg-slate-950/80" aria-label="Imagen siguiente">
+                    &#8250;
+                </button>
             </div>
-            <button type="button" @click="cerrarImagen()" class="absolute right-4 top-4 z-10 rounded-2xl bg-white/10 px-4 py-3 text-sm font-black text-white backdrop-blur-md transition hover:bg-white/20" aria-label="Cerrar imagen">
-                &#10005;
-            </button>
-            <button x-cloak x-show="visorImagen.galeria.length > 1" type="button" @click.stop="cambiarImagen(-1)" class="absolute left-4 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-3xl font-black text-white backdrop-blur-md transition hover:bg-white/20" aria-label="Imagen anterior">
-                &#8249;
-            </button>
-            <img :src="visorImagen.url" :alt="visorImagen.titulo" class="max-h-[92vh] max-w-[94vw] rounded-xl object-contain shadow-glass">
-            <button x-cloak x-show="visorImagen.galeria.length > 1" type="button" @click.stop="cambiarImagen(1)" class="absolute right-4 top-1/2 z-10 flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-3xl font-black text-white backdrop-blur-md transition hover:bg-white/20" aria-label="Imagen siguiente">
-                &#8250;
-            </button>
-        </div>
+        </section>
     </div>
 </div>
 {% endblock body %}
