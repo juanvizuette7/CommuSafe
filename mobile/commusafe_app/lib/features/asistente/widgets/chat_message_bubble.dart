@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/theme/app_theme.dart';
 import '../models/mensaje_model.dart';
 
 class ChatMessageBubble extends StatelessWidget {
@@ -10,8 +11,10 @@ class ChatMessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
     final isUser = mensaje.esDelUsuario;
     final time = DateFormat('hh:mm a', 'es_CO').format(mensaje.fechaCreacion);
+    final bubbleText = _limpiarTextoVisual(mensaje.contenido);
 
     return TweenAnimationBuilder<double>(
       duration: const Duration(milliseconds: 260),
@@ -51,9 +54,21 @@ class ChatMessageBubble extends StatelessWidget {
                       vertical: 14,
                     ),
                     decoration: BoxDecoration(
+                      gradient: isUser
+                          ? LinearGradient(
+                              colors: <Color>[
+                                theme.primary,
+                                Color.lerp(theme.primary, theme.accent, 0.38)!,
+                              ],
+                            )
+                          : null,
                       color: isUser
-                          ? const Color(0xFF12345A)
-                          : const Color(0xFF172033),
+                          ? null
+                          : Color.lerp(
+                              const Color(0xFF111827),
+                              theme.secondary,
+                              0.20,
+                            ),
                       borderRadius: BorderRadius.only(
                         topLeft: const Radius.circular(22),
                         topRight: const Radius.circular(22),
@@ -62,23 +77,24 @@ class ChatMessageBubble extends StatelessWidget {
                       ),
                       border: Border.all(
                         color: isUser
-                            ? const Color(0xFF2563EB).withValues(alpha: 0.38)
-                            : const Color(0xFF2E3A50),
+                            ? theme.accent.withValues(alpha: 0.42)
+                            : theme.primary.withValues(alpha: 0.20),
                       ),
                       boxShadow: <BoxShadow>[
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.22),
+                          color: (isUser ? theme.primary : Colors.black)
+                              .withValues(alpha: isUser ? 0.18 : 0.24),
                           blurRadius: 22,
                           offset: const Offset(0, 12),
                         ),
                       ],
                     ),
                     child: SelectableText(
-                      mensaje.contenido,
+                      bubbleText,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: isUser
-                            ? Colors.white
-                            : const Color(0xFFE2E8F0),
+                        color: Colors.white.withValues(
+                          alpha: isUser ? 1 : 0.92,
+                        ),
                         height: 1.55,
                         fontWeight: FontWeight.w500,
                       ),
@@ -88,7 +104,7 @@ class ChatMessageBubble extends StatelessWidget {
                   Text(
                     time,
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: const Color(0xFF64748B),
+                      color: Colors.white.withValues(alpha: 0.42),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -107,16 +123,30 @@ class _AssistantAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
     return Container(
       height: 34,
       width: 34,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: <Color>[Color(0xFF0F3460), Color(0xFFE94560)],
-        ),
+        gradient: LinearGradient(colors: <Color>[theme.primary, theme.accent]),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: theme.accent.withValues(alpha: 0.26),
+            blurRadius: 14,
+            offset: const Offset(0, 7),
+          ),
+        ],
       ),
       child: const Icon(Icons.smart_toy_rounded, size: 18, color: Colors.white),
     );
   }
+}
+
+String _limpiarTextoVisual(String texto) {
+  return texto
+      .replaceAll(RegExp(r'[*_]{2,}'), '')
+      .replaceAll(RegExp(r'^\s*#{1,6}\s*', multiLine: true), '')
+      .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+      .trim();
 }

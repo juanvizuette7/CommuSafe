@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/theme/app_theme.dart';
 import '../models/conversacion_model.dart';
 
 class ConversationSidebar extends StatelessWidget {
@@ -23,11 +24,15 @@ class ConversationSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
+
     return Container(
       width: 310,
-      decoration: const BoxDecoration(
-        color: Color(0xFF080D17),
-        border: Border(right: BorderSide(color: Color(0xFF1E293B))),
+      decoration: BoxDecoration(
+        color: Color.lerp(const Color(0xFF080D17), theme.primary, 0.10),
+        border: Border(
+          right: BorderSide(color: theme.accent.withValues(alpha: 0.20)),
+        ),
       ),
       child: SafeArea(
         bottom: false,
@@ -43,13 +48,10 @@ class ConversationSidebar extends StatelessWidget {
                       Container(
                         height: 42,
                         width: 42,
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           gradient: LinearGradient(
-                            colors: <Color>[
-                              Color(0xFF0F3460),
-                              Color(0xFFE94560),
-                            ],
+                            colors: <Color>[theme.primary, theme.accent],
                           ),
                         ),
                         child: const Icon(
@@ -89,7 +91,7 @@ class ConversationSidebar extends StatelessWidget {
                     icon: const Icon(Icons.add_rounded),
                     label: const Text('Nueva conversación'),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1D4ED8),
+                      backgroundColor: theme.accent,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(18),
@@ -100,9 +102,9 @@ class ConversationSidebar extends StatelessWidget {
               ),
             ),
             if (isLoading)
-              const Padding(
-                padding: EdgeInsets.all(20),
-                child: LinearProgressIndicator(color: Color(0xFF60A5FA)),
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: LinearProgressIndicator(color: theme.accent),
               )
             else
               Expanded(
@@ -114,8 +116,7 @@ class ConversationSidebar extends StatelessWidget {
                           final conversacion = conversaciones[index];
                           return _ConversationTile(
                             conversacion: conversacion,
-                            selected:
-                                conversacion.id == activeConversationId,
+                            selected: conversacion.id == activeConversationId,
                             onTap: () => onSelectConversation(conversacion),
                             onDelete: () => onDeleteConversation(conversacion),
                           );
@@ -146,12 +147,16 @@ class _ConversationTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final date = DateFormat('d MMM · h:mm a', 'es_CO').format(
-      conversacion.fechaActualizacion.toLocal(),
-    );
+    final theme = CommuSafeThemeExtension.of(context);
+    final date = DateFormat(
+      'd MMM · h:mm a',
+      'es_CO',
+    ).format(conversacion.fechaActualizacion.toLocal());
 
     return Material(
-      color: selected ? const Color(0xFF13233B) : Colors.transparent,
+      color: selected
+          ? theme.accent.withValues(alpha: 0.18)
+          : Colors.transparent,
       borderRadius: BorderRadius.circular(18),
       child: InkWell(
         onTap: onTap,
@@ -161,7 +166,9 @@ class _ConversationTile extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-              color: selected ? const Color(0xFF2563EB) : const Color(0xFF1E293B),
+              color: selected
+                  ? theme.accent
+                  : Colors.white.withValues(alpha: 0.10),
             ),
           ),
           child: Row(
@@ -184,7 +191,7 @@ class _ConversationTile extends StatelessWidget {
                     Text(
                       conversacion.ultimoMensaje.isEmpty
                           ? 'Sin mensajes todavía'
-                          : conversacion.ultimoMensaje,
+                          : _limpiarVista(conversacion.ultimoMensaje),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -244,4 +251,8 @@ class _EmptyConversations extends StatelessWidget {
       ),
     );
   }
+}
+
+String _limpiarVista(String texto) {
+  return texto.replaceAll(RegExp(r'[*_]{2,}'), '').trim();
 }

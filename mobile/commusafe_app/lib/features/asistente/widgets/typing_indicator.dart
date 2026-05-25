@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/app_theme.dart';
+
 class TypingIndicator extends StatefulWidget {
   const TypingIndicator({super.key});
 
@@ -32,6 +34,8 @@ class _TypingIndicatorState extends State<TypingIndicator> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: <Widget>[
@@ -40,11 +44,11 @@ class _TypingIndicatorState extends State<TypingIndicator> {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
           decoration: BoxDecoration(
-            color: const Color(0xFF172033),
+            color: Color.lerp(const Color(0xFF172033), theme.secondary, 0.22),
             borderRadius: BorderRadius.circular(
               20,
             ).copyWith(bottomLeft: const Radius.circular(6)),
-            border: Border.all(color: const Color(0xFF2E3A50)),
+            border: Border.all(color: theme.accent.withValues(alpha: 0.24)),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -56,8 +60,8 @@ class _TypingIndicatorState extends State<TypingIndicator> {
                 width: index == _activeDot ? 9 : 6,
                 decoration: BoxDecoration(
                   color: index == _activeDot
-                      ? const Color(0xFF60A5FA)
-                      : const Color(0xFF64748B),
+                      ? theme.accent
+                      : Colors.white.withValues(alpha: 0.34),
                   shape: BoxShape.circle,
                 ),
               );
@@ -74,14 +78,13 @@ class _BotAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
     return Container(
       height: 34,
       width: 34,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         shape: BoxShape.circle,
-        gradient: LinearGradient(
-          colors: <Color>[Color(0xFF0F3460), Color(0xFF2563EB)],
-        ),
+        gradient: LinearGradient(colors: <Color>[theme.primary, theme.accent]),
       ),
       child: const Icon(Icons.smart_toy_rounded, size: 18, color: Colors.white),
     );

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/app_theme.dart';
+
 class AssistantEmptyState extends StatelessWidget {
   const AssistantEmptyState({super.key, required this.onSuggestionSelected});
 
@@ -14,6 +16,8 @@ class AssistantEmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
+
     return Center(
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 620),
@@ -23,16 +27,16 @@ class AssistantEmptyState extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               Container(
-                height: 86,
-                width: 86,
+                height: 88,
+                width: 88,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: const LinearGradient(
-                    colors: <Color>[Color(0xFF1D4ED8), Color(0xFFE94560)],
+                  gradient: LinearGradient(
+                    colors: <Color>[theme.primary, theme.accent],
                   ),
                   boxShadow: <BoxShadow>[
                     BoxShadow(
-                      color: const Color(0xFF1D4ED8).withValues(alpha: 0.35),
+                      color: theme.accent.withValues(alpha: 0.35),
                       blurRadius: 34,
                       offset: const Offset(0, 16),
                     ),
@@ -55,7 +59,7 @@ class AssistantEmptyState extends StatelessWidget {
               ),
               const SizedBox(height: 10),
               Text(
-                'Tu asistente conversacional para Remansos del Norte. Puedo ayudarte con incidentes, avisos, normas, emergencias, administración y uso de CommuSafe.',
+                'Asistente IA de Remansos del Norte. Puedes preguntarme sobre incidentes, avisos, normas, emergencias, administración y uso de CommuSafe.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: const Color(0xFFCBD5E1),
@@ -71,10 +75,20 @@ class AssistantEmptyState extends StatelessWidget {
                 children: _sugerencias.map((texto) {
                   return ActionChip(
                     onPressed: () => onSuggestionSelected(texto),
-                    avatar: const Icon(Icons.auto_awesome_rounded, size: 16),
+                    avatar: Icon(
+                      Icons.auto_awesome_rounded,
+                      size: 16,
+                      color: theme.accent,
+                    ),
                     label: Text(texto),
-                    backgroundColor: const Color(0xFF172033),
-                    side: const BorderSide(color: Color(0xFF2E3A50)),
+                    backgroundColor: Color.lerp(
+                      const Color(0xFF172033),
+                      theme.secondary,
+                      0.22,
+                    ),
+                    side: BorderSide(
+                      color: theme.accent.withValues(alpha: 0.28),
+                    ),
                     labelStyle: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,

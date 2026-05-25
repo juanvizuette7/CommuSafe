@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/theme/app_theme.dart';
+
 class ChatInputBar extends StatefulWidget {
   const ChatInputBar({
     super.key,
@@ -59,15 +61,28 @@ class _ChatInputBarState extends State<ChatInputBar> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
     final canSend = widget.enabled && _hasText;
+    final panelColor = Color.lerp(
+      const Color(0xFF070B13),
+      theme.primary,
+      0.10,
+    )!;
+    final inputColor = Color.lerp(
+      const Color(0xFF101827),
+      theme.secondary,
+      0.18,
+    )!;
 
     return SafeArea(
       top: false,
       child: Container(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
         decoration: BoxDecoration(
-          color: const Color(0xFF070B13).withValues(alpha: 0.96),
-          border: const Border(top: BorderSide(color: Color(0xFF1E293B))),
+          color: panelColor.withValues(alpha: 0.98),
+          border: Border(
+            top: BorderSide(color: theme.accent.withValues(alpha: 0.24)),
+          ),
           boxShadow: <BoxShadow>[
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.35),
@@ -92,26 +107,37 @@ class _ChatInputBarState extends State<ChatInputBar> {
                 ),
                 decoration: InputDecoration(
                   hintText: 'Pregunta sobre Remansos del Norte o CommuSafe...',
-                  hintStyle: const TextStyle(color: Color(0xFF64748B)),
+                  hintStyle: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.42),
+                  ),
                   filled: true,
-                  fillColor: const Color(0xFF101827),
-                  prefixIcon: const Icon(
+                  fillColor: inputColor,
+                  prefixIcon: Icon(
                     Icons.auto_awesome_rounded,
-                    color: Color(0xFF60A5FA),
+                    color: theme.accent,
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(22),
-                    borderSide: const BorderSide(color: Color(0xFF263244)),
+                    borderSide: BorderSide(
+                      color: theme.primary.withValues(alpha: 0.26),
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(22),
-                    borderSide: const BorderSide(color: Color(0xFF60A5FA)),
+                    borderSide: BorderSide(color: theme.accent, width: 1.6),
                   ),
                   disabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(22),
-                    borderSide: const BorderSide(color: Color(0xFF1E293B)),
+                    borderSide: BorderSide(
+                      color: theme.primary.withValues(alpha: 0.16),
+                    ),
                   ),
                 ),
+                onSubmitted: (_) {
+                  if (canSend) {
+                    _submit();
+                  }
+                },
               ),
             ),
             const SizedBox(width: 10),
@@ -124,16 +150,25 @@ class _ChatInputBarState extends State<ChatInputBar> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: canSend
-                      ? const LinearGradient(
-                          colors: <Color>[Color(0xFF2563EB), Color(0xFF0F3460)],
+                      ? LinearGradient(
+                          colors: <Color>[theme.accent, theme.primary],
                         )
                       : null,
-                  color: canSend ? null : const Color(0xFF1E293B),
+                  color: canSend ? null : Colors.white.withValues(alpha: 0.10),
+                  boxShadow: canSend
+                      ? <BoxShadow>[
+                          BoxShadow(
+                            color: theme.accent.withValues(alpha: 0.26),
+                            blurRadius: 18,
+                            offset: const Offset(0, 9),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: IconButton(
                   onPressed: canSend ? _submit : null,
                   icon: const Icon(Icons.arrow_upward_rounded),
-                  color: canSend ? Colors.white : const Color(0xFF64748B),
+                  color: canSend ? Colors.white : Colors.white38,
                 ),
               ),
             ),

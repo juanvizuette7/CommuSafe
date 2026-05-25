@@ -25,7 +25,8 @@ class ConversacionModel {
       fechaActualizacion:
           DateTime.tryParse(json['fecha_actualizacion']?.toString() ?? '') ??
           DateTime.now(),
-      totalMensajes: int.tryParse(json['total_mensajes']?.toString() ?? '') ?? 0,
+      totalMensajes:
+          int.tryParse(json['total_mensajes']?.toString() ?? '') ?? 0,
       ultimoMensaje: json['ultimo_mensaje']?.toString() ?? '',
     );
   }

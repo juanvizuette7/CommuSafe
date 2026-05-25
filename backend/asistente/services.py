@@ -1,5 +1,7 @@
 """Servicios del asistente virtual persistente."""
 
+import re
+
 try:
     from anthropic import Anthropic
 except ImportError:  # pragma: no cover
@@ -37,7 +39,8 @@ Solo puedes responder con base en esta información autorizada:
 No inventes políticas, valores, multas, nombres de personas, sanciones, claves, datos privados ni decisiones administrativas.
 Si la información no está disponible o requiere confirmación humana, responde de forma natural indicando que no encuentras ese dato en CommuSafe y sugiere contactar a administración o portería.
 Si el usuario pregunta algo externo al conjunto o a CommuSafe, responde de forma amable que solo puedes apoyar consultas relacionadas con Remansos del Norte y CommuSafe.
-Usa respuestas concretas y estructuradas. Si hay pasos, enuméralos. Si hay riesgo o emergencia, prioriza seguridad y contacto con portería/línea 123.
+Usa respuestas concretas y estructuradas. Si hay pasos, enuméralos. Si hay riesgo o emergencia, prioriza seguridad y contacto con portería o línea 123.
+No uses Markdown decorativo, no uses negritas con asteriscos, no uses encabezados con numeral y no envuelvas palabras con símbolos. Responde en texto plano, con numeración simple cuando haya pasos.
 Cuando el usuario pregunte cómo reportar un incidente, explica pasos concretos dentro de CommuSafe, como si el usuario ya estuviera usando la aplicación.
 En preguntas sobre uso interno de la app, asume que el usuario ya inició sesión y está dentro de CommuSafe. No respondas con pasos genéricos como "descarga la app" o "inicia sesión" salvo que el usuario pregunte específicamente por acceso.
 Usa expresiones como "según la información registrada en CommuSafe", "de acuerdo con la información disponible en el sistema" o "puedes realizar este proceso desde el módulo correspondiente" cuando ayuden a contextualizar la respuesta.
@@ -259,6 +262,21 @@ def _extraer_texto_anthropic(respuesta):
     return "\n".join(textos).strip()
 
 
+def _limpiar_respuesta_ia(texto):
+    """Convierte markdown decorativo del LLM en texto plano para la app móvil."""
+
+    texto = (texto or "").strip()
+    if not texto:
+        return ""
+
+    texto = re.sub(r"[*_]{2,}", "", texto)
+    texto = re.sub(r"^\s{0,3}#{1,6}\s*", "", texto, flags=re.MULTILINE)
+    texto = re.sub(r"^\s*[\*\u2022]\s+", "- ", texto, flags=re.MULTILINE)
+    texto = re.sub(r"`{1,3}", "", texto)
+    texto = re.sub(r"\n{3,}", "\n\n", texto)
+    return texto.strip()
+
+
 def _llamar_anthropic(mensaje, historial, system_prompt):
     mensajes = _normalizar_historial(historial)
     mensajes.append({"role": "user", "content": mensaje})
@@ -325,7 +343,7 @@ def generar_respuesta_asistente(mensaje, historial=None, usuario=None):
         }
 
     try:
-        texto = funcion_llm(mensaje, historial, system_prompt)
+        texto = _limpiar_respuesta_ia(funcion_llm(mensaje, historial, system_prompt))
         if texto:
             return {
                 "respuesta": texto,
@@ -349,7 +367,7 @@ def procesar_mensaje_conversacion(*, conversacion, mensaje, usuario):
 
     mensaje = mensaje.strip()
     historial = _historial_desde_conversacion(conversacion)
-    if conversacion.titulo == "Nueva conversación":
+    if conversacion.titulo.lower().startswith("nueva conversaci"):
         conversacion.titulo = crear_titulo_conversacion(mensaje)
         conversacion.save(update_fields=["titulo", "fecha_actualizacion"])
 

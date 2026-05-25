@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 
 import '../constants/app_constants.dart';
@@ -9,6 +11,11 @@ class ApiService {
   static final Dio _dio = Dio();
   static final Dio _refreshDio = Dio();
   static bool _initialized = false;
+  static FutureOr<void> Function()? _unauthorizedHandler;
+
+  static void setUnauthorizedHandler(FutureOr<void> Function()? handler) {
+    _unauthorizedHandler = handler;
+  }
 
   static Future<void> init() async {
     if (_initialized) {
@@ -44,10 +51,14 @@ class ApiService {
         onError: (DioException error, ErrorInterceptorHandler handler) async {
           final statusCode = error.response?.statusCode;
           final alreadyRetried = error.requestOptions.extra['retried'] == true;
+          final requiresAuth = error.requestOptions.extra['omitAuth'] != true;
           final isRefreshRequest =
               error.requestOptions.path == AppConstants.refreshEndpoint;
 
-          if (statusCode == 401 && !alreadyRetried && !isRefreshRequest) {
+          if (statusCode == 401 &&
+              requiresAuth &&
+              !alreadyRetried &&
+              !isRefreshRequest) {
             final refreshed = await _refreshToken();
             if (refreshed) {
               try {
@@ -59,6 +70,7 @@ class ApiService {
             }
 
             await StorageService.clearSession();
+            await _unauthorizedHandler?.call();
           }
 
           handler.next(error);

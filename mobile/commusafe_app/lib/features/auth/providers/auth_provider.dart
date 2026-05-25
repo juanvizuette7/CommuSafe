@@ -11,6 +11,10 @@ import '../../../core/services/storage_service.dart';
 import '../models/usuario_model.dart';
 
 class AuthProvider extends ChangeNotifier {
+  AuthProvider() {
+    ApiService.setUnauthorizedHandler(_handleUnauthorizedSession);
+  }
+
   UsuarioModel? _usuarioActual;
   bool _isLoading = false;
   bool _isInitializing = true;
@@ -46,14 +50,18 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       await cargarPerfil(notifyLoading: false);
-    } catch (_) {
-      final storedUser = await StorageService.getUserData();
-      if (storedUser != null && await StorageService.hasActiveSession()) {
-        _usuarioActual = UsuarioModel.fromJson(storedUser);
-      } else {
+    } on DioException catch (error) {
+      if (_isAuthError(error)) {
         await StorageService.clearSession();
         _usuarioActual = null;
+        _isInitializing = false;
+        _initializationFuture = Future<bool>.value(false);
+        notifyListeners();
+        return false;
       }
+      await _restoreCachedUserOrClearSession();
+    } catch (_) {
+      await _restoreCachedUserOrClearSession();
     }
 
     _isInitializing = false;
@@ -75,6 +83,9 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      await StorageService.clearSession();
+      _usuarioActual = null;
+
       final response = await ApiService.post<Map<String, dynamic>>(
         AppConstants.loginEndpoint,
         data: <String, dynamic>{
@@ -114,7 +125,7 @@ class AuthProvider extends ChangeNotifier {
       try {
         await cargarPerfil(notifyLoading: false);
       } catch (_) {
-        // Si el perfil detallado falla, se conserva la información mínima del login.
+        // Se conserva la información mínima del login si el perfil tarda en responder.
       }
 
       FirebaseMessagingService.registerTokenRefreshSync();
@@ -202,12 +213,61 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> actualizarPerfil({
+    required String nombre,
+    required String apellido,
+    String? telefono,
+    String? unidadResidencial,
+  }) async {
+    _isLoading = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await ApiService.put<Map<String, dynamic>>(
+        AppConstants.profileEndpoint,
+        data: <String, dynamic>{
+          'nombre': nombre.trim(),
+          'apellido': apellido.trim(),
+          'telefono': telefono?.trim() ?? '',
+          if (_usuarioActual?.esResidente == true)
+            'unidad_residencial': unidadResidencial?.trim() ?? '',
+        },
+      );
+      final payload = response.data ?? <String, dynamic>{};
+      final usuario = UsuarioModel.fromJson(payload);
+      _usuarioActual = usuario;
+      await StorageService.saveUserData(usuario.toJson());
+      _errorMessage = null;
+      return true;
+    } on DioException catch (error) {
+      _errorMessage = _extractErrorMessage(error);
+      return false;
+    } catch (_) {
+      _errorMessage = 'No se pudo actualizar el perfil.';
+      return false;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> logout() async {
     await StorageService.clearSession();
     _usuarioActual = null;
     _isLoading = false;
     _isInitializing = false;
     _errorMessage = null;
+    _initializationFuture = Future<bool>.value(false);
+    notifyListeners();
+  }
+
+  Future<void> _handleUnauthorizedSession() async {
+    _usuarioActual = null;
+    _isLoading = false;
+    _isInitializing = false;
+    _errorMessage =
+        'Tu sesión expiró o no es válida. Inicia sesión nuevamente.';
     _initializationFuture = Future<bool>.value(false);
     notifyListeners();
   }
@@ -221,16 +281,31 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> _restoreCachedUserOrClearSession() async {
+    final storedUser = await StorageService.getUserData();
+    if (storedUser != null && await StorageService.hasActiveSession()) {
+      _usuarioActual = UsuarioModel.fromJson(storedUser);
+      return;
+    }
+
+    await StorageService.clearSession();
+    _usuarioActual = null;
+  }
+
   String _extractErrorMessage(DioException error) {
+    if (_isAuthError(error)) {
+      return 'Tu sesión expiró o no es válida. Inicia sesión nuevamente.';
+    }
+
     if (_isNetworkError(error)) {
-      return 'No se pudo conectar con el servidor. Verifica tu internet e intenta nuevamente; si Render estaba en reposo puede tardar unos segundos en despertar.';
+      return 'No se pudo conectar con el backend. Verifica que el servidor esté disponible antes de iniciar sesión.';
     }
 
     final data = error.response?.data;
     if (data is Map<String, dynamic>) {
       final detail = data['detail'];
       if (detail is String && detail.trim().isNotEmpty) {
-        return detail;
+        return _normalizeBackendMessage(detail);
       }
 
       final nonFieldErrors = data['non_field_errors'];
@@ -244,16 +319,34 @@ class AuthProvider extends ChangeNotifier {
           return value.first.toString();
         }
         if (value is String && value.trim().isNotEmpty) {
-          return value;
+          return _normalizeBackendMessage(value);
         }
       }
     }
 
     if (data is String && data.trim().isNotEmpty) {
-      return data;
+      return _normalizeBackendMessage(data);
     }
 
     return 'No fue posible completar la autenticación. Verifica tus credenciales.';
+  }
+
+  String _normalizeBackendMessage(String message) {
+    final normalized = message.toLowerCase();
+    if (normalized.contains('authentication credentials') ||
+        normalized.contains('credenciales de autenticacion') ||
+        normalized.contains('credenciales de autenticaci')) {
+      return 'Tu sesión expiró o no es válida. Inicia sesión nuevamente.';
+    }
+    if (normalized.contains('token') && normalized.contains('valid')) {
+      return 'Tu sesión expiró. Inicia sesión nuevamente.';
+    }
+    return message;
+  }
+
+  bool _isAuthError(DioException error) {
+    final statusCode = error.response?.statusCode;
+    return statusCode == 401 || statusCode == 403;
   }
 
   bool _isNetworkError(DioException error) {

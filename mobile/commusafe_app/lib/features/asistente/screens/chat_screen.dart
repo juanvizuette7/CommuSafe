@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/theme/app_theme.dart';
 import '../models/conversacion_model.dart';
 import '../providers/asistente_provider.dart';
 import '../widgets/assistant_empty_state.dart';
@@ -59,11 +60,15 @@ class _ChatScreenState extends State<ChatScreen> {
     BuildContext context,
     ConversacionModel conversacion,
   ) async {
+    final theme = CommuSafeThemeExtension.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          backgroundColor: const Color(0xFF0F172A),
+          backgroundColor: _chatSurface(theme),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           title: const Text(
             'Eliminar conversación',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900),
@@ -79,7 +84,8 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
             FilledButton(
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFFE94560),
+                backgroundColor: AppColors.danger,
+                foregroundColor: Colors.white,
               ),
               onPressed: () => Navigator.of(dialogContext).pop(true),
               child: const Text('Eliminar'),
@@ -98,6 +104,8 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
+
     return Consumer<AsistenteProvider>(
       builder: (context, provider, _) {
         if (_lastMessageCount != provider.mensajes.length ||
@@ -129,11 +137,12 @@ class _ChatScreenState extends State<ChatScreen> {
         );
 
         return Scaffold(
-          backgroundColor: const Color(0xFF050812),
+          backgroundColor: _chatBackground(theme),
           drawer: isWide ? null : Drawer(width: 320, child: sidebar),
           appBar: AppBar(
-            backgroundColor: const Color(0xFF050812),
+            backgroundColor: _chatBackground(theme),
             foregroundColor: Colors.white,
+            titleSpacing: 8,
             leading: isWide
                 ? null
                 : Builder(
@@ -147,15 +156,22 @@ class _ChatScreenState extends State<ChatScreen> {
             title: Row(
               children: <Widget>[
                 Container(
-                  height: 38,
-                  width: 38,
-                  decoration: const BoxDecoration(
+                  height: 40,
+                  width: 40,
+                  decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: LinearGradient(
-                      colors: <Color>[Color(0xFF0F3460), Color(0xFFE94560)],
+                      colors: <Color>[theme.primary, theme.accent],
                     ),
+                    boxShadow: <BoxShadow>[
+                      BoxShadow(
+                        color: theme.accent.withValues(alpha: 0.30),
+                        blurRadius: 18,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
                   ),
-                  child: const Icon(Icons.smart_toy_rounded, size: 20),
+                  child: const Icon(Icons.smart_toy_rounded, size: 21),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -171,15 +187,32 @@ class _ChatScreenState extends State<ChatScreen> {
                           color: Colors.white,
                         ),
                       ),
-                      Text(
-                        provider.ultimoModo == 'error'
-                            ? 'IA temporalmente no disponible'
-                            : 'CommuBot IA · memoria persistente',
-                        style: const TextStyle(
-                          color: Color(0xFF94A3B8),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                        ),
+                      Row(
+                        children: <Widget>[
+                          Container(
+                            height: 7,
+                            width: 7,
+                            decoration: const BoxDecoration(
+                              color: AppColors.success,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              provider.ultimoModo == 'error'
+                                  ? 'IA temporalmente no disponible'
+                                  : 'IA real conectada · memoria persistente',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.68),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -225,12 +258,17 @@ class _ChatWorkspace extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = CommuSafeThemeExtension.of(context);
+
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: RadialGradient(
           center: Alignment.topRight,
-          radius: 1.2,
-          colors: <Color>[Color(0xFF101A2D), Color(0xFF050812)],
+          radius: 1.12,
+          colors: <Color>[
+            theme.accent.withValues(alpha: 0.28),
+            _chatBackground(theme),
+          ],
         ),
       ),
       child: Column(
@@ -244,10 +282,8 @@ class _ChatWorkspace extends StatelessWidget {
             child: AnimatedSwitcher(
               duration: const Duration(milliseconds: 240),
               child: provider.isLoadingMessages
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: Color(0xFF60A5FA),
-                      ),
+                  ? Center(
+                      child: CircularProgressIndicator(color: theme.accent),
                     )
                   : provider.mensajes.isEmpty
                   ? AssistantEmptyState(
@@ -299,15 +335,13 @@ class _ErrorBanner extends StatelessWidget {
       margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFE94560).withValues(alpha: 0.12),
+        color: AppColors.danger.withValues(alpha: 0.14),
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: const Color(0xFFE94560).withValues(alpha: 0.35),
-        ),
+        border: Border.all(color: AppColors.danger.withValues(alpha: 0.35)),
       ),
       child: Row(
         children: <Widget>[
-          const Icon(Icons.error_outline_rounded, color: Color(0xFFE94560)),
+          const Icon(Icons.error_outline_rounded, color: AppColors.danger),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -323,4 +357,12 @@ class _ErrorBanner extends StatelessWidget {
       ),
     );
   }
+}
+
+Color _chatBackground(CommuSafeThemeExtension theme) {
+  return Color.lerp(const Color(0xFF030712), theme.primary, 0.16)!;
+}
+
+Color _chatSurface(CommuSafeThemeExtension theme) {
+  return Color.lerp(const Color(0xFF0B1120), theme.secondary, 0.20)!;
 }

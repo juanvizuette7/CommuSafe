@@ -36,14 +36,15 @@ class AsistenteApiService {
     return ConversacionModel.fromJson(response.data ?? <String, dynamic>{});
   }
 
-  static Future<List<MensajeModel>> cargarMensajes(String conversacionId) async {
+  static Future<List<MensajeModel>> cargarMensajes(
+    String conversacionId,
+  ) async {
     final response = await ApiService.get<dynamic>(
       '${AppConstants.assistantConversationsEndpoint}$conversacionId/mensajes/',
     );
-    return _extraerResultados(response.data)
-        .whereType<Map<String, dynamic>>()
-        .map(MensajeModel.fromJson)
-        .toList();
+    return _extraerResultados(
+      response.data,
+    ).whereType<Map<String, dynamic>>().map(MensajeModel.fromJson).toList();
   }
 
   static Future<EnviarMensajeResponse> enviarMensaje({

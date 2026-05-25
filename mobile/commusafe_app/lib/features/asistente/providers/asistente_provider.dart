@@ -68,7 +68,7 @@ class AsistenteProvider extends ChangeNotifier {
         ..addAll(mensajes);
       for (final mensaje in _mensajes.reversed) {
         if (!mensaje.esDelUsuario && mensaje.modo != null) {
-          _ultimoModo = mensaje.modo!;
+          _ultimoModo = mensaje.modo == 'error' ? 'error' : 'ia';
           break;
         }
       }
@@ -113,11 +113,12 @@ class AsistenteProvider extends ChangeNotifier {
       }
       _mensajes.add(respuesta.mensajeAsistente);
       _conversacionActiva = respuesta.conversacion;
-      _ultimoModo = respuesta.modo;
+      _ultimoModo = respuesta.modo == 'error' ? 'error' : 'ia';
       _upsertConversacion(respuesta.conversacion);
     } catch (_) {
       _errorMessage =
           'No pude conectar con CommuBot. Revisa tu conexión e intenta nuevamente.';
+      _ultimoModo = 'error';
       _mensajes.add(
         MensajeModel(
           contenido: _errorMessage!,
