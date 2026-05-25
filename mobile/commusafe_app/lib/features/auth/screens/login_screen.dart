@@ -473,7 +473,7 @@ class _PrivacyPolicyAcceptance extends StatelessWidget {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: <Widget>[
             Text(
-              'Confirmo que he leído y acepto la ',
+              'He leído y acepto la ',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: AppColors.textSecondary,
                 height: 1.35,
@@ -483,7 +483,7 @@ class _PrivacyPolicyAcceptance extends StatelessWidget {
             InkWell(
               onTap: () => _showPrivacyPolicy(context),
               child: Text(
-                'política de recolección y tratamiento de datos personales',
+                'Política de Recolección y Tratamiento de Datos Personales de CommuSafe',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: AppColors.accent,
                   height: 1.35,
@@ -493,7 +493,7 @@ class _PrivacyPolicyAcceptance extends StatelessWidget {
               ),
             ),
             Text(
-              '.',
+              ' y autorizo de manera previa, expresa e informada el tratamiento de mis datos personales conforme a las finalidades allí descritas.',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: AppColors.textSecondary,
                 height: 1.35,
@@ -533,27 +533,53 @@ class _PrivacyPolicyAcceptance extends StatelessWidget {
 const String _privacyPolicyText = '''
 Fecha de entrada en vigencia: 12 de mayo de 2026
 
-CommuSafe fortalece la seguridad comunitaria mediante herramientas de comunicación, reporte de incidentes, alertas y gestión de información dentro de conjuntos residenciales o comunidades. Para funcionar correctamente recopila ciertos datos personales de los usuarios.
+CommuSafe es una aplicación desarrollada en el marco de un proyecto académico orientado a apoyar la gestión de incidentes, alertas y comunicación dentro de conjuntos residenciales o comunidades. Para funcionar correctamente puede recolectar y tratar algunos datos personales de los usuarios.
+
+Esta política informa qué datos pueden ser recolectados, para qué se utilizan, cómo se protegen y cuáles son los derechos de los titulares, de conformidad con la Ley 1581 de 2012, el Decreto 1377 de 2013, el Decreto 1074 de 2015 y demás normas colombianas aplicables, dentro del alcance académico del proyecto.
 
 Responsables del tratamiento:
 Anderson David Ojeda Zambrano, anderson.ojeda@campusucc.edu.co.
 Juan Manuel Vizuette Fajardo, juan.vizuette@campusucc.edu.co.
 Ubicación: Pasto, Nariño, Colombia.
 
-Información recopilada:
-Nombre completo o alias, correo electrónico, número telefónico, ubicación cuando sea necesaria para reportes o emergencias, información ingresada en formularios, fotografías o evidencias relacionadas con incidentes y datos técnicos básicos del dispositivo.
+Datos personales recolectados:
+CommuSafe podrá recolectar datos necesarios para la operación de la aplicación, tales como nombre completo o alias, correo electrónico, número telefónico, rol o tipo de usuario, información asociada a la cuenta, datos ingresados en formularios, reportes de incidentes, comentarios, estados de seguimiento, archivos o evidencias adjuntas y datos técnicos básicos relacionados con el uso de la plataforma.
 
-Finalidades:
-Crear y administrar cuentas, permitir reportes de incidentes, facilitar alertas comunitarias, mejorar la seguridad y estabilidad de la aplicación, atender solicitudes, prevenir accesos no autorizados y cumplir obligaciones legales cuando sea requerido por autoridades competentes.
+Datos sensibles, fotografías, evidencias y ubicación:
+CommuSafe evitará solicitar datos sensibles que no sean necesarios. Cuando un reporte incluya fotografías, evidencias, descripciones, ubicación u otra información que pueda revelar aspectos sensibles del titular o de terceros, dichos datos se tratarán únicamente cuando sean necesarios para la funcionalidad correspondiente y con autorización previa, expresa e informada del usuario.
 
-Compartición:
-CommuSafe no venderá ni comercializará datos personales. La información podrá compartirse con proveedores tecnológicos necesarios, autoridades competentes, situaciones necesarias para proteger la seguridad de usuarios o casos autorizados por el titular.
+Finalidades del tratamiento:
+Los datos personales serán tratados para crear, autenticar y administrar cuentas; permitir el registro, consulta, seguimiento y cierre de incidentes; gestionar alertas, notificaciones y comunicaciones de seguridad comunitaria; asociar evidencias, comentarios, estados e historial a los reportes; atender solicitudes; mejorar la estabilidad, seguridad y usabilidad de CommuSafe; prevenir accesos no autorizados; generar evidencias académicas, técnicas o metodológicas procurando limitar la información personal cuando sea posible; y atender requerimientos de autoridades competentes cuando exista obligación legal aplicable.
+
+Forma de recolección:
+Los datos podrán recolectarse cuando el usuario se registre, inicie sesión, complete formularios, cree o actualice reportes, adjunte imágenes o archivos, autorice permisos de ubicación, utilice funcionalidades internas o se comunique con los responsables del proyecto.
+
+Autorización del usuario:
+El tratamiento de datos personales se realizará con autorización previa, expresa e informada del titular, obtenida mediante casillas de aceptación, formularios, permisos del dispositivo u otros mecanismos visibles dentro de la aplicación. El titular podrá solicitar la revocatoria de la autorización o la supresión de sus datos cuando sea procedente, siempre que no exista una obligación legal, técnica o funcional que justifique su conservación.
+
+Transferencia o transmisión a terceros:
+CommuSafe no vende ni comercializa los datos personales de sus usuarios. La información solo podrá compartirse o transmitirse cuando sea necesario para el funcionamiento de la aplicación, con proveedores tecnológicos necesarios, por requerimiento de autoridades competentes, para proteger la seguridad de los usuarios o cuando exista autorización expresa del titular.
+
+Seguridad y conservación:
+CommuSafe implementará medidas técnicas y administrativas razonables para proteger los datos personales contra pérdida, acceso no autorizado, alteración, uso indebido o divulgación no autorizada, de acuerdo con las capacidades y alcance académico del proyecto. Los datos serán conservados durante el tiempo necesario para cumplir las finalidades descritas, mantener trazabilidad básica de los reportes, atender solicitudes o cumplir obligaciones aplicables.
 
 Derechos del titular:
-Conocer, actualizar y rectificar datos personales, solicitar prueba de autorización, ser informado sobre el uso de la información, revocar la autorización y solicitar eliminación cuando sea procedente, presentar quejas ante la Superintendencia de Industria y Comercio y acceder gratuitamente a sus datos.
+El titular podrá conocer, actualizar y rectificar sus datos personales; solicitar prueba de la autorización; ser informado sobre el uso dado a sus datos; revocar la autorización o solicitar la eliminación cuando sea procedente; acceder gratuitamente a sus datos personales; y presentar quejas ante la Superintendencia de Industria y Comercio cuando considere que se ha vulnerado el régimen de protección de datos personales.
 
-Contacto:
-Las solicitudes pueden enviarse a anderson.ojeda@campusucc.edu.co o juan.vizuette@campusucc.edu.co, indicando nombre del titular, petición, medio de contacto e información para validar identidad.
+Procedimiento para consultas y reclamos:
+Las solicitudes pueden enviarse a anderson.ojeda@campusucc.edu.co o juan.vizuette@campusucc.edu.co, indicando nombre del titular, descripción clara de la petición, medio de contacto e información para validar identidad. Las solicitudes serán revisadas conforme a los términos y reglas aplicables en la legislación colombiana, teniendo en cuenta el alcance académico del proyecto.
+
+Menores de edad:
+CommuSafe no está dirigida principalmente a menores de edad. Si un menor utiliza la aplicación, deberá contar con autorización de sus padres o representantes legales. El tratamiento de datos de niños, niñas y adolescentes deberá respetar sus derechos prevalentes y limitarse a lo estrictamente necesario para la funcionalidad autorizada.
+
+Uso de ubicación:
+La ubicación solo será tratada cuando sea necesaria para reportes, alertas, emergencias o funciones de seguridad comunitaria, y siempre que el usuario haya otorgado la autorización correspondiente mediante la aplicación o los permisos del dispositivo. El usuario puede desactivar estos permisos desde su dispositivo, aunque algunas funcionalidades podrían verse limitadas.
+
+Vigencia y modificaciones:
+Esta política rige a partir del 12 de mayo de 2026. Podrá actualizarse cuando cambien las funcionalidades de CommuSafe, las condiciones del proyecto académico o la normativa aplicable. Las modificaciones relevantes serán informadas por medios razonables dentro de la aplicación o del sitio web del proyecto.
+
+Mejora futura:
+Como parte de la evolución del proyecto, se fortalecerán los mecanismos de consentimiento, auditoría, trazabilidad, retención de datos y atención formal de solicitudes de los titulares, para avanzar hacia una gestión más robusta de la privacidad y protección de datos personales.
 ''';
 
 class _LoginSignalHeader extends StatelessWidget {
