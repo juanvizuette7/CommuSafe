@@ -155,10 +155,15 @@ class _LoginScreenState extends State<LoginScreen>
                                               ),
                                             ],
                                           ),
-                                          child: const Icon(
-                                            Icons.shield_rounded,
-                                            color: Colors.white,
-                                            size: 30,
+                                          clipBehavior: Clip.antiAlias,
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(5),
+                                            child: Image.asset(
+                                              'assets/images/commusafe_logo.png',
+                                              fit: BoxFit.contain,
+                                              filterQuality:
+                                                  FilterQuality.high,
+                                            ),
                                           ),
                                         ),
                                         const SizedBox(width: 14),
