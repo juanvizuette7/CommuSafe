@@ -38,6 +38,8 @@ class NotificacionModel {
     }
   }
 
+  bool get esCritica => tipo.toUpperCase() == 'EMERGENCIA';
+
   String get tiempoRelativo {
     final diff = DateTime.now().difference(fechaEnvio);
     if (diff.inSeconds < 60) {

@@ -312,95 +312,173 @@ class _NotificationTile extends StatelessWidget {
   final NotificacionModel item;
   final VoidCallback onTap;
 
-  Color _typeColor() {
-    return _notificationColor(item);
-  }
-
   @override
   Widget build(BuildContext context) {
-    final color = _typeColor();
+    final color = _notificationColor(item);
+    final isCritical = item.esCritica;
 
     return Material(
-      color: item.leida
-          ? Colors.white
-          : AppColors.inProgress.withValues(alpha: 0.08),
-      borderRadius: BorderRadius.circular(20),
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(isCritical ? 24 : 20),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Container(
-                height: 48,
-                width: 48,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: color.withValues(alpha: 0.14),
-                ),
-                child: Icon(item.iconoPorTipo(), color: color),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Expanded(
-                          child: Text(
-                            item.titulo,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.titleSmall
-                                ?.copyWith(
-                                  fontWeight: item.leida
-                                      ? FontWeight.w600
-                                      : FontWeight.w900,
-                                  color: AppColors.textPrimary,
-                                ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          item.tiempoRelativo,
-                          style: Theme.of(context).textTheme.labelSmall
-                              ?.copyWith(
-                                color: AppColors.textSecondary,
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
-                      ],
+        borderRadius: BorderRadius.circular(isCritical ? 24 : 20),
+        child: Ink(
+          decoration: BoxDecoration(
+            color: isCritical
+                ? AppColors.danger.withValues(alpha: item.leida ? 0.07 : 0.12)
+                : item.leida
+                ? Colors.white
+                : AppColors.inProgress.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(isCritical ? 24 : 20),
+            border: Border.all(
+              color: isCritical
+                  ? AppColors.danger.withValues(alpha: 0.32)
+                  : Colors.transparent,
+              width: isCritical ? 1.3 : 1,
+            ),
+            boxShadow: isCritical
+                ? <BoxShadow>[
+                    BoxShadow(
+                      color: AppColors.danger.withValues(alpha: 0.16),
+                      blurRadius: 28,
+                      offset: const Offset(0, 14),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      item.cuerpo,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.textSecondary,
+                  ]
+                : null,
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(isCritical ? 24 : 20),
+            child: Stack(
+              children: <Widget>[
+                if (isCritical)
+                  Positioned(
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: Container(width: 6, color: AppColors.danger),
+                  ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    isCritical ? 18 : 14,
+                    14,
+                    14,
+                    14,
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      Container(
+                        height: isCritical ? 54 : 48,
+                        width: isCritical ? 54 : 48,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: isCritical
+                              ? const LinearGradient(
+                                  colors: <Color>[
+                                    AppColors.danger,
+                                    AppColors.warning,
+                                  ],
+                                )
+                              : null,
+                          color: isCritical
+                              ? null
+                              : color.withValues(alpha: 0.14),
+                        ),
+                        child: Icon(
+                          item.iconoPorTipo(),
+                          color: isCritical ? Colors.white : color,
+                        ),
                       ),
-                    ),
-                    if (item.incidenteTitulo != null) ...<Widget>[
-                      const SizedBox(height: 8),
-                      Text(
-                        item.incidenteTitulo!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.labelMedium
-                            ?.copyWith(
-                              color: color,
-                              fontWeight: FontWeight.w800,
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: <Widget>[
+                            if (isCritical) ...<Widget>[
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.danger.withValues(
+                                    alpha: 0.14,
+                                  ),
+                                  borderRadius: BorderRadius.circular(999),
+                                ),
+                                child: const Text(
+                                  'ALTA PRIORIDAD',
+                                  style: TextStyle(
+                                    color: AppColors.danger,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 11,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                            ],
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: <Widget>[
+                                Expanded(
+                                  child: Text(
+                                    item.titulo,
+                                    maxLines: isCritical ? 3 : 2,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleSmall
+                                        ?.copyWith(
+                                          fontWeight: item.leida
+                                              ? FontWeight.w700
+                                              : FontWeight.w900,
+                                          color: AppColors.textPrimary,
+                                          height: 1.16,
+                                        ),
+                                  ),
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  item.tiempoRelativo,
+                                  style: Theme.of(context).textTheme.labelSmall
+                                      ?.copyWith(
+                                        color: AppColors.textSecondary,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                ),
+                              ],
                             ),
+                            const SizedBox(height: 7),
+                            Text(
+                              item.cuerpo,
+                              maxLines: isCritical ? 2 : 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: AppColors.textSecondary),
+                            ),
+                            if (item.incidenteTitulo != null) ...<Widget>[
+                              const SizedBox(height: 8),
+                              Text(
+                                item.incidenteTitulo!,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(context).textTheme.labelMedium
+                                    ?.copyWith(
+                                      color: color,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                              ),
+                            ],
+                          ],
+                        ),
                       ),
                     ],
-                  ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -439,9 +517,9 @@ class _EmptyNotifications extends StatelessWidget {
     return ListView(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(20),
-      children: <Widget>[
-        const SizedBox(height: 120),
-        const EmptyStateCard(
+      children: const <Widget>[
+        SizedBox(height: 120),
+        EmptyStateCard(
           icon: Icons.notifications_none_rounded,
           title: 'Sin notificaciones por ahora',
           message:

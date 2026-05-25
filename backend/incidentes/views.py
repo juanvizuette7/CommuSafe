@@ -1,6 +1,6 @@
 """Vistas del módulo de incidentes."""
 
-from django.db.models import Case, Count, IntegerField, Prefetch, Value, When
+from django.db.models import Case, Count, IntegerField, Prefetch, Q, Value, When
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -55,7 +55,9 @@ class IncidenteViewSet(viewsets.ModelViewSet):
 
         usuario = self.request.user
         if usuario.es_residente:
-            queryset = queryset.filter(reportado_por=usuario)
+            queryset = queryset.filter(
+                Q(reportado_por=usuario) | Q(prioridad=Incidente.Prioridad.ALTA)
+            )
 
         return queryset.order_by("-fecha_reporte")
 

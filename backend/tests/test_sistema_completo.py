@@ -145,7 +145,7 @@ class TestControlAcceso:
         assert respuesta.status_code == 200
         assert respuesta.data["count"] == 2
 
-    def test_residente_solo_ve_sus_propios_incidentes(self):
+    def test_residente_ve_propios_y_alertas_alta_prioridad(self):
         residente = crear_usuario("residente-propios@test.com")
         otro = crear_usuario("residente-ajeno@test.com", unidad_residencial="Apto 303 Torre C")
         Incidente.objects.create(
@@ -154,7 +154,7 @@ class TestControlAcceso:
             categoria=Incidente.Categoria.CONVIVENCIA,
             reportado_por=residente,
         )
-        Incidente.objects.create(
+        incidente_alta = Incidente.objects.create(
             titulo="Ajeno",
             descripcion="Incidente de otro residente.",
             categoria=Incidente.Categoria.SEGURIDAD,
@@ -165,8 +165,9 @@ class TestControlAcceso:
         respuesta = cliente.get("/api/incidentes/")
 
         assert respuesta.status_code == 200
-        assert respuesta.data["count"] == 1
-        assert respuesta.data["results"][0]["titulo"] == "Propio"
+        titulos = {item["titulo"] for item in respuesta.data["results"]}
+        assert respuesta.data["count"] == 2
+        assert titulos == {"Propio", incidente_alta.titulo}
 
     def test_solo_administrador_puede_eliminar_incidentes(self):
         residente = crear_usuario("residente-delete@test.com")

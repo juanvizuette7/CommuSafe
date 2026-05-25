@@ -137,7 +137,7 @@ def notificar_incidente_nuevo(incidente):
     vistos = set()
     titulo = f"Nuevo incidente reportado: {incidente.titulo}"
     cuerpo = (
-        f"Se registro un incidente de categoria {incidente.get_categoria_display().lower()} "
+        f"Se registró un incidente de categoría {incidente.get_categoria_display().lower()} "
         f"con prioridad {incidente.get_prioridad_display().lower()}."
     )
     tipo = (
@@ -166,7 +166,7 @@ def notificar_cambio_estado(incidente, estado_nuevo):
     if incidente.atendido_por_id and incidente.atendido_por_id != incidente.reportado_por_id:
         destinatarios.append(incidente.atendido_por)
 
-    titulo = f"Actualizacion del incidente: {incidente.titulo}"
+    titulo = f"Actualización del incidente: {incidente.titulo}"
     cuerpo = f"El incidente ahora se encuentra en estado {dict(incidente.Estado.choices)[estado_nuevo].lower()}."
 
     vistos = set()

@@ -339,34 +339,48 @@ class IncidenteProvider extends ChangeNotifier {
       return 'No se pudo conectar con el backend. Verifica que Django esté ejecutándose en http://10.0.2.2:8000.';
     }
 
+    if (error.response?.statusCode == 404) {
+      return 'No fue posible abrir este incidente. Puede haber sido eliminado, cerrado o ya no estar disponible para tu rol.';
+    }
+
     final data = error.response?.data;
 
     if (data is Map<String, dynamic>) {
       final detail = data['detail'];
       if (detail is String && detail.trim().isNotEmpty) {
-        return detail;
+        return _normalizarMensajeBackend(detail);
       }
 
       final mensaje = data['mensaje'];
       if (mensaje is String && mensaje.trim().isNotEmpty) {
-        return mensaje;
+        return _normalizarMensajeBackend(mensaje);
       }
 
       for (final value in data.values) {
         if (value is List && value.isNotEmpty) {
-          return value.first.toString();
+          return _normalizarMensajeBackend(value.first.toString());
         }
         if (value is String && value.trim().isNotEmpty) {
-          return value;
+          return _normalizarMensajeBackend(value);
         }
       }
     }
 
     if (data is String && data.trim().isNotEmpty) {
-      return data;
+      return _normalizarMensajeBackend(data);
     }
 
     return 'No fue posible completar la operación con incidentes.';
+  }
+
+  String _normalizarMensajeBackend(String message) {
+    final normalized = message.toLowerCase();
+    if (normalized.contains('no incidente matches') ||
+        normalized.contains('not found') ||
+        normalized.contains('no encontrado')) {
+      return 'No fue posible abrir este incidente. Puede haber sido eliminado, cerrado o ya no estar disponible para tu rol.';
+    }
+    return message;
   }
 
   bool _isNetworkError(DioException error) {

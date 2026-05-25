@@ -297,6 +297,11 @@ class _DetalleIncidenteScreenState extends State<DetalleIncidenteScreen> {
                       )
                     : Column(
                         children: <Widget>[
+                          if (incidente.prioridad.toUpperCase() ==
+                              'ALTA') ...<Widget>[
+                            _HighPriorityBanner(incidente: incidente),
+                            const SizedBox(height: 18),
+                          ],
                           _SectionCard(
                             title: 'Información del incidente',
                             child: Column(
@@ -782,6 +787,78 @@ class _SectionCard extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           child,
+        ],
+      ),
+    );
+  }
+}
+
+class _HighPriorityBanner extends StatelessWidget {
+  const _HighPriorityBanner({required this.incidente});
+
+  final IncidenteModel incidente;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: <Color>[AppColors.danger, AppColors.warning],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: <BoxShadow>[
+          BoxShadow(
+            color: AppColors.danger.withValues(alpha: 0.22),
+            blurRadius: 28,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            height: 48,
+            width: 48,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.18),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.priority_high_rounded,
+              color: Colors.white,
+              size: 30,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  'ALERTA DE ALTA PRIORIDAD',
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Este incidente se comparte como alerta comunitaria por su impacto en seguridad o emergencia.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.white.withValues(alpha: 0.92),
+                    height: 1.35,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );

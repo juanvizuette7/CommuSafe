@@ -292,16 +292,6 @@ class _ProfileHeader extends StatelessWidget {
     return AppColors.success;
   }
 
-  IconData _roleIcon() {
-    if (usuario.esAdmin) {
-      return Icons.admin_panel_settings_rounded;
-    }
-    if (usuario.esVigilante) {
-      return Icons.security_rounded;
-    }
-    return Icons.home_rounded;
-  }
-
   @override
   Widget build(BuildContext context) {
     final theme = CommuSafeThemeExtension.of(context);
@@ -328,34 +318,6 @@ class _ProfileHeader extends StatelessWidget {
       ),
       child: Column(
         children: <Widget>[
-          Row(
-            children: <Widget>[
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.16),
-                  ),
-                ),
-                child: const Text(
-                  'CommuSafe ID',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                    fontSize: 12,
-                  ),
-                ),
-              ),
-              const Spacer(),
-              Icon(_roleIcon(), color: Colors.white, size: 28),
-            ],
-          ),
-          const SizedBox(height: 18),
           GestureDetector(
             onTap: subiendoFoto ? null : onAvatarTap,
             child: Stack(
@@ -459,19 +421,12 @@ class _ProfileHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(999),
               border: Border.all(color: Colors.white.withValues(alpha: 0.16)),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Icon(_roleIcon(), size: 16, color: Colors.white),
-                const SizedBox(width: 7),
-                Text(
-                  usuario.rolLegible,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
+            child: Text(
+              usuario.rolLegible,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+              ),
             ),
           ),
         ],
