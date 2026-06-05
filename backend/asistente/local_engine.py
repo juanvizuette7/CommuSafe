@@ -1,0 +1,432 @@
+"""Motor local de recuperacion e intenciones para CommuBot.
+
+No depende de servicios externos. Combina coincidencia exacta, palabras clave y
+similitud TF-IDF ligera para responder preguntas frecuentes sin consumir IA
+generativa. El motor es stateless para usuarios y seguro para concurrencia.
+"""
+
+from __future__ import annotations
+
+import math
+import re
+import time
+import unicodedata
+from collections import Counter, defaultdict
+from dataclasses import asdict
+from functools import lru_cache
+from typing import Any
+
+from .local_knowledge import FAQEntry, FAQ_ENTRIES, get_entries_for_role, knowledge_summary
+
+
+HIGH_CONFIDENCE_THRESHOLD = 0.62
+MEDIUM_CONFIDENCE_THRESHOLD = 0.42
+AMBIGUITY_MARGIN = 0.08
+MAX_OPTIONS = 3
+TOKEN_RE = re.compile(r"[a-z0-9]+")
+STOPWORDS = {
+    "a",
+    "al",
+    "algo",
+    "como",
+    "con",
+    "cual",
+    "cuando",
+    "de",
+    "del",
+    "donde",
+    "el",
+    "en",
+    "es",
+    "eso",
+    "esta",
+    "este",
+    "hacer",
+    "hago",
+    "hay",
+    "la",
+    "las",
+    "le",
+    "lo",
+    "los",
+    "me",
+    "mi",
+    "para",
+    "pero",
+    "por",
+    "puedo",
+    "que",
+    "se",
+    "si",
+    "un",
+    "una",
+    "y",
+}
+DOMAIN_TERMS = {
+    "acceso",
+    "administracion",
+    "alerta",
+    "app",
+    "area",
+    "areas",
+    "apartamento",
+    "asistente",
+    "aviso",
+    "basura",
+    "camara",
+    "cerradura",
+    "chat",
+    "citofono",
+    "commubot",
+    "commusafe",
+    "comun",
+    "comunes",
+    "conjunto",
+    "convivencia",
+    "correo",
+    "cuota",
+    "dano",
+    "datos",
+    "domiciliario",
+    "emergencia",
+    "evidencia",
+    "foto",
+    "gas",
+    "historial",
+    "horario",
+    "horarios",
+    "incidente",
+    "ingreso",
+    "mantenimiento",
+    "mascota",
+    "norma",
+    "normas",
+    "notificacion",
+    "parqueadero",
+    "perfil",
+    "porteria",
+    "proveedor",
+    "reporte",
+    "residente",
+    "remansos",
+    "ruido",
+    "seguridad",
+    "sesion",
+    "telefono",
+    "torre",
+    "usuario",
+    "vehiculo",
+    "vigilancia",
+    "visitante",
+    "zona",
+}
+
+
+def normalize_text(text: str) -> str:
+    """Normaliza texto para comparaciones robustas ante tildes y puntuacion."""
+
+    text = unicodedata.normalize("NFKD", text or "")
+    text = "".join(char for char in text if not unicodedata.combining(char))
+    text = text.lower()
+    text = re.sub(r"[^a-z0-9\s]", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def tokenize(text: str) -> list[str]:
+    normalized = normalize_text(text)
+    tokens = []
+    for token in TOKEN_RE.findall(normalized):
+        if token in STOPWORDS or len(token) <= 1:
+            continue
+        tokens.append(token)
+        if len(token) > 4 and token.endswith("s"):
+            tokens.append(token[:-1])
+    return tokens
+
+
+class LocalAssistantEngine:
+    """Indice en memoria para resolver preguntas frecuentes."""
+
+    def __init__(self, entries: tuple[FAQEntry, ...] = FAQ_ENTRIES):
+        self.entries = entries
+        self._entry_by_id = {entry.id: entry for entry in entries}
+        self._exact_index: dict[str, FAQEntry] = {}
+        self._entry_tokens: dict[str, Counter[str]] = {}
+        self._entry_keywords: dict[str, set[str]] = {}
+        self._idf: dict[str, float] = {}
+        self._vectors: dict[str, dict[str, float]] = {}
+        self._norms: dict[str, float] = {}
+        self._build_index()
+
+    def _build_index(self) -> None:
+        document_frequency: Counter[str] = Counter()
+        raw_documents: dict[str, Counter[str]] = {}
+
+        for entry in self.entries:
+            searchable_chunks = [normalize_text(text) for text in entry.searchable_texts()]
+            for chunk in searchable_chunks:
+                if chunk:
+                    self._exact_index[chunk] = entry
+
+            tokens = Counter(tokenize(" ".join(searchable_chunks)))
+            raw_documents[entry.id] = tokens
+            self._entry_tokens[entry.id] = tokens
+            self._entry_keywords[entry.id] = set(tokenize(" ".join(entry.keywords)))
+            for token in tokens:
+                document_frequency[token] += 1
+
+        total_docs = max(len(raw_documents), 1)
+        self._idf = {
+            token: math.log((1 + total_docs) / (1 + frequency)) + 1
+            for token, frequency in document_frequency.items()
+        }
+
+        for entry_id, tokens in raw_documents.items():
+            vector = {token: count * self._idf.get(token, 1.0) for token, count in tokens.items()}
+            norm = math.sqrt(sum(value * value for value in vector.values())) or 1.0
+            self._vectors[entry_id] = vector
+            self._norms[entry_id] = norm
+
+    def resolve(self, message: str, role: str = "RESIDENTE") -> dict[str, Any]:
+        started = time.perf_counter()
+        role = (role or "RESIDENTE").upper()
+        normalized = normalize_text(message)
+        if not normalized:
+            return self._safe_response(started, reason="mensaje_vacio")
+
+        exact_entry = self._exact_index.get(normalized)
+        if exact_entry and self._role_allowed(exact_entry, role):
+            return self._answer_payload(
+                exact_entry,
+                confidence=1.0,
+                method="coincidencia_exacta",
+                mode="local",
+                started=started,
+            )
+
+        query_tokens = set(tokenize(normalized))
+        if query_tokens and not (query_tokens & DOMAIN_TERMS):
+            return self._safe_response(started, reason="fuera_de_dominio")
+
+        candidates = self._score_candidates(normalized, role)
+        if not candidates:
+            return self._safe_response(started, reason="sin_candidatos")
+
+        best = candidates[0]
+        second = candidates[1] if len(candidates) > 1 else None
+        entry = best["entry"]
+        confidence = best["confidence"]
+
+        if confidence >= HIGH_CONFIDENCE_THRESHOLD and not self._is_ambiguous(best, second):
+            return self._answer_payload(
+                entry,
+                confidence=confidence,
+                method=best["method"],
+                mode="local" if best["method"] == "palabras_clave" else "semantica",
+                started=started,
+                score_parts=best["score_parts"],
+            )
+
+        if confidence >= MEDIUM_CONFIDENCE_THRESHOLD:
+            options = [
+                {
+                    "id": item["entry"].id,
+                    "pregunta": item["entry"].question,
+                    "categoria": item["entry"].category,
+                    "confianza": round(item["confidence"], 4),
+                }
+                for item in candidates[:MAX_OPTIONS]
+            ]
+            return {
+                "action": "clarify",
+                "respuesta": self._build_clarification(options),
+                "mode": "aclaracion",
+                "provider": "local",
+                "model": "commusafe-local-tfidf-v1",
+                "confidence": round(confidence, 4),
+                "intent": entry.intent,
+                "entry_id": entry.id,
+                "category": entry.category,
+                "method": "aclaracion_por_confianza_media",
+                "verified": entry.verified,
+                "requires_validation": not entry.verified,
+                "options": options,
+                "latency_ms": self._elapsed_ms(started),
+            }
+
+        return {
+            "action": "fallback_allowed",
+            "respuesta": "",
+            "mode": "baja_confianza",
+            "provider": "local",
+            "model": "commusafe-local-tfidf-v1",
+            "confidence": round(confidence, 4),
+            "intent": entry.intent,
+            "entry_id": entry.id,
+            "category": entry.category,
+            "method": best["method"],
+            "verified": entry.verified,
+            "requires_validation": not entry.verified,
+            "options": [],
+            "latency_ms": self._elapsed_ms(started),
+        }
+
+    def _score_candidates(self, normalized: str, role: str) -> list[dict[str, Any]]:
+        query_tokens = Counter(tokenize(normalized))
+        if not query_tokens:
+            return []
+
+        query_vector = {token: count * self._idf.get(token, 1.0) for token, count in query_tokens.items()}
+        query_norm = math.sqrt(sum(value * value for value in query_vector.values())) or 1.0
+        query_token_set = set(query_tokens)
+        candidates = []
+
+        for entry in get_entries_for_role(role):
+            semantic = self._cosine(entry.id, query_vector, query_norm)
+            keyword = self._keyword_score(entry.id, query_token_set)
+            lexical = self._lexical_overlap(entry.id, query_token_set)
+            confidence = max(semantic * 0.78 + keyword * 0.22, keyword * 0.9, lexical * 0.72)
+            method = "semantica_tfidf"
+            if keyword >= semantic and keyword >= lexical:
+                method = "palabras_clave"
+            elif lexical > semantic:
+                method = "coincidencia_lexica"
+
+            candidates.append(
+                {
+                    "entry": entry,
+                    "confidence": confidence,
+                    "method": method,
+                    "score_parts": {
+                        "semantica": round(semantic, 4),
+                        "keywords": round(keyword, 4),
+                        "lexica": round(lexical, 4),
+                    },
+                }
+            )
+
+        return sorted(candidates, key=lambda item: item["confidence"], reverse=True)
+
+    def _cosine(self, entry_id: str, query_vector: dict[str, float], query_norm: float) -> float:
+        vector = self._vectors.get(entry_id, {})
+        dot = sum(query_vector[token] * vector.get(token, 0.0) for token in query_vector)
+        return max(0.0, min(1.0, dot / (query_norm * self._norms.get(entry_id, 1.0))))
+
+    def _keyword_score(self, entry_id: str, query_tokens: set[str]) -> float:
+        keywords = self._entry_keywords.get(entry_id, set())
+        if not keywords:
+            return 0.0
+        overlap = len(query_tokens & keywords)
+        return min(1.0, overlap / max(2, min(len(keywords), 5)))
+
+    def _lexical_overlap(self, entry_id: str, query_tokens: set[str]) -> float:
+        entry_tokens = set(self._entry_tokens.get(entry_id, Counter()))
+        if not entry_tokens or not query_tokens:
+            return 0.0
+        return len(query_tokens & entry_tokens) / len(query_tokens | entry_tokens)
+
+    def _role_allowed(self, entry: FAQEntry, role: str) -> bool:
+        return role in entry.allowed_roles
+
+    def _is_ambiguous(self, best: dict[str, Any], second: dict[str, Any] | None) -> bool:
+        if not second:
+            return False
+        return (best["confidence"] - second["confidence"]) < AMBIGUITY_MARGIN
+
+    def _answer_payload(
+        self,
+        entry: FAQEntry,
+        *,
+        confidence: float,
+        method: str,
+        mode: str,
+        started: float,
+        score_parts: dict[str, float] | None = None,
+    ) -> dict[str, Any]:
+        mode = "segura" if not entry.verified else mode
+        return {
+            "action": "answer",
+            "respuesta": entry.answer,
+            "mode": mode,
+            "provider": "local",
+            "model": "commusafe-local-tfidf-v1",
+            "confidence": round(confidence, 4),
+            "intent": entry.intent,
+            "entry_id": entry.id,
+            "category": entry.category,
+            "method": method,
+            "verified": entry.verified,
+            "requires_validation": not entry.verified,
+            "options": [],
+            "score_parts": score_parts or {},
+            "updated_at": entry.updated_at,
+            "latency_ms": self._elapsed_ms(started),
+        }
+
+    def _safe_response(self, started: float, *, reason: str) -> dict[str, Any]:
+        return {
+            "action": "safe",
+            "respuesta": (
+                "Solo puedo apoyar consultas relacionadas con Remansos del Norte y CommuSafe. "
+                "No encuentro informacion verificada suficiente para responder esa consulta. "
+                "Te recomiendo validarlo con administracion."
+            ),
+            "mode": "segura",
+            "provider": "local",
+            "model": "commusafe-local-tfidf-v1",
+            "confidence": 0.0,
+            "intent": "sin_intencion_confiable",
+            "entry_id": "",
+            "category": "seguridad_respuesta",
+            "method": reason,
+            "verified": True,
+            "requires_validation": True,
+            "options": [],
+            "latency_ms": self._elapsed_ms(started),
+        }
+
+    def _build_clarification(self, options: list[dict[str, Any]]) -> str:
+        lines = [
+            "Puedo ayudarte, pero necesito precisar mejor la consulta. ¿Te refieres a una de estas opciones?"
+        ]
+        for index, option in enumerate(options, start=1):
+            lines.append(f"{index}. {option['pregunta']}")
+        lines.append("Responde con el numero o escribe mas detalles para orientarte mejor.")
+        return "\n".join(lines)
+
+    def _elapsed_ms(self, started: float) -> int:
+        return int((time.perf_counter() - started) * 1000)
+
+    def export_entries(self) -> list[dict[str, Any]]:
+        return [asdict(entry) for entry in self.entries]
+
+    def stats(self) -> dict[str, Any]:
+        by_category: dict[str, int] = defaultdict(int)
+        for entry in self.entries:
+            by_category[entry.category] += 1
+        return {
+            **knowledge_summary(),
+            "categorias_detalle": dict(sorted(by_category.items())),
+            "umbral_alto": HIGH_CONFIDENCE_THRESHOLD,
+            "umbral_medio": MEDIUM_CONFIDENCE_THRESHOLD,
+            "modelo": "commusafe-local-tfidf-v1",
+        }
+
+
+ENGINE = LocalAssistantEngine()
+
+
+@lru_cache(maxsize=512)
+def resolve_local_answer_cached(message: str, role: str = "RESIDENTE") -> dict[str, Any]:
+    """Resolucion cacheada por texto normalizado y rol."""
+
+    normalized = normalize_text(message)
+    return ENGINE.resolve(normalized, (role or "RESIDENTE").upper())
+
+
+def resolve_local_answer(message: str, role: str = "RESIDENTE") -> dict[str, Any]:
+    return resolve_local_answer_cached(message, role)
+
+
+def local_engine_stats() -> dict[str, Any]:
+    return ENGINE.stats()

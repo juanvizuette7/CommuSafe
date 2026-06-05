@@ -23,6 +23,7 @@ docstring_parser==0.18.0
 factory_boy==3.3.3
 Faker==40.15.0
 firebase-admin==6.5.0
+Flask==3.1.2
 frozenlist==1.8.0
 google-auth==2.49.2
 google-genai==1.55.0

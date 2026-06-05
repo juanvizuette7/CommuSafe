@@ -1,6 +1,8 @@
 """Servicios del asistente virtual persistente."""
 
 import re
+import time
+from decimal import Decimal, InvalidOperation
 
 try:
     from anthropic import Anthropic
@@ -22,7 +24,8 @@ from incidentes.models import Incidente
 from notificaciones.models import Notificacion
 
 from .knowledge_base import render_knowledge_base
-from .models import ConversacionAsistente, MensajeAsistente
+from .local_engine import local_engine_stats, resolve_local_answer
+from .models import AsistenteRespuestaLog, ConversacionAsistente, MensajeAsistente
 
 
 CONOCIMIENTO_REMANSOS = render_knowledge_base()
@@ -328,37 +331,156 @@ def _modelo_por_proveedor(proveedor):
     return ""
 
 
-def generar_respuesta_asistente(mensaje, historial=None, usuario=None):
-    """Genera una respuesta del asistente con proveedor real o fallback local."""
+def _decimal_confianza(valor):
+    try:
+        return Decimal(str(round(float(valor or 0), 4)))
+    except (InvalidOperation, TypeError, ValueError):
+        return None
 
-    historial = historial or []
-    proveedor, funcion_llm = _resolver_proveedor()
-    system_prompt = construir_system_prompt(usuario)
 
-    if funcion_llm is None:
-        return {
-            "respuesta": _respuesta_fallback(mensaje),
-            "modo": "fallback",
-            "proveedor": "fallback",
-        }
+def _estimar_tokens(texto):
+    if not texto:
+        return 0
+    return max(1, int(len(str(texto).split()) * 1.35))
+
+
+def _respuesta_segura_controlada():
+    return (
+        "No encuentro informacion verificada suficiente en CommuSafe para responder esa consulta con precision. "
+        "Te recomiendo validarlo directamente con administracion para evitar datos incorrectos."
+    )
+
+
+def _registrar_respuesta_log(*, mensaje, resultado, usuario=None, conversacion=None):
+    """Guarda trazabilidad tecnica sin interrumpir el chat si falla el registro."""
 
     try:
-        texto = _limpiar_respuesta_ia(funcion_llm(mensaje, historial, system_prompt))
-        if texto:
-            return {
-                "respuesta": texto,
-                "modo": "ia",
-                "proveedor": proveedor,
-                "modelo_usado": _modelo_por_proveedor(proveedor),
-            }
+        AsistenteRespuestaLog.objects.create(
+            usuario=usuario if getattr(usuario, "is_authenticated", False) else None,
+            conversacion=conversacion,
+            mensaje=mensaje[:4000],
+            modo=resultado.get("modo", "fallback") or "fallback",
+            proveedor=resultado.get("proveedor", ""),
+            modelo=resultado.get("modelo_usado", "") or resultado.get("modelo", ""),
+            intencion=resultado.get("intencion", "") or resultado.get("intent", ""),
+            categoria=resultado.get("categoria", ""),
+            metodo=resultado.get("metodo", "") or resultado.get("method", ""),
+            confianza=_decimal_confianza(resultado.get("confianza", 0)),
+            latencia_ms=int(resultado.get("latencia_ms", 0) or 0),
+            tokens_entrada=resultado.get("tokens_entrada"),
+            tokens_salida=resultado.get("tokens_salida"),
+            requiere_validacion=bool(resultado.get("requiere_validacion", False)),
+            metadata=resultado.get("metadata", {}),
+        )
     except Exception:
         pass
 
+
+def _payload_desde_local(local_result):
     return {
-        "respuesta": _respuesta_fallback(mensaje),
-        "modo": "fallback",
-        "proveedor": "fallback",
+        "respuesta": local_result["respuesta"],
+        "modo": local_result["mode"],
+        "proveedor": local_result["provider"],
+        "modelo_usado": local_result.get("model", ""),
+        "confianza": local_result.get("confidence", 0),
+        "intencion": local_result.get("intent", ""),
+        "categoria": local_result.get("category", ""),
+        "metodo": local_result.get("method", ""),
+        "requiere_validacion": local_result.get("requires_validation", False),
+        "latencia_ms": local_result.get("latency_ms", 0),
+        "metadata": {
+            "entry_id": local_result.get("entry_id", ""),
+            "verified": local_result.get("verified", False),
+            "options": local_result.get("options", []),
+            "score_parts": local_result.get("score_parts", {}),
+            "updated_at": local_result.get("updated_at", ""),
+        },
     }
+
+
+def generar_respuesta_asistente(mensaje, historial=None, usuario=None, conversacion=None):
+    """Genera respuesta hibrida: local verificado primero, IA solo como respaldo."""
+
+    inicio = time.perf_counter()
+    historial = historial or []
+    rol = getattr(usuario, "rol", "RESIDENTE") if usuario else "RESIDENTE"
+    local_result = resolve_local_answer(mensaje, rol)
+
+    if local_result["action"] in {"answer", "clarify", "safe"}:
+        resultado = _payload_desde_local(local_result)
+        _registrar_respuesta_log(
+            mensaje=mensaje,
+            resultado=resultado,
+            usuario=usuario,
+            conversacion=conversacion,
+        )
+        return resultado
+
+    proveedor, funcion_llm = _resolver_proveedor()
+    system_prompt = construir_system_prompt(usuario)
+
+    if funcion_llm is not None:
+        try:
+            texto = _limpiar_respuesta_ia(funcion_llm(mensaje, historial, system_prompt))
+            if texto:
+                latencia_ms = int((time.perf_counter() - inicio) * 1000)
+                resultado = {
+                    "respuesta": texto,
+                    "modo": "ia",
+                    "proveedor": proveedor,
+                    "modelo_usado": _modelo_por_proveedor(proveedor),
+                    "confianza": local_result.get("confidence", 0),
+                    "intencion": local_result.get("intent", "respaldo_generativo"),
+                    "categoria": local_result.get("category", "respaldo_generativo"),
+                    "metodo": "ia_con_contexto_verificado",
+                    "requiere_validacion": True,
+                    "latencia_ms": latencia_ms,
+                    "tokens_entrada": _estimar_tokens(system_prompt) + _estimar_tokens(mensaje),
+                    "tokens_salida": _estimar_tokens(texto),
+                    "metadata": {
+                        "local_confidence": local_result.get("confidence", 0),
+                        "local_method": local_result.get("method", ""),
+                        "tokens_estimados": True,
+                    },
+                }
+                _registrar_respuesta_log(
+                    mensaje=mensaje,
+                    resultado=resultado,
+                    usuario=usuario,
+                    conversacion=conversacion,
+                )
+                return resultado
+        except Exception as exc:
+            local_result["llm_error"] = str(exc)
+
+    resultado = {
+        "respuesta": _respuesta_segura_controlada(),
+        "modo": "segura",
+        "proveedor": "local",
+        "modelo_usado": "commusafe-local-tfidf-v1",
+        "confianza": local_result.get("confidence", 0),
+        "intencion": local_result.get("intent", "sin_intencion_confiable"),
+        "categoria": local_result.get("category", "seguridad_respuesta"),
+        "metodo": "respuesta_segura_sin_ia_disponible",
+        "requiere_validacion": True,
+        "latencia_ms": int((time.perf_counter() - inicio) * 1000),
+        "metadata": {
+            "local_result": {
+                "action": local_result.get("action"),
+                "method": local_result.get("method"),
+                "entry_id": local_result.get("entry_id"),
+            },
+            "llm_disponible": bool(funcion_llm),
+            "llm_error": local_result.get("llm_error", ""),
+        },
+    }
+    _registrar_respuesta_log(
+        mensaje=mensaje,
+        resultado=resultado,
+        usuario=usuario,
+        conversacion=conversacion,
+    )
+    return resultado
 
 
 @transaction.atomic
@@ -376,7 +498,12 @@ def procesar_mensaje_conversacion(*, conversacion, mensaje, usuario):
         rol=MensajeAsistente.Rol.USUARIO,
         contenido=mensaje,
     )
-    resultado = generar_respuesta_asistente(mensaje, historial, usuario=usuario)
+    resultado = generar_respuesta_asistente(
+        mensaje,
+        historial,
+        usuario=usuario,
+        conversacion=conversacion,
+    )
     mensaje_asistente = MensajeAsistente.objects.create(
         conversacion=conversacion,
         rol=MensajeAsistente.Rol.ASISTENTE,

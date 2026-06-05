@@ -11,7 +11,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .knowledge_base import KNOWLEDGE_BASE_SECTIONS, render_knowledge_base
-from .models import ConversacionAsistente, MensajeAsistente
+from .models import AsistenteRespuestaLog, ConversacionAsistente, MensajeAsistente
 from .services import SYSTEM_PROMPT
 from .views import _api_llm_configurada, _extraer_texto_anthropic, _normalizar_historial, _respuesta_fallback
 
@@ -27,7 +27,7 @@ def normalizar_texto(texto):
 
 @override_settings(LLM_API_KEY="", GEMINI_API_KEY="", LLM_PROVIDER="gemini")
 class ChatAsistenteFallbackTests(APITestCase):
-    """Pruebas del fallback del asistente."""
+    """Pruebas del asistente hibrido local-first."""
 
     def setUp(self):
         self.usuario = Usuario.objects.create_user(
@@ -51,8 +51,8 @@ class ChatAsistenteFallbackTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["modo"], "fallback")
-        self.assertIn("areas comunes", normalizar_texto(response.data["respuesta"]))
+        self.assertIn(response.data["modo"], {"local", "semantica", "aclaracion", "segura"})
+        self.assertIn("6:00", normalizar_texto(response.data["respuesta"]))
 
     def test_limita_historial_a_ultimos_ocho_mensajes(self):
         self.client.force_authenticate(self.usuario)
@@ -67,7 +67,7 @@ class ChatAsistenteFallbackTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["modo"], "fallback")
+        self.assertIn(response.data["modo"], {"local", "semantica", "aclaracion", "segura"})
 
     def test_consulta_fuera_de_alcance_da_respuesta_controlada(self):
         self.client.force_authenticate(self.usuario)
@@ -81,6 +81,30 @@ class ChatAsistenteFallbackTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn("remansos del norte", normalizar_texto(response.data["respuesta"]))
+
+    def test_registra_log_tecnico_de_respuesta_local(self):
+        self.client.force_authenticate(self.usuario)
+        response = self.client.post(
+            reverse("asistente:chat"),
+            {"mensaje": "Como reporto un incidente?"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        log = AsistenteRespuestaLog.objects.latest("fecha_creacion")
+        self.assertEqual(log.usuario, self.usuario)
+        self.assertIn(log.modo, {"local", "semantica"})
+        self.assertEqual(log.proveedor, "local")
+        self.assertTrue(log.intencion)
+        self.assertIsNotNone(log.confianza)
+
+    def test_health_expone_motor_local(self):
+        self.client.force_authenticate(self.usuario)
+        response = self.client.get(reverse("asistente:health"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["arquitectura"], "hibrida_local_primero")
+        self.assertGreaterEqual(response.data["motor_local"]["total_faq"], 100)
 
     def test_acepta_historial_con_campo_mensaje_y_roles_alias(self):
         self.client.force_authenticate(self.usuario)
@@ -97,7 +121,7 @@ class ChatAsistenteFallbackTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["modo"], "fallback")
+        self.assertIn(response.data["modo"], {"local", "semantica", "aclaracion", "segura"})
 
     def test_rechaza_mensaje_de_historial_sin_contenido(self):
         self.client.force_authenticate(self.usuario)
@@ -132,9 +156,9 @@ class ChatAsistenteFallbackTests(APITestCase):
             format="json",
         )
 
-        self.assertIn("cuotas", normalizar_texto(cuotas.data["respuesta"]))
+        self.assertIn("administracion", normalizar_texto(cuotas.data["respuesta"]))
         self.assertIn("convivencia", normalizar_texto(normas.data["respuesta"]))
-        self.assertIn("reportar incidentes", normalizar_texto(app.data["respuesta"]))
+        self.assertIn("commusafe", normalizar_texto(app.data["respuesta"]))
 
     def test_endpoint_requiere_autenticacion(self):
         response = self.client.post(
@@ -241,7 +265,7 @@ class ChatAsistenteIAModeTests(APITestCase):
         response = self.client.post(
             self.url,
             {
-                "mensaje": "Dame un resumen",
+                "mensaje": "procedimiento biometrico de porteria para QR temporal",
                 "historial": [{"rol": "usuario", "contenido": "hola"}],
             },
             format="json",
@@ -264,12 +288,12 @@ class ChatAsistenteIAModeTests(APITestCase):
         self.client.force_authenticate(self.usuario)
         response = self.client.post(
             self.url,
-            {"mensaje": "Necesito ayuda con convivencia"},
+            {"mensaje": "consulta operativa no registrada qwerty personalizada"},
             format="json",
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["modo"], "fallback")
+        self.assertEqual(response.data["modo"], "segura")
 
     @override_settings(LLM_API_KEY="clave-real")
     @patch("asistente.services.Anthropic", side_effect=Exception("fallo"))
@@ -277,12 +301,12 @@ class ChatAsistenteIAModeTests(APITestCase):
         self.client.force_authenticate(self.usuario)
         response = self.client.post(
             self.url,
-            {"mensaje": "Necesito ayuda"},
+            {"mensaje": "consulta operativa no registrada qwerty personalizada"},
             format="json",
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["modo"], "fallback")
+        self.assertEqual(response.data["modo"], "segura")
 
 
 @override_settings(LLM_API_KEY="", GEMINI_API_KEY="", LLM_PROVIDER="gemini")

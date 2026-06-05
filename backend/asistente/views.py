@@ -24,6 +24,7 @@ from .services import (
     _resolver_proveedor,
     _respuesta_fallback,
     generar_respuesta_asistente,
+    local_engine_stats,
     procesar_mensaje_conversacion,
 )
 
@@ -57,6 +58,8 @@ class ChatHealthView(APIView):
                 "proveedor_activo": proveedor,
                 "modelo": _modelo_por_proveedor(proveedor),
                 "configurado": bool(funcion_llm),
+                "arquitectura": "hibrida_local_primero",
+                "motor_local": local_engine_stats(),
             },
             status=status.HTTP_200_OK,
         )
@@ -116,6 +119,9 @@ class ConversacionAsistenteViewSet(viewsets.ModelViewSet):
                 "modo": resultado["modo"],
                 "proveedor": resultado["proveedor"],
                 "modelo_usado": resultado.get("modelo_usado", ""),
+                "confianza": resultado.get("confianza", 0),
+                "intencion": resultado.get("intencion", ""),
+                "metodo": resultado.get("metodo", ""),
             },
             status=status.HTTP_201_CREATED,
         )

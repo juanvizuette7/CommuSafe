@@ -22,6 +22,9 @@ class Command(BaseCommand):
 
         resultado = generar_respuesta_asistente(mensaje)
         self.stdout.write(self.style.SUCCESS(f"Proveedor: {resultado['proveedor']}"))
+        self.stdout.write(self.style.SUCCESS(f"Modo: {resultado.get('modo', 'desconocido')}"))
+        self.stdout.write(self.style.SUCCESS(f"Intencion: {resultado.get('intencion', 'no detectada')}"))
+        self.stdout.write(self.style.SUCCESS(f"Confianza: {resultado.get('confianza', 0)}"))
         if resultado.get("modelo_usado"):
             self.stdout.write(self.style.SUCCESS(f"Modelo: {resultado['modelo_usado']}"))
         self.stdout.write("")

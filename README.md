@@ -77,12 +77,14 @@ El sistema no reemplaza la labor humana de vigilancia o administracion. Su objet
 ### Asistente Virtual
 
 - Asistente conversacional orientado al contexto de Remansos del Norte.
-- Integracion con Gemini como proveedor principal de IA.
-- Soporte alternativo para Anthropic.
-- Modo local de respaldo si no existe API key o si el proveedor no responde.
 - Conversaciones persistentes por usuario.
 - Historial de mensajes almacenado en base de datos.
-- Base de conocimiento mantenible para normas, procedimientos, avisos, uso de CommuSafe y preguntas frecuentes.
+- Base de conocimiento local con mas de 100 preguntas, variaciones, categorias e intenciones.
+- Motor local-first con busqueda exacta, palabras clave, similitud TF-IDF, umbrales de confianza y respuestas seguras.
+- Escalamiento a Gemini o Anthropic cuando la pregunta pertenece al dominio pero requiere IA generativa.
+- Servicio Flask auxiliar opcional para inferencia local por HTTP.
+- Logs tecnicos de modo, proveedor, intencion, confianza, latencia y tokens estimados.
+- Evaluacion automatizada del asistente con precision, recall, F1, cobertura local y matriz de confusion resumida.
 
 ## Arquitectura Usada
 
@@ -173,6 +175,7 @@ Otras reglas implementadas:
 | DB URL | dj-database-url | Conexion PostgreSQL por `DATABASE_URL` |
 | Push backend | firebase-admin | Envio de FCM desde Django |
 | IA | google-genai, Anthropic | Asistente virtual |
+| NLP auxiliar | Flask | Servicio local opcional de inferencia del asistente |
 | Exportaciones | openpyxl, reportlab | Excel y PDF |
 | Pruebas backend | pytest, pytest-django, coverage, factory-boy | Validacion automatizada |
 | Panel web | Django Templates | Interfaz administrativa |
@@ -343,6 +346,7 @@ CommuSafe/
     PLAN_DESARROLLO.md
     DISENO.md
     DESPLIEGUE.md
+    ASISTENTE_HIBRIDO.md
     CHECKLIST_ENTREGA.md
     GUION_DEMO.md
     MATRIZ_CUMPLIMIENTO.md
@@ -426,6 +430,8 @@ El archivo real `backend/.env` no debe versionarse. En produccion las variables 
 | `LLM_PROVIDER` | Proveedor IA configurado |
 | `LLM_API_KEY` | Alternativa Anthropic |
 | `FIREBASE_CREDENTIALS_JSON_BASE64` | Credenciales Firebase Admin codificadas |
+| `COMMUSAFE_NLP_SERVICE_KEY` | Clave opcional para proteger el servicio Flask auxiliar |
+| `COMMUSAFE_NLP_PORT` | Puerto opcional del servicio Flask auxiliar |
 | `EMAIL_HOST_USER` | Correo emisor si se activa SMTP |
 | `EMAIL_HOST_PASSWORD` | Password de aplicacion SMTP |
 | `DEFAULT_FROM_EMAIL` | Remitente del sistema |
@@ -472,6 +478,15 @@ coverage run -m pytest -q
 coverage report
 ```
 
+Asistente virtual:
+
+```powershell
+cd backend
+python manage.py probar_asistente "Como reporto un incidente?"
+python manage.py evaluar_asistente_local
+python -m pytest asistente/tests.py -q
+```
+
 Flutter:
 
 ```powershell
@@ -490,7 +505,7 @@ Validaciones cubiertas:
 - Historial de estados.
 - Limite de evidencias.
 - Notificaciones segmentadas.
-- Asistente virtual.
+- Asistente virtual hibrido local-first, persistencia, logs y metricas.
 - Panel web y rutas protegidas.
 - Compilacion Android.
 

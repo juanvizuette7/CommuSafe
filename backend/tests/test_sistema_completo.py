@@ -383,28 +383,17 @@ class TestAsistente:
         residente = crear_usuario("residente-chat-ia@test.com")
         cliente = cliente_autenticado(residente)
 
-        with (
-            patch("asistente.services._gemini_configurada", return_value=True),
-            patch("asistente.services._anthropic_configurada", return_value=False),
-            patch(
-                "asistente.services._llamar_gemini",
-                return_value=(
-                    "Las areas comunes de Remansos del Norte funcionan de "
-                    "6:00 a. m. a 10:00 p. m."
-                ),
-            ),
-        ):
-            respuesta = cliente.post(
-                "/api/asistente/chat/",
-                {
-                    "mensaje": "Cuáles son los horarios de las áreas comunes?",
-                    "historial": [],
-                },
-                format="json",
-            )
+        respuesta = cliente.post(
+            "/api/asistente/chat/",
+            {
+                "mensaje": "Cuales son los horarios de las areas comunes?",
+                "historial": [],
+            },
+            format="json",
+        )
 
         assert respuesta.status_code == 200
         assert respuesta.data["respuesta"].strip()
-        assert respuesta.data["modo"] == "ia"
-        assert respuesta.data["proveedor"] == "gemini"
-        assert respuesta.data["modelo_usado"]
+        assert respuesta.data["modo"] in {"local", "semantica", "aclaracion", "segura"}
+        assert respuesta.data["proveedor"] == "local"
+        assert "confianza" in respuesta.data

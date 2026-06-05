@@ -52,3 +52,58 @@ class MensajeAsistente(models.Model):
 
     def __str__(self):
         return f"{self.get_rol_display()} - {self.conversacion.titulo}"
+
+
+class AsistenteRespuestaLog(models.Model):
+    """Trazabilidad tecnica de cada respuesta generada por CommuBot."""
+
+    class Modo(models.TextChoices):
+        LOCAL = "local", "Local"
+        SEMANTICA = "semantica", "Semantica"
+        ACLARACION = "aclaracion", "Aclaracion"
+        IA = "ia", "IA generativa"
+        SEGURA = "segura", "Respuesta segura"
+        FALLBACK = "fallback", "Fallback"
+        ERROR = "error", "Error"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        related_name="logs_asistente",
+        null=True,
+        blank=True,
+    )
+    conversacion = models.ForeignKey(
+        ConversacionAsistente,
+        on_delete=models.SET_NULL,
+        related_name="logs_respuesta",
+        null=True,
+        blank=True,
+    )
+    mensaje = models.TextField()
+    modo = models.CharField(max_length=20, choices=Modo.choices, db_index=True)
+    proveedor = models.CharField(max_length=40, blank=True)
+    modelo = models.CharField(max_length=80, blank=True)
+    intencion = models.CharField(max_length=120, blank=True, db_index=True)
+    categoria = models.CharField(max_length=80, blank=True)
+    metodo = models.CharField(max_length=80, blank=True)
+    confianza = models.DecimalField(max_digits=5, decimal_places=4, null=True, blank=True)
+    latencia_ms = models.PositiveIntegerField(default=0)
+    tokens_entrada = models.PositiveIntegerField(null=True, blank=True)
+    tokens_salida = models.PositiveIntegerField(null=True, blank=True)
+    requiere_validacion = models.BooleanField(default=False)
+    metadata = models.JSONField(default=dict, blank=True)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Log de respuesta del asistente"
+        verbose_name_plural = "Logs de respuestas del asistente"
+        ordering = ("-fecha_creacion",)
+        indexes = [
+            models.Index(fields=["modo", "fecha_creacion"]),
+            models.Index(fields=["intencion", "fecha_creacion"]),
+        ]
+
+    def __str__(self):
+        return f"{self.modo} - {self.intencion or 'sin intencion'}"
