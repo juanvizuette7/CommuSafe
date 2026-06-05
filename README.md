@@ -347,6 +347,7 @@ CommuSafe/
     DISENO.md
     DESPLIEGUE.md
     ASISTENTE_HIBRIDO.md
+    AUDITORIA_ASISTENTE_VIRTUAL.md
     CHECKLIST_ENTREGA.md
     GUION_DEMO.md
     MATRIZ_CUMPLIMIENTO.md
@@ -431,6 +432,7 @@ El archivo real `backend/.env` no debe versionarse. En produccion las variables 
 | `LLM_API_KEY` | Alternativa Anthropic |
 | `FIREBASE_CREDENTIALS_JSON_BASE64` | Credenciales Firebase Admin codificadas |
 | `COMMUSAFE_NLP_SERVICE_KEY` | Clave opcional para proteger el servicio Flask auxiliar |
+| `COMMUSAFE_NLP_HOST` | Host del servicio Flask auxiliar; por defecto `127.0.0.1` |
 | `COMMUSAFE_NLP_PORT` | Puerto opcional del servicio Flask auxiliar |
 | `EMAIL_HOST_USER` | Correo emisor si se activa SMTP |
 | `EMAIL_HOST_PASSWORD` | Password de aplicacion SMTP |

@@ -29,6 +29,8 @@ from .models import AsistenteRespuestaLog, ConversacionAsistente, MensajeAsisten
 
 
 CONOCIMIENTO_REMANSOS = render_knowledge_base()
+MAX_LLM_HISTORY_MESSAGES = 12
+MAX_LLM_HISTORY_CHARS = 6000
 
 
 SYSTEM_PROMPT = f"""
@@ -95,6 +97,30 @@ def _normalizar_historial(historial):
         if contenido:
             mensajes.append({"role": rol, "content": contenido})
     return mensajes
+
+
+def _compactar_historial_para_ia(historial):
+    """Reduce el historial enviado al LLM sin perder la memoria reciente."""
+
+    mensajes = _normalizar_historial(historial)[-MAX_LLM_HISTORY_MESSAGES:]
+    seleccionados = []
+    caracteres = 0
+
+    for item in reversed(mensajes):
+        contenido = item["content"][:2000].strip()
+        if not contenido:
+            continue
+
+        disponible = MAX_LLM_HISTORY_CHARS - caracteres
+        if disponible <= 0:
+            break
+        if len(contenido) > disponible:
+            contenido = contenido[-disponible:].strip()
+
+        seleccionados.append({"role": item["role"], "content": contenido})
+        caracteres += len(contenido)
+
+    return list(reversed(seleccionados))
 
 
 def _normalizar_historial_gemini(historial, mensaje_actual):
@@ -421,7 +447,8 @@ def generar_respuesta_asistente(mensaje, historial=None, usuario=None, conversac
 
     if funcion_llm is not None:
         try:
-            texto = _limpiar_respuesta_ia(funcion_llm(mensaje, historial, system_prompt))
+            historial_llm = _compactar_historial_para_ia(historial)
+            texto = _limpiar_respuesta_ia(funcion_llm(mensaje, historial_llm, system_prompt))
             if texto:
                 latencia_ms = int((time.perf_counter() - inicio) * 1000)
                 resultado = {
@@ -440,6 +467,8 @@ def generar_respuesta_asistente(mensaje, historial=None, usuario=None, conversac
                     "metadata": {
                         "local_confidence": local_result.get("confidence", 0),
                         "local_method": local_result.get("method", ""),
+                        "historial_mensajes_enviados": len(historial_llm),
+                        "historial_caracteres_enviados": sum(len(item["content"]) for item in historial_llm),
                         "tokens_estimados": True,
                     },
                 }

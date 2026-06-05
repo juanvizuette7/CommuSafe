@@ -95,6 +95,14 @@ Cuando se usa IA real, el proveedor se resuelve desde variables de entorno:
 
 El prompt del sistema restringe al asistente al contexto de CommuSafe, evita Markdown decorativo, evita respuestas externas y solicita texto claro en espanol. El historial persistente de la conversacion se envia como contexto para mantener coherencia.
 
+Para controlar consumo de tokens, el historial completo permanece guardado en PostgreSQL, pero la ventana enviada al LLM se compacta a los ultimos mensajes relevantes:
+
+| Control | Valor |
+|---|---:|
+| Maximo de mensajes enviados a IA | 12 |
+| Maximo de caracteres de historial enviado a IA | 6000 |
+| Maximo de salida de Gemini/Anthropic | 700 tokens |
+
 ## Persistencia
 
 El asistente usa tres modelos principales:
@@ -125,6 +133,8 @@ Endpoints:
 | `GET` | `/knowledge` | Resumen de la base de conocimiento |
 
 Si se define `COMMUSAFE_NLP_SERVICE_KEY`, las peticiones deben enviar el header `X-CommuSafe-NLP-Key`.
+
+Por seguridad, el servicio escucha por defecto en `127.0.0.1`. Para exponerlo a otra interfaz se debe configurar conscientemente `COMMUSAFE_NLP_HOST` y protegerlo con `COMMUSAFE_NLP_SERVICE_KEY`.
 
 ## Evaluacion y metricas
 
@@ -193,10 +203,12 @@ Cobertura funcional validada:
 - El usuario debe estar autenticado para usar el asistente.
 - Las conversaciones se filtran por propietario.
 - No se exponen chats de otros usuarios.
+- Los endpoints del asistente tienen throttling por usuario.
 - No se guardan claves de IA en el repositorio.
 - El asistente no responde temas externos al conjunto.
 - El prompt prohibe inventar datos administrativos no registrados.
 - Los logs registran informacion tecnica, no claves ni secretos.
+- El servicio Flask auxiliar bloquea inferencia remota si no existe clave de servicio.
 
 ## Comandos utiles
 

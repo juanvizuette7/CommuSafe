@@ -12,8 +12,11 @@ from rest_framework.test import APITestCase
 
 from .knowledge_base import KNOWLEDGE_BASE_SECTIONS, render_knowledge_base
 from .models import AsistenteRespuestaLog, ConversacionAsistente, MensajeAsistente
-from .services import SYSTEM_PROMPT
+from .nlp_flask_service import app as flask_app
+from .services import MAX_LLM_HISTORY_CHARS, MAX_LLM_HISTORY_MESSAGES, SYSTEM_PROMPT, _compactar_historial_para_ia
+from .throttles import AsistenteChatThrottle, AsistenteLecturaThrottle
 from .views import _api_llm_configurada, _extraer_texto_anthropic, _normalizar_historial, _respuesta_fallback
+from .views import ChatAsistenteView, ChatHealthView, ConversacionAsistenteViewSet
 
 
 Usuario = get_user_model()
@@ -105,6 +108,16 @@ class ChatAsistenteFallbackTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["arquitectura"], "hibrida_local_primero")
         self.assertGreaterEqual(response.data["motor_local"]["total_faq"], 100)
+
+    def test_endpoints_declaran_throttling_del_asistente(self):
+        self.assertEqual(ChatAsistenteView.throttle_classes, [AsistenteChatThrottle])
+        self.assertEqual(ChatHealthView.throttle_classes, [AsistenteLecturaThrottle])
+
+        viewset = ConversacionAsistenteViewSet()
+        viewset.action = "enviar"
+        self.assertIsInstance(viewset.get_throttles()[0], AsistenteChatThrottle)
+        viewset.action = "list"
+        self.assertIsInstance(viewset.get_throttles()[0], AsistenteLecturaThrottle)
 
     def test_acepta_historial_con_campo_mensaje_y_roles_alias(self):
         self.client.force_authenticate(self.usuario)
@@ -199,6 +212,18 @@ class ChatAsistenteHelpersTests(APITestCase):
         self.assertEqual(normalizado[0], {"role": "user", "content": "Hola"})
         self.assertEqual(normalizado[1], {"role": "assistant", "content": "Mundo"})
 
+    def test_compacta_historial_para_reducir_tokens_ia(self):
+        historial = [
+            {"rol": "usuario", "contenido": f"Mensaje {indice} " + ("x" * 800)}
+            for indice in range(30)
+        ]
+
+        compacto = _compactar_historial_para_ia(historial)
+
+        self.assertLessEqual(len(compacto), MAX_LLM_HISTORY_MESSAGES)
+        self.assertLessEqual(sum(len(item["content"]) for item in compacto), MAX_LLM_HISTORY_CHARS)
+        self.assertIn("Mensaje 29", compacto[-1]["content"])
+
     def test_extraer_texto_anthropic(self):
         respuesta = SimpleNamespace(
             content=[
@@ -234,6 +259,24 @@ class ChatAsistenteHelpersTests(APITestCase):
         self.assertNotIn("informacion falsa", contenido)
         self.assertNotIn("datos inventados", contenido)
         self.assertNotIn("datos simulados", contenido)
+
+    def test_servicio_flask_restringe_acceso_remoto_sin_clave(self):
+        client = flask_app.test_client()
+
+        remoto = client.post(
+            "/infer",
+            json={"mensaje": "Como reporto un incidente?", "rol": "RESIDENTE"},
+            environ_base={"REMOTE_ADDR": "203.0.113.10"},
+        )
+        local = client.post(
+            "/infer",
+            json={"mensaje": "Como reporto un incidente?", "rol": "RESIDENTE"},
+            environ_base={"REMOTE_ADDR": "127.0.0.1"},
+        )
+
+        self.assertEqual(remoto.status_code, 403)
+        self.assertEqual(local.status_code, 200)
+        self.assertEqual(local.json["action"], "answer")
 
 
 @override_settings(GEMINI_API_KEY="", LLM_PROVIDER="anthropic")

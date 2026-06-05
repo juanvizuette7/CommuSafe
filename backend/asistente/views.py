@@ -27,12 +27,14 @@ from .services import (
     local_engine_stats,
     procesar_mensaje_conversacion,
 )
+from .throttles import AsistenteChatThrottle, AsistenteLecturaThrottle
 
 
 class ChatAsistenteView(APIView):
     """Endpoint legado del asistente virtual sin persistencia de conversación."""
 
     permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = [AsistenteChatThrottle]
 
     def post(self, request):
         serializer = ChatAsistenteSerializer(data=request.data)
@@ -50,6 +52,7 @@ class ChatHealthView(APIView):
     """Expone el estado de configuración del proveedor de IA."""
 
     permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = [AsistenteLecturaThrottle]
 
     def get(self, request):
         proveedor, funcion_llm = _resolver_proveedor()
@@ -70,6 +73,10 @@ class ConversacionAsistenteViewSet(viewsets.ModelViewSet):
 
     permission_classes = [permissions.IsAuthenticated]
     http_method_names = ["get", "post", "patch", "delete", "head", "options"]
+
+    def get_throttles(self):
+        throttle_classes = [AsistenteChatThrottle] if self.action == "enviar" else [AsistenteLecturaThrottle]
+        return [throttle() for throttle in throttle_classes]
 
     def get_queryset(self):
         mensajes_prefetch = Prefetch(

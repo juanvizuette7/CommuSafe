@@ -21,6 +21,8 @@ from flask import Flask, jsonify, request
 
 from .local_engine import ENGINE, resolve_local_answer
 
+LOCAL_REMOTE_ADDRS = {"127.0.0.1", "::1", "localhost"}
+
 
 def create_app() -> Flask:
     app = Flask(__name__)
@@ -33,6 +35,8 @@ def create_app() -> Flask:
                 received = request.headers.get("X-CommuSafe-NLP-Key", "")
                 if received != expected_key:
                     return jsonify({"detail": "Credencial del servicio NLP invalida."}), 401
+            elif request.remote_addr not in LOCAL_REMOTE_ADDRS:
+                return jsonify({"detail": "Configura COMMUSAFE_NLP_SERVICE_KEY para acceso remoto."}), 403
             return view_func(*args, **kwargs)
 
         return wrapped
@@ -64,4 +68,5 @@ app = create_app()
 
 if __name__ == "__main__":
     port = int(os.environ.get("COMMUSAFE_NLP_PORT", "5055"))
-    app.run(host="0.0.0.0", port=port, threaded=True)
+    host = os.environ.get("COMMUSAFE_NLP_HOST", "127.0.0.1")
+    app.run(host=host, port=port, threaded=True)
