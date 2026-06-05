@@ -1,16 +1,19 @@
 ﻿"""Pruebas del modulo de asistente virtual."""
 
 import unicodedata
+from io import StringIO
 from types import SimpleNamespace
 from unittest.mock import patch
 
 from django.contrib.auth import get_user_model
+from django.core.management import call_command
 from django.test import override_settings
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .knowledge_base import KNOWLEDGE_BASE_SECTIONS, render_knowledge_base
+from .local_knowledge import FAQ_ENTRIES
 from .models import AsistenteRespuestaLog, ConversacionAsistente, MensajeAsistente
 from .nlp_flask_service import app as flask_app
 from .services import MAX_LLM_HISTORY_CHARS, MAX_LLM_HISTORY_MESSAGES, SYSTEM_PROMPT, _compactar_historial_para_ia
@@ -100,6 +103,20 @@ class ChatAsistenteFallbackTests(APITestCase):
         self.assertEqual(log.proveedor, "local")
         self.assertTrue(log.intencion)
         self.assertIsNotNone(log.confianza)
+
+    @override_settings(LLM_API_KEY="clave-real", GEMINI_API_KEY="", LLM_PROVIDER="anthropic")
+    @patch("asistente.services.Anthropic")
+    def test_preguntas_conocidas_no_usan_ia_externa(self, anthropic_mock):
+        self.client.force_authenticate(self.usuario)
+        response = self.client.post(
+            reverse("asistente:chat"),
+            {"mensaje": "Como reporto un incidente?"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn(response.data["modo"], {"local", "semantica"})
+        anthropic_mock.assert_not_called()
 
     def test_health_expone_motor_local(self):
         self.client.force_authenticate(self.usuario)
@@ -259,6 +276,42 @@ class ChatAsistenteHelpersTests(APITestCase):
         self.assertNotIn("informacion falsa", contenido)
         self.assertNotIn("datos inventados", contenido)
         self.assertNotIn("datos simulados", contenido)
+
+    def test_base_local_es_diversa_verificable_y_vigente(self):
+        self.assertGreaterEqual(len(FAQ_ENTRIES), 100)
+        self.assertEqual(len({entry.id for entry in FAQ_ENTRIES}), len(FAQ_ENTRIES))
+        self.assertEqual(len({entry.intent for entry in FAQ_ENTRIES}), len(FAQ_ENTRIES))
+        self.assertEqual(len({entry.question.lower() for entry in FAQ_ENTRIES}), len(FAQ_ENTRIES))
+        self.assertGreaterEqual(len({entry.category for entry in FAQ_ENTRIES}), 10)
+
+        for entry in FAQ_ENTRIES:
+            self.assertTrue(entry.verification_status)
+            self.assertEqual(entry.validity_status, "VIGENTE")
+            self.assertTrue(entry.valid_from)
+            self.assertGreaterEqual(len(entry.keywords), 3)
+            self.assertGreaterEqual(len(entry.variations), 2)
+
+    def test_respuestas_pendientes_son_seguras(self):
+        pendientes = [entry for entry in FAQ_ENTRIES if not entry.verified]
+        self.assertGreaterEqual(len(pendientes), 1)
+
+        for entry in pendientes:
+            respuesta = normalizar_texto(entry.answer)
+            self.assertTrue(
+                any(
+                    termino in respuesta
+                    for termino in ["administracion", "validar", "validarse", "verificar", "no encuentro", "no emite"]
+                ),
+                entry.id,
+            )
+
+    def test_comando_valida_base_conocimiento(self):
+        salida = StringIO()
+        call_command("validar_base_conocimiento", stdout=salida)
+        contenido = salida.getvalue()
+
+        self.assertIn('"estado": "ok"', contenido)
+        self.assertIn("al_menos_100_preguntas_diferentes", contenido)
 
     def test_servicio_flask_restringe_acceso_remoto_sin_clave(self):
         client = flask_app.test_client()

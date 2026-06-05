@@ -60,9 +60,26 @@ Cada entrada define:
 - `variations`: formas alternativas de preguntar.
 - `allowed_roles`: roles que pueden recibir esa respuesta.
 - `verified`: indica si la respuesta esta validada.
+- `verification_status`: estado formal de verificacion.
+- `valid_from` y `valid_until`: vigencia de la entrada.
+- `validity_status`: indica si la entrada esta vigente o vencida.
+- `maintainer_role`: rol responsable de mantenimiento.
+- `source`: fuente interna registrada para trazabilidad.
 - `change_trace`: motivo o historial de la entrada.
 
 Esto permite ampliar la informacion sin modificar toda la logica del asistente.
+
+Estado actual verificado:
+
+| Indicador | Valor |
+|---|---:|
+| Preguntas principales diferentes | 108 |
+| Intenciones unicas | 108 |
+| Categorias | 12 |
+| Entradas verificadas | 100 |
+| Pendientes de validacion administrativa | 8 |
+| Entradas vigentes | 108 |
+| Entradas vencidas | 0 |
 
 ## Estrategia local-first
 
@@ -223,6 +240,18 @@ Evaluar cobertura local:
 
 ```powershell
 python manage.py evaluar_asistente_local
+```
+
+Validar diversidad, vigencia, roles y respuestas seguras:
+
+```powershell
+python manage.py validar_base_conocimiento
+```
+
+Exportar la base a JSON para revision o mantenimiento:
+
+```powershell
+python manage.py validar_base_conocimiento --export-json tmp/commusafe_kb.json
 ```
 
 Verificar configuracion:

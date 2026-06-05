@@ -12,6 +12,7 @@ Esta auditoria revisa exclusivamente el asistente virtual de CommuSafe a nivel b
 | Consumo de tokens | El historial persistente podia crecer y aumentar el costo si se enviaba completo al LLM. | Se agrego compactacion de historial antes de IA: maximo 12 mensajes y 6000 caracteres. La base de datos conserva el historial completo. | `MAX_LLM_HISTORY_MESSAGES`, `MAX_LLM_HISTORY_CHARS`, `_compactar_historial_para_ia()` |
 | Respuestas inconsistentes | La IA podria usar formato Markdown excesivo, inventar informacion o salir del dominio. | Prompt restringido al dominio, limpieza de Markdown decorativo, fallback seguro y logs de modo/intencion/confianza. | `SYSTEM_PROMPT`, `_limpiar_respuesta_ia()`, `AsistenteRespuestaLog` |
 | Falta de conocimiento local | El asistente necesitaba respuestas preparadas para normas, procedimientos y uso del sistema. | Base local con preguntas, variaciones, categorias, keywords, roles, estado de verificacion y trazabilidad. | `local_knowledge.py` |
+| Mantenimiento futuro | La base necesitaba una forma objetiva de validar diversidad, vigencia y seguridad. | Se agrego comando de validacion/exportacion de base de conocimiento. | `python manage.py validar_base_conocimiento` |
 | Concurrencia | Multiples usuarios no deben mezclar conversaciones ni estados. | Motor local stateless con cache por texto/rol, conversaciones filtradas por usuario autenticado y mensajes persistidos por conversacion. | `ConversacionAsistenteViewSet.get_queryset()`, `resolve_local_answer_cached()` |
 | Abuso del endpoint | No habia limite especifico para mensajes del asistente. | Se agregaron throttles por usuario: 30 mensajes/minuto para chat y 120 lecturas/minuto. | `backend/asistente/throttles.py`, `views.py` |
 | Seguridad del servicio Flask | El servicio auxiliar podia quedar escuchando en todas las interfaces sin clave. | Por defecto escucha en `127.0.0.1`; si no hay `COMMUSAFE_NLP_SERVICE_KEY`, bloquea inferencia remota. | `backend/asistente/nlp_flask_service.py` |
@@ -82,11 +83,24 @@ python manage.py evaluar_asistente_local
 Resultados verificados:
 
 ```text
-asistente/tests.py: 26 passed
-suite completa backend: 148 passed, 6 subtests passed
+asistente/tests.py: 30 passed
+suite completa backend: 155 passed, 6 subtests passed
 manage.py check: sin problemas
 makemigrations --check --dry-run: sin cambios pendientes
+validar_base_conocimiento: ok
 ```
+
+Estado de base de conocimiento:
+
+| Indicador | Valor |
+|---|---:|
+| Preguntas principales diferentes | 108 |
+| Intenciones unicas | 108 |
+| Categorias | 12 |
+| Entradas verificadas | 100 |
+| Pendientes de validacion administrativa | 8 |
+| Entradas vigentes | 108 |
+| Entradas vencidas | 0 |
 
 Metricas del motor local:
 

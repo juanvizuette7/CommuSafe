@@ -417,6 +417,10 @@ def _payload_desde_local(local_result):
         "metadata": {
             "entry_id": local_result.get("entry_id", ""),
             "verified": local_result.get("verified", False),
+            "verification_status": local_result.get("verification_status", ""),
+            "validity_status": local_result.get("validity_status", ""),
+            "valid_from": local_result.get("valid_from", ""),
+            "valid_until": local_result.get("valid_until", ""),
             "options": local_result.get("options", []),
             "score_parts": local_result.get("score_parts", {}),
             "updated_at": local_result.get("updated_at", ""),

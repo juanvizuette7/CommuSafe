@@ -9,6 +9,7 @@ para que el asistente responda de forma segura sin inventar datos.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 from typing import Iterable
 
 
@@ -16,6 +17,10 @@ ALL_ROLES = ("RESIDENTE", "VIGILANTE", "ADMINISTRADOR")
 OPERATIVE_ROLES = ("VIGILANTE", "ADMINISTRADOR")
 ADMIN_ROLE = ("ADMINISTRADOR",)
 UPDATED_AT = "2026-06-05"
+VERIFICATION_VERIFIED = "VERIFICADA"
+VERIFICATION_PENDING_ADMIN = "PENDIENTE_VALIDACION_ADMINISTRACION"
+VALIDITY_ACTIVE = "VIGENTE"
+VALIDITY_EXPIRED = "VENCIDA"
 
 
 @dataclass(frozen=True)
@@ -30,6 +35,10 @@ class FAQEntry:
     allowed_roles: tuple[str, ...] = ALL_ROLES
     verified: bool = True
     updated_at: str = UPDATED_AT
+    valid_from: str = UPDATED_AT
+    valid_until: str = ""
+    maintainer_role: str = "ADMINISTRADOR"
+    source: str = "Base de conocimiento local CommuSafe - Remansos del Norte"
     change_trace: tuple[str, ...] = (
         "2026-06-05: Entrada creada para motor hibrido local de CommuSafe.",
     )
@@ -38,6 +47,44 @@ class FAQEntry:
         yield self.question
         yield from self.variations
         yield " ".join(self.keywords)
+
+    @property
+    def verification_status(self) -> str:
+        return VERIFICATION_VERIFIED if self.verified else VERIFICATION_PENDING_ADMIN
+
+    @property
+    def validity_status(self) -> str:
+        return VALIDITY_ACTIVE if self.is_active() else VALIDITY_EXPIRED
+
+    def is_active(self, today: date | None = None) -> bool:
+        if not self.valid_until:
+            return True
+        today = today or date.today()
+        try:
+            return today <= date.fromisoformat(self.valid_until)
+        except ValueError:
+            return False
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "id": self.id,
+            "intent": self.intent,
+            "category": self.category,
+            "question": self.question,
+            "answer": self.answer,
+            "keywords": self.keywords,
+            "variations": self.variations,
+            "allowed_roles": self.allowed_roles,
+            "verified": self.verified,
+            "verification_status": self.verification_status,
+            "validity_status": self.validity_status,
+            "valid_from": self.valid_from,
+            "valid_until": self.valid_until,
+            "updated_at": self.updated_at,
+            "maintainer_role": self.maintainer_role,
+            "source": self.source,
+            "change_trace": self.change_trace,
+        }
 
 
 SAFE_ADMIN_CONTACT = (
@@ -1064,11 +1111,15 @@ FAQ_ENTRIES: tuple[FAQEntry, ...] = (
 )
 
 
-def get_entries_for_role(role: str | None) -> tuple[FAQEntry, ...]:
+def get_entries_for_role(role: str | None, *, only_active: bool = True) -> tuple[FAQEntry, ...]:
     """Filtra entradas segun rol del usuario."""
 
     role = (role or "RESIDENTE").upper()
-    return tuple(entry for entry in FAQ_ENTRIES if role in entry.allowed_roles)
+    return tuple(
+        entry
+        for entry in FAQ_ENTRIES
+        if role in entry.allowed_roles and (not only_active or entry.is_active())
+    )
 
 
 def knowledge_summary() -> dict[str, int]:
@@ -1076,10 +1127,17 @@ def knowledge_summary() -> dict[str, int]:
 
     categories = {entry.category for entry in FAQ_ENTRIES}
     verified = sum(1 for entry in FAQ_ENTRIES if entry.verified)
+    active = sum(1 for entry in FAQ_ENTRIES if entry.is_active())
     pending = len(FAQ_ENTRIES) - verified
     return {
         "total_faq": len(FAQ_ENTRIES),
         "categorias": len(categories),
         "verificadas": verified,
         "pendientes_validacion": pending,
+        "vigentes": active,
+        "vencidas": len(FAQ_ENTRIES) - active,
+        "estado_verificacion": {
+            VERIFICATION_VERIFIED: verified,
+            VERIFICATION_PENDING_ADMIN: pending,
+        },
     }

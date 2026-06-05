@@ -12,7 +12,6 @@ import re
 import time
 import unicodedata
 from collections import Counter, defaultdict
-from dataclasses import asdict
 from functools import lru_cache
 from typing import Any
 
@@ -234,6 +233,8 @@ class LocalAssistantEngine:
                     "pregunta": item["entry"].question,
                     "categoria": item["entry"].category,
                     "confianza": round(item["confidence"], 4),
+                    "estado_verificacion": item["entry"].verification_status,
+                    "vigencia": item["entry"].validity_status,
                 }
                 for item in candidates[:MAX_OPTIONS]
             ]
@@ -249,6 +250,10 @@ class LocalAssistantEngine:
                 "category": entry.category,
                 "method": "aclaracion_por_confianza_media",
                 "verified": entry.verified,
+                "verification_status": entry.verification_status,
+                "validity_status": entry.validity_status,
+                "valid_from": entry.valid_from,
+                "valid_until": entry.valid_until,
                 "requires_validation": not entry.verified,
                 "options": options,
                 "latency_ms": self._elapsed_ms(started),
@@ -266,6 +271,10 @@ class LocalAssistantEngine:
             "category": entry.category,
             "method": best["method"],
             "verified": entry.verified,
+            "verification_status": entry.verification_status,
+            "validity_status": entry.validity_status,
+            "valid_from": entry.valid_from,
+            "valid_until": entry.valid_until,
             "requires_validation": not entry.verified,
             "options": [],
             "latency_ms": self._elapsed_ms(started),
@@ -326,7 +335,7 @@ class LocalAssistantEngine:
         return len(query_tokens & entry_tokens) / len(query_tokens | entry_tokens)
 
     def _role_allowed(self, entry: FAQEntry, role: str) -> bool:
-        return role in entry.allowed_roles
+        return role in entry.allowed_roles and entry.is_active()
 
     def _is_ambiguous(self, best: dict[str, Any], second: dict[str, Any] | None) -> bool:
         if not second:
@@ -356,6 +365,10 @@ class LocalAssistantEngine:
             "category": entry.category,
             "method": method,
             "verified": entry.verified,
+            "verification_status": entry.verification_status,
+            "validity_status": entry.validity_status,
+            "valid_from": entry.valid_from,
+            "valid_until": entry.valid_until,
             "requires_validation": not entry.verified,
             "options": [],
             "score_parts": score_parts or {},
@@ -380,6 +393,10 @@ class LocalAssistantEngine:
             "category": "seguridad_respuesta",
             "method": reason,
             "verified": True,
+            "verification_status": "VERIFICADA",
+            "validity_status": "VIGENTE",
+            "valid_from": "",
+            "valid_until": "",
             "requires_validation": True,
             "options": [],
             "latency_ms": self._elapsed_ms(started),
@@ -398,7 +415,7 @@ class LocalAssistantEngine:
         return int((time.perf_counter() - started) * 1000)
 
     def export_entries(self) -> list[dict[str, Any]]:
-        return [asdict(entry) for entry in self.entries]
+        return [entry.to_dict() for entry in self.entries]
 
     def stats(self) -> dict[str, Any]:
         by_category: dict[str, int] = defaultdict(int)

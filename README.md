@@ -486,6 +486,7 @@ Asistente virtual:
 cd backend
 python manage.py probar_asistente "Como reporto un incidente?"
 python manage.py evaluar_asistente_local
+python manage.py validar_base_conocimiento
 python -m pytest asistente/tests.py -q
 ```
 
