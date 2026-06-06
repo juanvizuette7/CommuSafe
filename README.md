@@ -85,6 +85,7 @@ El sistema no reemplaza la labor humana de vigilancia o administracion. Su objet
 - Servicio Flask auxiliar opcional para inferencia local por HTTP.
 - Logs tecnicos de modo, proveedor, intencion, confianza, latencia y tokens estimados.
 - Evaluacion automatizada del asistente con precision, recall, F1, cobertura local y matriz de confusion resumida.
+- Dataset profesional de comprension de intenciones con 648 ejemplos balanceados en entrenamiento, validacion y prueba.
 
 ## Arquitectura Usada
 
@@ -279,6 +280,11 @@ CommuSafe/
       views.py
       services.py
       knowledge_base.py
+      local_knowledge.py
+      local_engine.py
+      training_dataset.py
+      evaluation.py
+      nlp_flask_service.py
       urls.py
       admin.py
       management/
@@ -485,6 +491,7 @@ Asistente virtual:
 ```powershell
 cd backend
 python manage.py probar_asistente "Como reporto un incidente?"
+python manage.py generar_dataset_asistente
 python manage.py evaluar_asistente_local
 python manage.py validar_base_conocimiento
 python -m pytest asistente/tests.py -q

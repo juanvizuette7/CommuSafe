@@ -1,7 +1,11 @@
 ﻿"""Pruebas del modulo de asistente virtual."""
 
+import json
+import tempfile
 import unicodedata
+from collections import Counter
 from io import StringIO
+from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -13,11 +17,20 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .knowledge_base import KNOWLEDGE_BASE_SECTIONS, render_knowledge_base
+from .local_engine import normalize_text
 from .local_knowledge import FAQ_ENTRIES
 from .models import AsistenteRespuestaLog, ConversacionAsistente, MensajeAsistente
 from .nlp_flask_service import app as flask_app
 from .services import MAX_LLM_HISTORY_CHARS, MAX_LLM_HISTORY_MESSAGES, SYSTEM_PROMPT, _compactar_historial_para_ia
 from .throttles import AsistenteChatThrottle, AsistenteLecturaThrottle
+from .training_dataset import (
+    EXAMPLES_PER_INTENT,
+    REQUIRED_STYLES,
+    SPLIT_RATIOS,
+    build_professional_dataset,
+    dataset_summary,
+    validate_professional_dataset,
+)
 from .views import _api_llm_configurada, _extraer_texto_anthropic, _normalizar_historial, _respuesta_fallback
 from .views import ChatAsistenteView, ChatHealthView, ConversacionAsistenteViewSet
 
@@ -330,6 +343,83 @@ class ChatAsistenteHelpersTests(APITestCase):
         self.assertEqual(remoto.status_code, 403)
         self.assertEqual(local.status_code, 200)
         self.assertEqual(local.json["action"], "answer")
+
+
+class AsistenteTrainingDatasetTests(APITestCase):
+    """Pruebas del dataset profesional usado para entrenar y evaluar intenciones."""
+
+    def test_dataset_profesional_es_balanceado_y_coherente(self):
+        splits = build_professional_dataset(seed=42)
+        errores = validate_professional_dataset(splits)
+        resumen = dataset_summary(splits)
+        total_intenciones = len(FAQ_ENTRIES)
+
+        self.assertEqual(errores, [])
+        self.assertEqual(resumen["total"], total_intenciones * EXAMPLES_PER_INTENT)
+        self.assertEqual(resumen["intenciones"], total_intenciones)
+        self.assertEqual(resumen["categorias"], 12)
+        self.assertTrue(resumen["balanceado_por_intencion"])
+        self.assertEqual(resumen["min_ejemplos_por_intencion"], EXAMPLES_PER_INTENT)
+        self.assertEqual(resumen["max_ejemplos_por_intencion"], EXAMPLES_PER_INTENT)
+
+        for split, ratio in SPLIT_RATIOS.items():
+            self.assertEqual(resumen["splits"][split], total_intenciones * ratio)
+
+        expected_holdout = total_intenciones // len(REQUIRED_STYLES)
+        expected_train = total_intenciones - (expected_holdout * 2)
+        for style in REQUIRED_STYLES:
+            self.assertEqual(resumen["estilos"][style], total_intenciones)
+            self.assertEqual(resumen["estilos_por_split"]["train"][style], expected_train)
+            self.assertEqual(resumen["estilos_por_split"]["validation"][style], expected_holdout)
+            self.assertEqual(resumen["estilos_por_split"]["test"][style], expected_holdout)
+
+        conteo_por_intencion = Counter()
+        conteo_split_por_intencion: dict[str, Counter[str]] = {}
+        for split, ejemplos in splits.items():
+            for ejemplo in ejemplos:
+                conteo_por_intencion[ejemplo.intent] += 1
+                conteo_split_por_intencion.setdefault(ejemplo.intent, Counter())[split] += 1
+                self.assertTrue(ejemplo.text)
+                self.assertTrue(ejemplo.entry_id)
+                self.assertIn(ejemplo.style, REQUIRED_STYLES)
+                self.assertEqual(ejemplo.requires_admin_validation, not ejemplo.verified)
+
+        self.assertEqual(set(conteo_por_intencion.values()), {EXAMPLES_PER_INTENT})
+        for intent, conteo_split in conteo_split_por_intencion.items():
+            self.assertEqual(conteo_split["train"], SPLIT_RATIOS["train"], intent)
+            self.assertEqual(conteo_split["validation"], SPLIT_RATIOS["validation"], intent)
+            self.assertEqual(conteo_split["test"], SPLIT_RATIOS["test"], intent)
+
+    def test_dataset_no_repite_frases_entre_particiones(self):
+        splits = build_professional_dataset(seed=42)
+        textos_vistos: dict[str, str] = {}
+
+        for split, ejemplos in splits.items():
+            for ejemplo in ejemplos:
+                normalizado = normalize_text(ejemplo.text)
+                self.assertNotIn(
+                    normalizado,
+                    textos_vistos,
+                    f"Texto repetido entre {textos_vistos.get(normalizado)} y {split}: {ejemplo.text}",
+                )
+                textos_vistos[normalizado] = split
+
+    def test_comando_generar_dataset_exporta_json_validado(self):
+        salida = StringIO()
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            ruta_json = Path(tmp_dir) / "commusafe_dataset.json"
+            call_command("generar_dataset_asistente", "--json", str(ruta_json), stdout=salida)
+
+            payload = json.loads(salida.getvalue())
+            exportado = json.loads(ruta_json.read_text(encoding="utf-8"))
+
+        self.assertEqual(payload["estado"], "ok")
+        self.assertEqual(payload["errores"], [])
+        self.assertEqual(payload["resumen"]["json_exportado"], str(ruta_json))
+        self.assertEqual(len(exportado["splits"]["train"]), len(FAQ_ENTRIES) * SPLIT_RATIOS["train"])
+        self.assertEqual(len(exportado["splits"]["validation"]), len(FAQ_ENTRIES) * SPLIT_RATIOS["validation"])
+        self.assertEqual(len(exportado["splits"]["test"]), len(FAQ_ENTRIES) * SPLIT_RATIOS["test"])
 
 
 @override_settings(GEMINI_API_KEY="", LLM_PROVIDER="anthropic")

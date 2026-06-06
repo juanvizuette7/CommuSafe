@@ -19,6 +19,7 @@ Esta auditoria revisa exclusivamente el asistente virtual de CommuSafe a nivel b
 | Exposicion de informacion | El servicio `/knowledge` no debe exponerse remotamente sin control. | La misma proteccion de clave/local-only aplica a `/knowledge` e `/infer`. | Prueba `test_servicio_flask_restringe_acceso_remoto_sin_clave` |
 | Observabilidad | No habia medicion suficiente del comportamiento por respuesta. | Logs tecnicos con modo, proveedor, modelo, intencion, categoria, confianza, latencia, tokens estimados y metadatos. | Modelo `AsistenteRespuestaLog` |
 | Evaluacion | Faltaba comparacion clara entre estrategias locales. | Se agrego comando de evaluacion con baseline de palabras clave, TF-IDF puro e hibrido seleccionado. | `python manage.py evaluar_asistente_local` |
+| Dataset de entrenamiento | El asistente necesitaba datos separados y sin fuga para sustentar comprension de intenciones. | Se agrego dataset profesional con 648 ejemplos, 108 intenciones, train/validation/test, seis estilos por intencion y validacion de duplicados/ambiguedades. | `python manage.py generar_dataset_asistente` |
 | Documentacion | La arquitectura hibrida necesitaba explicacion sustentable. | Se agrego documentacion especifica de arquitectura, pruebas, seguridad, metricas y comandos. | `docs/ASISTENTE_HIBRIDO.md` |
 
 ## Arquitectura resultante
@@ -77,17 +78,19 @@ cd backend
 python manage.py check
 python -m pytest asistente/tests.py -q
 python -m pytest -q
+python manage.py generar_dataset_asistente
 python manage.py evaluar_asistente_local
 ```
 
 Resultados verificados:
 
 ```text
-asistente/tests.py: 30 passed
-suite completa backend: 155 passed, 6 subtests passed
+asistente/tests.py: 33 passed
+suite completa backend: 158 passed, 6 subtests passed
 manage.py check: sin problemas
 makemigrations --check --dry-run: sin cambios pendientes
 validar_base_conocimiento: ok
+generar_dataset_asistente: ok, 648 ejemplos, 0 errores
 ```
 
 Estado de base de conocimiento:
@@ -102,21 +105,42 @@ Estado de base de conocimiento:
 | Entradas vigentes | 108 |
 | Entradas vencidas | 0 |
 
+Dataset profesional:
+
+| Indicador | Valor |
+|---|---:|
+| Ejemplos totales | 648 |
+| Train | 432 |
+| Validation | 108 |
+| Test | 108 |
+| Estilos por intencion | 6 |
+| Duplicados entre particiones | 0 |
+| Intenciones ambiguas por frase repetida | 0 |
+
+Distribucion de estilos:
+
+| Particion | Formal | Informal | Corta | Larga | Error ortografico | No tecnico |
+|---|---:|---:|---:|---:|---:|---:|
+| Train | 72 | 72 | 72 | 72 | 72 | 72 |
+| Validation | 18 | 18 | 18 | 18 | 18 | 18 |
+| Test | 18 | 18 | 18 | 18 | 18 | 18 |
+
 Metricas del motor local:
 
 | Split | F1 |
 |---|---:|
-| Train | 0.9921 |
-| Validation | 0.9756 |
-| Test | 0.9438 |
+| Train | 0.7917 |
+| Validation | 0.7593 |
+| Test | 0.8426 |
+| Challenge | 0.5714 |
 
 Comparacion de estrategias:
 
-| Estrategia | Validation F1 | Test F1 |
-|---|---:|---:|
-| Palabras clave baseline | 0.1829 | 0.1124 |
-| TF-IDF semantico puro | 0.3780 | 0.3483 |
-| Hibrido seleccionado | 0.9756 | 0.9438 |
+| Estrategia | Validation F1 | Test F1 | Challenge F1 |
+|---|---:|---:|---:|
+| Palabras clave baseline | 0.3611 | 0.3333 | 0.5714 |
+| TF-IDF semantico puro | 0.5463 | 0.6111 | 0.5714 |
+| Hibrido seleccionado | 0.7870 | 0.8889 | 0.5714 |
 
 ## Riesgos residuales reales
 

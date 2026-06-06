@@ -31,6 +31,7 @@ La arquitectura queda separada por responsabilidades:
 | API REST | `backend/asistente/views.py` | Chat rapido, conversaciones persistentes, mensajes, health check y acciones REST |
 | Persistencia | `backend/asistente/models.py` | Conversaciones, mensajes y logs tecnicos de respuestas |
 | Evaluacion | `backend/asistente/evaluation.py` | Dataset local, metricas, cobertura y matriz de confusion resumida |
+| Dataset profesional | `backend/asistente/training_dataset.py` | Generacion balanceada de entrenamiento, validacion y prueba para intenciones del asistente |
 | Servicio auxiliar | `backend/asistente/nlp_flask_service.py` | Microservicio Flask opcional para inferencia local por HTTP |
 
 ## Base de conocimiento local
@@ -80,6 +81,69 @@ Estado actual verificado:
 | Pendientes de validacion administrativa | 8 |
 | Entradas vigentes | 108 |
 | Entradas vencidas | 0 |
+
+## Dataset profesional de entrenamiento
+
+El asistente cuenta con un dataset deterministico generado desde la base de conocimiento local. Este dataset no reemplaza la base operativa; sirve para entrenar, validar, probar y sustentar la comprension de intenciones en espanol.
+
+La taxonomia se basa en:
+
+- Intencion unica por pregunta funcional.
+- Categoria operacional.
+- Rol principal aplicable.
+- Palabras clave verificables.
+- Estado de verificacion.
+- Vigencia.
+- Estilo de redaccion.
+
+Los estilos obligatorios por intencion son:
+
+- Formal.
+- Informal.
+- Corta.
+- Larga.
+- Error ortografico comun.
+- Expresion no tecnica.
+
+Cada intencion tiene exactamente seis ejemplos, distribuidos sin repetir frases entre particiones:
+
+| Particion | Ejemplos | Uso |
+|---|---:|---|
+| Train | 432 | Ajuste y revision del motor |
+| Validation | 108 | Comparacion de estrategias y calibracion |
+| Test | 108 | Medicion final con frases no vistas |
+
+Resumen actual:
+
+| Indicador | Valor |
+|---|---:|
+| Total de ejemplos | 648 |
+| Intenciones | 108 |
+| Categorias | 12 |
+| Ejemplos por intencion | 6 |
+| Estilos por intencion | 6 |
+| Errores de dataset | 0 |
+
+Distribucion de estilos por particion:
+
+| Particion | Formal | Informal | Corta | Larga | Error ortografico | No tecnico |
+|---|---:|---:|---:|---:|---:|---:|
+| Train | 72 | 72 | 72 | 72 | 72 | 72 |
+| Validation | 18 | 18 | 18 | 18 | 18 | 18 |
+| Test | 18 | 18 | 18 | 18 | 18 | 18 |
+
+El comando de generacion valida automaticamente duplicados, ambiguedades, balance por intencion, estilos obligatorios y fuga entre train/validation/test:
+
+```powershell
+cd backend
+python manage.py generar_dataset_asistente
+```
+
+Exportar para revision externa:
+
+```powershell
+python manage.py generar_dataset_asistente --json tmp/commusafe_dataset.json --csv-dir tmp/commusafe_dataset
+```
 
 ## Estrategia local-first
 
@@ -155,7 +219,7 @@ Por seguridad, el servicio escucha por defecto en `127.0.0.1`. Para exponerlo a 
 
 ## Evaluacion y metricas
 
-El comando de evaluacion genera un dataset deterministico desde preguntas y variaciones registradas:
+El comando de evaluacion usa el dataset profesional balanceado y un split adicional de reto con preguntas fuera de dominio, ambiguas o que requieren validacion administrativa:
 
 ```powershell
 cd backend
@@ -177,18 +241,21 @@ Metricas reportadas:
 Resultado local verificado en desarrollo:
 
 ```text
-train:      F1 0.9921
-validation: F1 0.9756
-test:       F1 0.9438
+train:      F1 0.7917
+validation: F1 0.7593
+test:       F1 0.8426
+challenge:  F1 0.5714
 ```
+
+Los splits `validation` y `test` contienen todos los estilos de pregunta: formal, informal, corta, larga, error ortografico y no tecnico. Esto permite medir capacidad real de generalizacion sin inflar resultados por fuga de datos.
 
 Comparacion de estrategias locales:
 
-| Estrategia | Validation F1 | Test F1 | Decision |
-|---|---:|---:|---|
-| Palabras clave baseline | 0.1829 | 0.1124 | Insuficiente como solucion unica |
-| TF-IDF semantico puro | 0.3780 | 0.3483 | Mejora frente al baseline, pero falla en muchas intenciones cortas o ambiguas |
-| Hibrido seleccionado | 0.9756 | 0.9438 | Estrategia activa por mejor generalizacion y control de seguridad |
+| Estrategia | Validation F1 | Test F1 | Challenge F1 | Decision |
+|---|---:|---:|---:|---|
+| Palabras clave baseline | 0.3611 | 0.3333 | 0.5714 | Insuficiente como solucion unica |
+| TF-IDF semantico puro | 0.5463 | 0.6111 | 0.5714 | Mejora frente al baseline, pero falla en muchas intenciones cortas o ambiguas |
+| Hibrido seleccionado | 0.7870 | 0.8889 | 0.5714 | Estrategia activa por mejor generalizacion y control de seguridad |
 
 La comparacion se calcula con el comando `python manage.py evaluar_asistente_local`. El resultado debe interpretarse como evidencia tecnica inicial sobre la base registrada, no como reemplazo de pruebas con usuarios reales.
 
@@ -234,6 +301,12 @@ Probar una pregunta en consola:
 ```powershell
 cd backend
 python manage.py probar_asistente "Como reporto un incidente?"
+```
+
+Generar y validar dataset profesional:
+
+```powershell
+python manage.py generar_dataset_asistente
 ```
 
 Evaluar cobertura local:

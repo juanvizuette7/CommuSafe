@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-import random
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from typing import Any
 
 from .local_engine import DOMAIN_TERMS, ENGINE, MEDIUM_CONFIDENCE_THRESHOLD, normalize_text, tokenize
-from .local_knowledge import FAQ_ENTRIES
+from .training_dataset import build_professional_dataset, dataset_summary, validate_professional_dataset
 
 
 @dataclass(frozen=True)
@@ -20,36 +19,30 @@ class EvaluationExample:
 
 
 def build_dataset(seed: int = 42) -> dict[str, list[EvaluationExample]]:
-    """Construye split deterministico train/validation/test desde la base local."""
+    """Construye split deterministico train/validation/test profesional."""
 
-    examples: list[EvaluationExample] = []
-    for entry in FAQ_ENTRIES:
-        role = entry.allowed_roles[0]
-        examples.append(EvaluationExample(entry.question, entry.intent, entry.category, role))
-        for variation in entry.variations:
-            examples.append(EvaluationExample(variation, entry.intent, entry.category, role))
-
-    random.Random(seed).shuffle(examples)
-    total = len(examples)
-    train_end = int(total * 0.70)
-    validation_end = int(total * 0.85)
-    splits = {
-        "train": examples[:train_end],
-        "validation": examples[train_end:validation_end],
-        "test": examples[validation_end:],
-    }
-    splits["test"].extend(
-        [
-            EvaluationExample("quien gano el partido de futbol ayer", "sin_intencion_confiable", "fuera_contexto"),
-            EvaluationExample("precio del dolar hoy en colombia", "sin_intencion_confiable", "fuera_contexto"),
-            EvaluationExample("hazme una receta de pasta", "sin_intencion_confiable", "fuera_contexto"),
-            EvaluationExample("quiero saber algo del parqueadero y visitantes", "vehiculo_visitante", "ambigua"),
-            EvaluationExample("tengo una duda con un reporte y una alerta", "consultar_estado_incidente", "ambigua"),
-            EvaluationExample("cuanto vale exactamente la multa por ruido", "pagos_cuotas", "requiere_validacion"),
-            EvaluationExample("cual es el celular directo del administrador", "telefono_administracion", "requiere_validacion"),
+    professional_splits = build_professional_dataset(seed=seed)
+    return {
+        split: [
+            EvaluationExample(example.text, example.intent, example.category, example.role)
+            for example in examples
         ]
-    )
-    return splits
+        for split, examples in professional_splits.items()
+    }
+
+
+def build_challenge_dataset() -> list[EvaluationExample]:
+    """Casos dificiles fuera del entrenamiento para medir rechazo y ambiguedad."""
+
+    return [
+        EvaluationExample("quien gano el partido de futbol ayer", "sin_intencion_confiable", "fuera_contexto"),
+        EvaluationExample("precio del dolar hoy en colombia", "sin_intencion_confiable", "fuera_contexto"),
+        EvaluationExample("hazme una receta de pasta", "sin_intencion_confiable", "fuera_contexto"),
+        EvaluationExample("quiero saber algo del parqueadero y visitantes", "vehiculo_visitante", "ambigua"),
+        EvaluationExample("tengo una duda con un reporte y una alerta", "consultar_estado_incidente", "ambigua"),
+        EvaluationExample("cuanto vale exactamente la multa por ruido", "pagos_cuotas", "requiere_validacion"),
+        EvaluationExample("cual es el celular directo del administrador", "telefono_administracion", "requiere_validacion"),
+    ]
 
 
 def evaluate_split(examples: list[EvaluationExample]) -> dict[str, Any]:
@@ -176,17 +169,23 @@ def compare_models(examples: list[EvaluationExample]) -> dict[str, Any]:
 
 def evaluate_all() -> dict[str, Any]:
     splits = build_dataset()
+    professional_splits = build_professional_dataset()
+    challenge = build_challenge_dataset()
     return {
         "dataset": {name: len(values) for name, values in splits.items()},
+        "dataset_profesional": dataset_summary(professional_splits),
+        "errores_dataset": validate_professional_dataset(professional_splits),
         "train": evaluate_split(splits["train"]),
         "validation": evaluate_split(splits["validation"]),
         "test": evaluate_split(splits["test"]),
+        "challenge": evaluate_split(challenge),
         "comparacion_modelos": {
             "validation": compare_models(splits["validation"]),
             "test": compare_models(splits["test"]),
+            "challenge": compare_models(challenge),
         },
         "nota": (
-            "Metricas calculadas localmente sobre preguntas y variaciones registradas. "
-            "No sustituyen pruebas con usuarios reales, pero evidencian cobertura inicial."
+            "Metricas calculadas sobre dataset profesional balanceado por intencion. "
+            "El split challenge contiene preguntas fuera de dominio, ambiguas o que requieren validacion."
         ),
     }
