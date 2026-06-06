@@ -11,15 +11,20 @@ Esta auditoria revisa exclusivamente el asistente virtual de CommuSafe a nivel b
 | Dependencia de IA generativa | El asistente podia depender demasiado de Gemini/Anthropic para preguntas frecuentes. | Se mantiene arquitectura local-first con base de conocimiento de 108 entradas, coincidencia exacta, palabras clave, TF-IDF y respuesta segura. | `backend/asistente/local_knowledge.py`, `backend/asistente/local_engine.py` |
 | Consumo de tokens | El historial persistente podia crecer y aumentar el costo si se enviaba completo al LLM. | Se agrego compactacion de historial antes de IA: maximo 12 mensajes y 6000 caracteres. La base de datos conserva el historial completo. | `MAX_LLM_HISTORY_MESSAGES`, `MAX_LLM_HISTORY_CHARS`, `_compactar_historial_para_ia()` |
 | Respuestas inconsistentes | La IA podria usar formato Markdown excesivo, inventar informacion o salir del dominio. | Prompt restringido al dominio, limpieza de Markdown decorativo, fallback seguro y logs de modo/intencion/confianza. | `SYSTEM_PROMPT`, `_limpiar_respuesta_ia()`, `AsistenteRespuestaLog` |
+| Privacidad frente al proveedor IA | El contexto generativo incluia datos personales y detalles operativos innecesarios. | El contexto externo se minimizo a rol y conteos agregados; no envia nombre, unidad, titulos, ubicaciones ni cuerpos de avisos. | `_contexto_usuario()`, `test_contexto_enviado_a_ia_minimiza_datos_personales` |
 | Falta de conocimiento local | El asistente necesitaba respuestas preparadas para normas, procedimientos y uso del sistema. | Base local con preguntas, variaciones, categorias, keywords, roles, estado de verificacion y trazabilidad. | `local_knowledge.py` |
 | Mantenimiento futuro | La base necesitaba una forma objetiva de validar diversidad, vigencia y seguridad. | Se agrego comando de validacion/exportacion de base de conocimiento. | `python manage.py validar_base_conocimiento` |
-| Concurrencia | Multiples usuarios no deben mezclar conversaciones ni estados. | Motor local stateless con cache por texto/rol, conversaciones filtradas por usuario autenticado y mensajes persistidos por conversacion. | `ConversacionAsistenteViewSet.get_queryset()`, `resolve_local_answer_cached()` |
+| Concurrencia | Multiples usuarios no deben mezclar conversaciones ni dos mensajes simultaneos deben construir contexto desactualizado. | Motor local stateless con cache por texto/rol, conversaciones filtradas por usuario y bloqueo transaccional por conversacion durante el envio. | `ConversacionAsistenteViewSet.get_queryset()`, `select_for_update()`, `resolve_local_answer_cached()` |
 | Abuso del endpoint | No habia limite especifico para mensajes del asistente. | Se agregaron throttles por usuario: 30 mensajes/minuto para chat y 120 lecturas/minuto. | `backend/asistente/throttles.py`, `views.py` |
 | Seguridad del servicio Flask | El servicio auxiliar podia quedar escuchando en todas las interfaces sin clave. | Por defecto escucha en `127.0.0.1`; si no hay `COMMUSAFE_NLP_SERVICE_KEY`, bloquea inferencia remota. | `backend/asistente/nlp_flask_service.py` |
 | Exposicion de informacion | El servicio `/knowledge` no debe exponerse remotamente sin control. | La misma proteccion de clave/local-only aplica a `/knowledge` e `/infer`. | Prueba `test_servicio_flask_restringe_acceso_remoto_sin_clave` |
 | Observabilidad | No habia medicion suficiente del comportamiento por respuesta. | Logs tecnicos con modo, proveedor, modelo, intencion, categoria, confianza, latencia, tokens estimados y metadatos. | Modelo `AsistenteRespuestaLog` |
 | Evaluacion | Faltaba comparacion clara entre estrategias locales. | Se agrego comando de evaluacion con baseline de palabras clave, TF-IDF puro e hibrido seleccionado. | `python manage.py evaluar_asistente_local` |
-| Dataset de entrenamiento | El asistente necesitaba datos separados y sin fuga para sustentar comprension de intenciones. | Se agrego dataset profesional con 648 ejemplos, 108 intenciones, train/validation/test, seis estilos por intencion y validacion de duplicados/ambiguedades. | `python manage.py generar_dataset_asistente` |
+| Fragmentacion de intenciones | Las 108 FAQ estaban tratadas como 108 clases con pocos ejemplos, lo que dificultaba generalizar y explicar la taxonomia. | Se conservaron las 108 FAQ como subintenciones y se agruparon en 20 intenciones principales mantenibles. | `backend/asistente/taxonomy.py` |
+| Dataset de entrenamiento | El asistente necesitaba datos separados y sin fuga para sustentar comprension de intenciones. | Se reconstruyo un dataset profesional con 720 ejemplos, 20 intenciones principales, train/validation/test y seis estilos balanceados. | `python manage.py generar_dataset_asistente` |
+| Umbrales de confianza | Los umbrales iniciales no tenian evidencia reproducible suficiente. | Se agrego calibracion por busqueda sobre validation y casos de reto; se seleccionaron 0.52, 0.28 y margen 0.04 con cero respuestas directas incorrectas en calibracion. | `calibrate_thresholds()` |
+| Errores ortograficos | El filtro de dominio rechazaba algunas preguntas utiles antes de clasificarlas. | Se agrego normalizacion de errores frecuentes y vocabulario cotidiano, conservando rechazo seguro fuera de dominio. | `COMMON_TOKEN_CORRECTIONS`, `normalize_text()` |
+| Colisiones exactas | Siete variaciones cortas podian corresponder a mas de una FAQ y el indice conservaba solo una. | El indice exacto conserva todos los candidatos y solicita aclaracion cuando una frase es realmente ambigua. | `_exact_ambiguity_payload()`, `colisiones_exactas_controladas` |
 | Documentacion | La arquitectura hibrida necesitaba explicacion sustentable. | Se agrego documentacion especifica de arquitectura, pruebas, seguridad, metricas y comandos. | `docs/ASISTENTE_HIBRIDO.md` |
 
 ## Arquitectura resultante
@@ -85,12 +90,12 @@ python manage.py evaluar_asistente_local
 Resultados verificados:
 
 ```text
-asistente/tests.py: 33 passed
-suite completa backend: 158 passed, 6 subtests passed
+asistente/tests.py: 37 passed, 5 subtests passed
+suite completa backend: 162 passed, 11 subtests passed
 manage.py check: sin problemas
 makemigrations --check --dry-run: sin cambios pendientes
 validar_base_conocimiento: ok
-generar_dataset_asistente: ok, 648 ejemplos, 0 errores
+generar_dataset_asistente: ok, 720 ejemplos, 0 errores
 ```
 
 Estado de base de conocimiento:
@@ -98,7 +103,8 @@ Estado de base de conocimiento:
 | Indicador | Valor |
 |---|---:|
 | Preguntas principales diferentes | 108 |
-| Intenciones unicas | 108 |
+| Intenciones principales | 20 |
+| Subintenciones FAQ | 108 |
 | Categorias | 12 |
 | Entradas verificadas | 100 |
 | Pendientes de validacion administrativa | 8 |
@@ -109,10 +115,10 @@ Dataset profesional:
 
 | Indicador | Valor |
 |---|---:|
-| Ejemplos totales | 648 |
-| Train | 432 |
-| Validation | 108 |
-| Test | 108 |
+| Ejemplos totales | 720 |
+| Train | 480 |
+| Validation | 120 |
+| Test | 120 |
 | Estilos por intencion | 6 |
 | Duplicados entre particiones | 0 |
 | Intenciones ambiguas por frase repetida | 0 |
@@ -121,34 +127,59 @@ Distribucion de estilos:
 
 | Particion | Formal | Informal | Corta | Larga | Error ortografico | No tecnico |
 |---|---:|---:|---:|---:|---:|---:|
-| Train | 72 | 72 | 72 | 72 | 72 | 72 |
-| Validation | 18 | 18 | 18 | 18 | 18 | 18 |
-| Test | 18 | 18 | 18 | 18 | 18 | 18 |
+| Train | 80 | 80 | 80 | 80 | 80 | 80 |
+| Validation | 20 | 20 | 20 | 20 | 20 | 20 |
+| Test | 20 | 20 | 20 | 20 | 20 | 20 |
+
+Umbrales calibrados:
+
+| Decision | Valor |
+|---|---:|
+| Respuesta local directa | `>= 0.52` sin ambiguedad |
+| Aclaracion | `>= 0.28` o candidatos cercanos |
+| Margen de ambiguedad | `0.04` entre intenciones principales |
+| Respaldo generativo | Menor a `0.28`, solo si pertenece al dominio |
+| Respuesta segura | Fuera de dominio, dato no verificado o falla del proveedor |
 
 Metricas del motor local:
 
 | Split | F1 |
 |---|---:|
-| Train | 0.7917 |
-| Validation | 0.7593 |
-| Test | 0.8426 |
+| Train | 0.8250 |
+| Validation | 0.8250 |
+| Test | 0.8167 |
 | Challenge | 0.5714 |
 
 Comparacion de estrategias:
 
 | Estrategia | Validation F1 | Test F1 | Challenge F1 |
 |---|---:|---:|---:|
-| Palabras clave baseline | 0.3611 | 0.3333 | 0.5714 |
-| TF-IDF semantico puro | 0.5463 | 0.6111 | 0.5714 |
-| Hibrido seleccionado | 0.7870 | 0.8889 | 0.5714 |
+| Palabras clave baseline | 0.4750 | 0.5333 | 0.5714 |
+| TF-IDF semantico puro | 0.6583 | 0.6917 | 0.5714 |
+| Hibrido seleccionado | 0.8250 | 0.8250 | 0.5714 |
+
+Comportamiento en test:
+
+| Resultado | Porcentaje |
+|---|---:|
+| Respuesta local directa | 69.17% |
+| Aclaracion | 15.83% |
+| Candidato a Gemini/Anthropic | 1.67% |
+| Respuesta segura | 13.33% |
+
+Confusiones residuales identificadas:
+
+- Clasificacion de incidentes frente a avisos cuando la frase solo menciona una categoria.
+- Gestion de avisos frente a navegacion de la app cuando la consulta solo indica que desea abrir algo.
+- Frases demasiado cortas sin terminos del dominio, que se rechazan de forma segura antes de arriesgar una respuesta incorrecta.
 
 ## Riesgos residuales reales
 
-- Las metricas locales se calculan sobre la base registrada; deben complementarse con pruebas de usuarios reales.
+- Las metricas locales se calculan sobre la base registrada y deben complementarse con pruebas de usuarios reales.
 - Algunas respuestas marcadas como pendientes de validacion necesitan confirmacion administrativa si el conjunto cambia horarios, telefonos o reglas.
 - El LLM sigue siendo un respaldo externo: puede fallar por cuota, red o proveedor; el sistema ya responde de forma segura en esos casos.
 - El servicio Flask auxiliar es opcional; si se publica fuera de localhost debe usarse `COMMUSAFE_NLP_SERVICE_KEY`.
 
 ## Conclusion
 
-El asistente queda defendible como modulo profesional del sistema: reduce dependencia de IA generativa, conserva memoria conversacional, mantiene control por rol, limita abuso, evita consumo innecesario de tokens, registra trazabilidad y cuenta con pruebas y documentacion verificables.
+El asistente queda defendible como modulo profesional del sistema: conserva 108 respuestas preparadas sin convertirlas en 108 clases fragmentadas, reduce dependencia de IA generativa, conserva memoria conversacional, mantiene control por rol, evita consumo innecesario de tokens, registra trazabilidad y cuenta con pruebas y documentacion verificables.

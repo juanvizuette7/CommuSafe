@@ -26,6 +26,7 @@ La arquitectura queda separada por responsabilidades:
 | Capa | Archivo | Responsabilidad |
 |---|---|---|
 | Base de conocimiento | `backend/asistente/local_knowledge.py` | Preguntas frecuentes, variaciones, categorias, palabras clave, roles permitidos y trazabilidad de cada entrada |
+| Taxonomia | `backend/asistente/taxonomy.py` | Agrupacion mantenible de FAQ y subtemas en intenciones principales |
 | Motor local | `backend/asistente/local_engine.py` | Coincidencia exacta, scoring por palabras clave, TF-IDF, umbrales de confianza y respuesta segura |
 | Servicio LLM | `backend/asistente/services.py` | Orquestacion local-first, contexto del usuario, historial conversacional, Gemini/Anthropic y logs |
 | API REST | `backend/asistente/views.py` | Chat rapido, conversaciones persistentes, mensajes, health check y acciones REST |
@@ -53,7 +54,8 @@ La base local contiene mas de 100 entradas iniciales organizadas por categorias:
 
 Cada entrada define:
 
-- `intent`: identificador funcional de la pregunta.
+- `main_intent`: intencion principal usada por el clasificador y las metricas.
+- `subintent`: identificador funcional especifico de la FAQ.
 - `category`: categoria operacional.
 - `question`: pregunta principal.
 - `answer`: respuesta validada para el asistente.
@@ -75,20 +77,39 @@ Estado actual verificado:
 | Indicador | Valor |
 |---|---:|
 | Preguntas principales diferentes | 108 |
-| Intenciones unicas | 108 |
+| Intenciones principales | 20 |
+| Subintenciones FAQ | 108 |
 | Categorias | 12 |
 | Entradas verificadas | 100 |
 | Pendientes de validacion administrativa | 8 |
 | Entradas vigentes | 108 |
 | Entradas vencidas | 0 |
 
+## Decision de taxonomia
+
+La primera version trataba cada una de las 108 FAQ como una intencion independiente. Aunque conservaba mucha informacion, producia clases pequenas, aumentaba ambiguedad y dificultaba explicar el modelo. La auditoria reorganizo el conocimiento sin eliminarlo:
+
+```text
+Categoria operacional
+  -> Intencion principal
+     -> FAQ o subintencion
+        -> Pregunta principal
+        -> Variaciones naturales
+        -> Respuesta preparada y verificada
+```
+
+Las categorias sirven para organizar el dominio; las 20 intenciones principales representan objetivos del usuario; las 108 FAQ conservan el detalle operativo; y las variaciones permiten reconocer distintas formas de preguntar. Esta estructura evita que el clasificador memorice una clase por pregunta y permite que el motor recupere una respuesta concreta despues de comprender el tema general.
+
 ## Dataset profesional de entrenamiento
 
 El asistente cuenta con un dataset deterministico generado desde la base de conocimiento local. Este dataset no reemplaza la base operativa; sirve para entrenar, validar, probar y sustentar la comprension de intenciones en espanol.
 
+El dataset no es un archivo aislado: `training_dataset.py` y el chat real consumen la misma fuente de verdad, `FAQ_ENTRIES` y `MAIN_INTENTS`. El motor recupera la FAQ concreta para responder, mientras el dataset evalua la intencion principal y conserva `subintent` y `entry_id` para trazabilidad.
+
 La taxonomia se basa en:
 
-- Intencion unica por pregunta funcional.
+- Veinte intenciones principales faciles de explicar y mantener.
+- Ciento ocho FAQ conservadas como subintenciones y respuestas preparadas.
 - Categoria operacional.
 - Rol principal aplicable.
 - Palabras clave verificables.
@@ -105,22 +126,23 @@ Los estilos obligatorios por intencion son:
 - Error ortografico comun.
 - Expresion no tecnica.
 
-Cada intencion tiene exactamente seis ejemplos, distribuidos sin repetir frases entre particiones:
+Cada intencion principal tiene exactamente 36 ejemplos, seis por cada estilo, distribuidos sin repetir frases entre particiones:
 
 | Particion | Ejemplos | Uso |
 |---|---:|---|
-| Train | 432 | Ajuste y revision del motor |
-| Validation | 108 | Comparacion de estrategias y calibracion |
-| Test | 108 | Medicion final con frases no vistas |
+| Train | 480 | Ajuste y revision del motor |
+| Validation | 120 | Comparacion de estrategias y calibracion |
+| Test | 120 | Medicion final con frases no vistas |
 
 Resumen actual:
 
 | Indicador | Valor |
 |---|---:|
-| Total de ejemplos | 648 |
-| Intenciones | 108 |
+| Total de ejemplos | 720 |
+| Intenciones principales | 20 |
+| FAQ representadas | 108 de 108 |
 | Categorias | 12 |
-| Ejemplos por intencion | 6 |
+| Ejemplos por intencion | 36 |
 | Estilos por intencion | 6 |
 | Errores de dataset | 0 |
 
@@ -128,9 +150,9 @@ Distribucion de estilos por particion:
 
 | Particion | Formal | Informal | Corta | Larga | Error ortografico | No tecnico |
 |---|---:|---:|---:|---:|---:|---:|
-| Train | 72 | 72 | 72 | 72 | 72 | 72 |
-| Validation | 18 | 18 | 18 | 18 | 18 | 18 |
-| Test | 18 | 18 | 18 | 18 | 18 | 18 |
+| Train | 80 | 80 | 80 | 80 | 80 | 80 |
+| Validation | 20 | 20 | 20 | 20 | 20 | 20 |
+| Test | 20 | 20 | 20 | 20 | 20 | 20 |
 
 El comando de generacion valida automaticamente duplicados, ambiguedades, balance por intencion, estilos obligatorios y fuga entre train/validation/test:
 
@@ -156,10 +178,24 @@ El motor local usa cuatro niveles de decision:
 | `safe` | Rechaza o redirige consultas fuera del contexto de Remansos del Norte y CommuSafe |
 | `fallback_allowed` | Permite escalar a Gemini o Anthropic cuando la pregunta es del dominio pero la base local no alcanza confianza suficiente |
 
-Los umbrales actuales son:
+Flujo aplicado:
 
-- Confianza alta: `0.62`.
-- Confianza media: `0.42`.
+1. Normaliza texto, tildes, puntuacion y errores ortograficos frecuentes.
+2. Busca coincidencia exacta en preguntas, variaciones y palabras clave.
+3. Calcula similitud por palabras clave, coincidencia lexica y TF-IDF.
+4. Recupera la FAQ concreta y su respuesta preparada.
+5. Responde localmente si la confianza es alta.
+6. Pide aclaracion si la confianza es media o existe ambiguedad entre intenciones principales.
+7. Permite Gemini o Anthropic solo si la consulta es del dominio y queda en baja confianza.
+8. Responde de forma segura si esta fuera del dominio, el proveedor falla o no hay informacion verificada.
+
+Los umbrales actuales fueron seleccionados mediante busqueda reproducible sobre validation y casos de reto:
+
+- Confianza alta: `0.52`.
+- Confianza media: `0.28`.
+- Margen de ambiguedad: `0.04`.
+
+La calibracion obtuvo cero respuestas directas incorrectas sobre el conjunto usado para seleccionar umbrales. Los valores se verifican con `python manage.py evaluar_asistente_local`.
 
 La respuesta segura impide que el asistente invente datos sobre valores, sanciones, nombres, decisiones administrativas o temas externos al conjunto.
 
@@ -215,6 +251,8 @@ Endpoints:
 
 Si se define `COMMUSAFE_NLP_SERVICE_KEY`, las peticiones deben enviar el header `X-CommuSafe-NLP-Key`.
 
+El procesamiento principal permanece integrado en Django porque comparte autenticacion, roles, persistencia y servicios de negocio. Flask no es necesario para el chat de produccion; se conserva como adaptador auxiliar opcional para pruebas de inferencia, evaluacion o integraciones NLP aisladas. Reutiliza el mismo `ENGINE`, por lo que no duplica la logica de clasificacion.
+
 Por seguridad, el servicio escucha por defecto en `127.0.0.1`. Para exponerlo a otra interfaz se debe configurar conscientemente `COMMUSAFE_NLP_HOST` y protegerlo con `COMMUSAFE_NLP_SERVICE_KEY`.
 
 ## Evaluacion y metricas
@@ -241,9 +279,9 @@ Metricas reportadas:
 Resultado local verificado en desarrollo:
 
 ```text
-train:      F1 0.7917
-validation: F1 0.7593
-test:       F1 0.8426
+train:      F1 0.8250
+validation: F1 0.8250
+test:       F1 0.8167
 challenge:  F1 0.5714
 ```
 
@@ -253,9 +291,20 @@ Comparacion de estrategias locales:
 
 | Estrategia | Validation F1 | Test F1 | Challenge F1 | Decision |
 |---|---:|---:|---:|---|
-| Palabras clave baseline | 0.3611 | 0.3333 | 0.5714 | Insuficiente como solucion unica |
-| TF-IDF semantico puro | 0.5463 | 0.6111 | 0.5714 | Mejora frente al baseline, pero falla en muchas intenciones cortas o ambiguas |
-| Hibrido seleccionado | 0.7870 | 0.8889 | 0.5714 | Estrategia activa por mejor generalizacion y control de seguridad |
+| Palabras clave baseline | 0.4750 | 0.5333 | 0.5714 | Insuficiente como solucion unica |
+| TF-IDF semantico puro | 0.6583 | 0.6917 | 0.5714 | Mejora frente al baseline, pero falla en preguntas cortas o ambiguas |
+| Hibrido seleccionado | 0.8250 | 0.8250 | 0.5714 | Estrategia activa por mejor generalizacion y control de seguridad |
+
+Comportamiento medido en `test`:
+
+| Resultado | Porcentaje |
+|---|---:|
+| Respuesta local directa | 69.17% |
+| Solicitud de aclaracion | 15.83% |
+| Candidato a IA generativa | 1.67% |
+| Respuesta segura | 13.33% |
+
+Las confusiones principales restantes se concentran entre clasificacion de incidentes y avisos, gestion de avisos y navegacion, y frases muy cortas que el filtro de dominio prefiere rechazar de forma segura.
 
 La comparacion se calcula con el comando `python manage.py evaluar_asistente_local`. El resultado debe interpretarse como evidencia tecnica inicial sobre la base registrada, no como reemplazo de pruebas con usuarios reales.
 
@@ -281,6 +330,9 @@ Cobertura funcional validada:
 - Eliminacion de conversaciones.
 - Uso de IA cuando la consulta es del dominio pero no tiene respuesta local suficiente.
 - Manejo de errores del proveedor LLM.
+- Errores ortograficos frecuentes y lenguaje no tecnico.
+- Preguntas largas, ambiguas, fuera de alcance y sobre datos no verificados.
+- Calibracion reproducible de umbrales.
 
 ## Criterios de seguridad
 
@@ -338,3 +390,7 @@ Ejecutar servicio Flask auxiliar:
 ```powershell
 python -m asistente.nlp_flask_service
 ```
+
+## Texto academico para el trabajo de grado
+
+CommuSafe incorporo un asistente virtual hibrido apoyado en una base de conocimiento local y un modelo de comprension de preguntas. La solucion organiza 108 preguntas frecuentes verificables en 20 intenciones principales, lo que permite responder consultas habituales sin consumir servicios externos de inteligencia artificial. El motor combina normalizacion de texto, coincidencia exacta, palabras clave y busqueda semantica TF-IDF; cuando detecta ambiguedad solicita aclaracion y solo permite usar Gemini como respaldo controlado ante consultas del dominio que no pueden resolverse localmente. Esta arquitectura reduce dependencia de tokens, mejora disponibilidad, mantiene consistencia en las respuestas y evita inventar informacion interna no validada por la administracion.

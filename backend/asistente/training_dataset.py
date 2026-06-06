@@ -10,17 +10,20 @@ from typing import Any
 
 from .local_engine import normalize_text
 from .local_knowledge import FAQEntry, FAQ_ENTRIES
+from .taxonomy import MAIN_INTENTS
 
 
 SPLIT_RATIOS = {"train": 4, "validation": 1, "test": 1}
-EXAMPLES_PER_INTENT = sum(SPLIT_RATIOS.values())
 REQUIRED_STYLES = {"formal", "informal", "corta", "larga", "error_ortografico", "no_tecnico"}
+EXAMPLES_PER_STYLE_PER_INTENT = sum(SPLIT_RATIOS.values())
+EXAMPLES_PER_INTENT = len(REQUIRED_STYLES) * EXAMPLES_PER_STYLE_PER_INTENT
 
 
 @dataclass(frozen=True)
 class TrainingExample:
     text: str
     intent: str
+    subintent: str
     category: str
     role: str
     entry_id: str
@@ -113,44 +116,29 @@ def _candidate_texts(entry: FAQEntry) -> list[tuple[str, str]]:
     return list(unique.values())
 
 
-def _select_balanced_candidates(entry: FAQEntry, seed: int) -> list[tuple[str, str]]:
-    rng = random.Random(f"{seed}:{entry.id}")
-    candidates = _candidate_texts(entry)
-    by_style: dict[str, list[str]] = defaultdict(list)
-    for style, text in candidates:
-        by_style[style].append(text)
+def _select_intent_candidates(
+    intent_id: str,
+    entries: list[FAQEntry],
+    seed: int,
+) -> list[tuple[str, str, FAQEntry]]:
+    """Selecciona ejemplos variados y balanceados para una intencion principal."""
 
-    selected: list[tuple[str, str]] = []
-    used = set()
-    for style in sorted(REQUIRED_STYLES):
-        options = by_style.get(style, [])
-        if not options:
-            continue
-        text = rng.choice(options)
-        normalized = normalize_text(text)
-        if normalized not in used:
-            selected.append((style, text))
-            used.add(normalized)
-
-    remaining = candidates[:]
-    rng.shuffle(remaining)
-    for style, text in remaining:
-        if len(selected) >= EXAMPLES_PER_INTENT:
-            break
-        normalized = normalize_text(text)
-        if normalized not in used:
-            selected.append((style, text))
-            used.add(normalized)
-
-    while len(selected) < EXAMPLES_PER_INTENT:
-        style = "no_tecnico"
-        text = f"Tengo una duda sobre {_keyword_phrase(entry)} en CommuSafe {len(selected) + 1}"
-        normalized = normalize_text(text)
-        if normalized not in used:
-            selected.append((style, text))
-            used.add(normalized)
-
-    return selected[:EXAMPLES_PER_INTENT]
+    selected: list[tuple[str, str, FAQEntry]] = []
+    styles = sorted(REQUIRED_STYLES)
+    for style_index, style in enumerate(styles):
+        ordered_entries = entries[style_index % len(entries):] + entries[:style_index % len(entries)]
+        for example_index in range(EXAMPLES_PER_STYLE_PER_INTENT):
+            entry = ordered_entries[example_index % len(ordered_entries)]
+            options = [
+                text
+                for candidate_style, text in _candidate_texts(entry)
+                if candidate_style == style
+            ]
+            if not options:
+                options = [entry.question]
+            rng = random.Random(f"{seed}:{intent_id}:{style}:{entry.id}:{example_index}")
+            selected.append((style, rng.choice(options), entry))
+    return selected
 
 
 def build_professional_dataset(seed: int = 42) -> dict[str, list[TrainingExample]]:
@@ -159,36 +147,35 @@ def build_professional_dataset(seed: int = 42) -> dict[str, list[TrainingExample
     splits: dict[str, list[TrainingExample]] = {"train": [], "validation": [], "test": []}
     used_global_texts: set[str] = set()
 
-    styles = sorted(REQUIRED_STYLES)
-
-    for entry_index, entry in enumerate(FAQ_ENTRIES):
-        selected = _select_balanced_candidates(entry, seed)
-        selected_by_style = {style: text for style, text in selected}
-        role = entry.allowed_roles[0]
-        validation_style = styles[entry_index % len(styles)]
-        test_style = styles[(entry_index + 1) % len(styles)]
-        train_styles = [style for style in styles if style not in {validation_style, test_style}]
-        split_items = (
-            [("train", style, selected_by_style[style]) for style in train_styles]
-            + [("validation", validation_style, selected_by_style[validation_style])]
-            + [("test", test_style, selected_by_style[test_style])]
+    entries_by_id = {entry.id: entry for entry in FAQ_ENTRIES}
+    for main_intent in MAIN_INTENTS:
+        entries = [entries_by_id[faq_id] for faq_id in main_intent.faq_ids]
+        selected = _select_intent_candidates(main_intent.id, entries, seed)
+        split_plan = (
+            ["train"] * SPLIT_RATIOS["train"]
+            + ["validation"] * SPLIT_RATIOS["validation"]
+            + ["test"] * SPLIT_RATIOS["test"]
         )
 
-        for split, style, text in split_items:
-            text = _make_global_unique(text, entry, used_global_texts)
-            splits[split].append(
-                TrainingExample(
-                    text=text,
-                    intent=entry.intent,
-                    category=entry.category,
-                    role=role,
-                    entry_id=entry.id,
-                    style=style,
-                    split=split,
-                    verified=entry.verified,
-                    requires_admin_validation=not entry.verified,
+        for style_index, style in enumerate(sorted(REQUIRED_STYLES)):
+            style_examples = [item for item in selected if item[0] == style]
+            for split, (_, text, entry) in zip(split_plan, style_examples, strict=True):
+                role = entry.allowed_roles[0]
+                text = _make_global_unique(text, entry, used_global_texts)
+                splits[split].append(
+                    TrainingExample(
+                        text=text,
+                        intent=main_intent.id,
+                        subintent=entry.intent,
+                        category=entry.category,
+                        role=role,
+                        entry_id=entry.id,
+                        style=style,
+                        split=split,
+                        verified=entry.verified,
+                        requires_admin_validation=not entry.verified,
+                    )
                 )
-            )
 
     for values in splits.values():
         values.sort(key=lambda item: (item.category, item.intent, item.style, normalize_text(item.text)))
@@ -203,7 +190,8 @@ def _make_global_unique(text: str, entry: FAQEntry, used_global_texts: set[str])
         text,
         f"{text} en {entry.category.replace('_', ' ')}",
         f"{text} sobre {entry.keywords[0] if entry.keywords else entry.intent}",
-        f"{text} para {entry.intent.replace('_', ' ')}",
+        f"{text} para {entry.main_intent.replace('_', ' ')}",
+        f"{text} relacionado con {entry.question.lower().strip('¿? ')}",
     ]
     for candidate in candidates:
         normalized = normalize_text(candidate)
@@ -213,7 +201,7 @@ def _make_global_unique(text: str, entry: FAQEntry, used_global_texts: set[str])
 
     suffix = 1
     while True:
-        candidate = f"{text} caso {entry.id} {suffix}"
+        candidate = f"{text} consulta adicional {suffix} sobre {entry.keywords[0]}"
         normalized = normalize_text(candidate)
         if normalized not in used_global_texts:
             used_global_texts.add(normalized)
@@ -234,6 +222,7 @@ def dataset_summary(splits: dict[str, list[TrainingExample]]) -> dict[str, Any]:
     }
     by_category = Counter(example.category for example in all_examples)
     examples_per_intent = Counter(example.intent for example in all_examples)
+    represented_faq = {example.entry_id for example in all_examples}
     return {
         "total": len(all_examples),
         "splits": by_split,
@@ -242,6 +231,8 @@ def dataset_summary(splits: dict[str, list[TrainingExample]]) -> dict[str, Any]:
         "estilos": dict(sorted(by_style.items())),
         "estilos_por_split": by_split_style,
         "categorias_detalle": dict(sorted(by_category.items())),
+        "faq_representadas": len(represented_faq),
+        "faq_totales": len(FAQ_ENTRIES),
         "min_ejemplos_por_intencion": min(examples_per_intent.values()) if examples_per_intent else 0,
         "max_ejemplos_por_intencion": max(examples_per_intent.values()) if examples_per_intent else 0,
         "balanceado_por_intencion": len(set(examples_per_intent.values())) == 1,
@@ -279,35 +270,43 @@ def validate_professional_dataset(splits: dict[str, list[TrainingExample]]) -> l
             errors.append(f"Texto ambiguo '{normalized}' asignado a intenciones {sorted(intents)}.")
 
     for intent, split_counts in intent_to_splits.items():
-        if split_counts["train"] != SPLIT_RATIOS["train"]:
+        expected_train = len(REQUIRED_STYLES) * SPLIT_RATIOS["train"]
+        expected_validation = len(REQUIRED_STYLES) * SPLIT_RATIOS["validation"]
+        expected_test = len(REQUIRED_STYLES) * SPLIT_RATIOS["test"]
+        if split_counts["train"] != expected_train:
             errors.append(f"{intent}: cantidad train inesperada ({split_counts['train']}).")
-        if split_counts["validation"] != SPLIT_RATIOS["validation"]:
+        if split_counts["validation"] != expected_validation:
             errors.append(f"{intent}: cantidad validation inesperada ({split_counts['validation']}).")
-        if split_counts["test"] != SPLIT_RATIOS["test"]:
+        if split_counts["test"] != expected_test:
             errors.append(f"{intent}: cantidad test inesperada ({split_counts['test']}).")
         missing_styles = REQUIRED_STYLES - intent_to_styles[intent]
         if missing_styles:
             errors.append(f"{intent}: faltan estilos {sorted(missing_styles)}.")
 
     total_intents = len(intent_to_splits)
-    if total_intents and total_intents % len(REQUIRED_STYLES) == 0:
-        expected_holdout = total_intents // len(REQUIRED_STYLES)
-        expected_train = total_intents - (expected_holdout * 2)
-        for style in REQUIRED_STYLES:
-            if split_to_styles["validation"][style] != expected_holdout:
-                errors.append(
-                    f"validation: estilo {style} tiene {split_to_styles['validation'][style]}, "
-                    f"esperado {expected_holdout}."
-                )
-            if split_to_styles["test"][style] != expected_holdout:
-                errors.append(
-                    f"test: estilo {style} tiene {split_to_styles['test'][style]}, "
-                    f"esperado {expected_holdout}."
-                )
-            if split_to_styles["train"][style] != expected_train:
-                errors.append(
-                    f"train: estilo {style} tiene {split_to_styles['train'][style]}, "
-                    f"esperado {expected_train}."
-                )
+    for style in REQUIRED_STYLES:
+        expected_train = total_intents * SPLIT_RATIOS["train"]
+        expected_validation = total_intents * SPLIT_RATIOS["validation"]
+        expected_test = total_intents * SPLIT_RATIOS["test"]
+        if split_to_styles["validation"][style] != expected_validation:
+            errors.append(
+                f"validation: estilo {style} tiene {split_to_styles['validation'][style]}, "
+                f"esperado {expected_validation}."
+            )
+        if split_to_styles["test"][style] != expected_test:
+            errors.append(
+                f"test: estilo {style} tiene {split_to_styles['test'][style]}, "
+                f"esperado {expected_test}."
+            )
+        if split_to_styles["train"][style] != expected_train:
+            errors.append(
+                f"train: estilo {style} tiene {split_to_styles['train'][style]}, "
+                f"esperado {expected_train}."
+            )
+
+    represented_faq = {example.entry_id for example in all_examples}
+    missing_faq = sorted({entry.id for entry in FAQ_ENTRIES} - represented_faq)
+    if missing_faq:
+        errors.append(f"FAQ sin representacion en dataset: {missing_faq}.")
 
     return errors

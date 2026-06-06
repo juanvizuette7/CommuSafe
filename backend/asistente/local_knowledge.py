@@ -12,6 +12,8 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Iterable
 
+from .taxonomy import get_main_intent_id, taxonomy_summary
+
 
 ALL_ROLES = ("RESIDENTE", "VIGILANTE", "ADMINISTRADOR")
 OPERATIVE_ROLES = ("VIGILANTE", "ADMINISTRADOR")
@@ -53,6 +55,10 @@ class FAQEntry:
         return VERIFICATION_VERIFIED if self.verified else VERIFICATION_PENDING_ADMIN
 
     @property
+    def main_intent(self) -> str:
+        return get_main_intent_id(self.id)
+
+    @property
     def validity_status(self) -> str:
         return VALIDITY_ACTIVE if self.is_active() else VALIDITY_EXPIRED
 
@@ -68,7 +74,9 @@ class FAQEntry:
     def to_dict(self) -> dict[str, object]:
         return {
             "id": self.id,
-            "intent": self.intent,
+            "intent": self.main_intent,
+            "main_intent": self.main_intent,
+            "subintent": self.intent,
             "category": self.category,
             "question": self.question,
             "answer": self.answer,
@@ -100,8 +108,8 @@ FAQ_ENTRIES: tuple[FAQEntry, ...] = (
         "uso_sistema",
         "Como inicio sesion en CommuSafe?",
         "Ingresa con el correo asignado y la contrasena entregada por administracion. Si el acceso falla, verifica que el correo este bien escrito y solicita apoyo a administracion para validar tu cuenta.",
-        ("login", "sesion", "correo", "contrasena", "acceso"),
-        ("no puedo entrar", "como ingreso", "con que correo entro", "me falla el login"),
+        ("login", "sesion", "correo", "contrasena", "acceso", "cuenta", "entrar"),
+        ("no puedo entrar", "no puedo entrar a la cuenta", "como ingreso", "con que correo entro", "me falla el login"),
     ),
     FAQEntry(
         "uso_002",
@@ -1132,6 +1140,7 @@ def knowledge_summary() -> dict[str, int]:
     return {
         "total_faq": len(FAQ_ENTRIES),
         "categorias": len(categories),
+        **taxonomy_summary(),
         "verificadas": verified,
         "pendientes_validacion": pending,
         "vigentes": active,

@@ -18,11 +18,22 @@ from typing import Any
 from .local_knowledge import FAQEntry, FAQ_ENTRIES, get_entries_for_role, knowledge_summary
 
 
-HIGH_CONFIDENCE_THRESHOLD = 0.62
-MEDIUM_CONFIDENCE_THRESHOLD = 0.42
-AMBIGUITY_MARGIN = 0.08
+HIGH_CONFIDENCE_THRESHOLD = 0.52
+MEDIUM_CONFIDENCE_THRESHOLD = 0.28
+AMBIGUITY_MARGIN = 0.04
 MAX_OPTIONS = 3
 TOKEN_RE = re.compile(r"[a-z0-9]+")
+COMMON_TOKEN_CORRECTIONS = {
+    "adminstracion": "administracion",
+    "contrsena": "contrasena",
+    "insidente": "incidente",
+    "incidnte": "incidente",
+    "komo": "como",
+    "notificasion": "notificacion",
+    "parkiadero": "parqueadero",
+    "segurida": "seguridad",
+    "veiculo": "vehiculo",
+}
 STOPWORDS = {
     "a",
     "al",
@@ -83,6 +94,7 @@ DOMAIN_TERMS = {
     "conjunto",
     "convivencia",
     "correo",
+    "cuenta",
     "cuota",
     "dano",
     "datos",
@@ -128,7 +140,8 @@ def normalize_text(text: str) -> str:
     text = "".join(char for char in text if not unicodedata.combining(char))
     text = text.lower()
     text = re.sub(r"[^a-z0-9\s]", " ", text)
-    return re.sub(r"\s+", " ", text).strip()
+    tokens = [COMMON_TOKEN_CORRECTIONS.get(token, token) for token in text.split()]
+    return re.sub(r"\s+", " ", " ".join(tokens)).strip()
 
 
 def tokenize(text: str) -> list[str]:
@@ -149,7 +162,7 @@ class LocalAssistantEngine:
     def __init__(self, entries: tuple[FAQEntry, ...] = FAQ_ENTRIES):
         self.entries = entries
         self._entry_by_id = {entry.id: entry for entry in entries}
-        self._exact_index: dict[str, FAQEntry] = {}
+        self._exact_index: dict[str, list[FAQEntry]] = {}
         self._entry_tokens: dict[str, Counter[str]] = {}
         self._entry_keywords: dict[str, set[str]] = {}
         self._idf: dict[str, float] = {}
@@ -165,7 +178,9 @@ class LocalAssistantEngine:
             searchable_chunks = [normalize_text(text) for text in entry.searchable_texts()]
             for chunk in searchable_chunks:
                 if chunk:
-                    self._exact_index[chunk] = entry
+                    entries = self._exact_index.setdefault(chunk, [])
+                    if entry.id not in {indexed.id for indexed in entries}:
+                        entries.append(entry)
 
             tokens = Counter(tokenize(" ".join(searchable_chunks)))
             raw_documents[entry.id] = tokens
@@ -193,8 +208,13 @@ class LocalAssistantEngine:
         if not normalized:
             return self._safe_response(started, reason="mensaje_vacio")
 
-        exact_entry = self._exact_index.get(normalized)
-        if exact_entry and self._role_allowed(exact_entry, role):
+        exact_entries = [
+            entry
+            for entry in self._exact_index.get(normalized, [])
+            if self._role_allowed(entry, role)
+        ]
+        if len(exact_entries) == 1:
+            exact_entry = exact_entries[0]
             return self._answer_payload(
                 exact_entry,
                 confidence=1.0,
@@ -202,6 +222,8 @@ class LocalAssistantEngine:
                 mode="local",
                 started=started,
             )
+        if len(exact_entries) > 1:
+            return self._exact_ambiguity_payload(exact_entries, started)
 
         query_tokens = set(tokenize(normalized))
         if query_tokens and not (query_tokens & DOMAIN_TERMS):
@@ -227,25 +249,16 @@ class LocalAssistantEngine:
             )
 
         if confidence >= MEDIUM_CONFIDENCE_THRESHOLD:
-            options = [
-                {
-                    "id": item["entry"].id,
-                    "pregunta": item["entry"].question,
-                    "categoria": item["entry"].category,
-                    "confianza": round(item["confidence"], 4),
-                    "estado_verificacion": item["entry"].verification_status,
-                    "vigencia": item["entry"].validity_status,
-                }
-                for item in candidates[:MAX_OPTIONS]
-            ]
+            options = self._clarification_options(candidates)
             return {
                 "action": "clarify",
                 "respuesta": self._build_clarification(options),
                 "mode": "aclaracion",
                 "provider": "local",
-                "model": "commusafe-local-tfidf-v1",
+                "model": "commusafe-local-tfidf-v2",
                 "confidence": round(confidence, 4),
-                "intent": entry.intent,
+                "intent": entry.main_intent,
+                "subintent": entry.intent,
                 "entry_id": entry.id,
                 "category": entry.category,
                 "method": "aclaracion_por_confianza_media",
@@ -264,9 +277,10 @@ class LocalAssistantEngine:
             "respuesta": "",
             "mode": "baja_confianza",
             "provider": "local",
-            "model": "commusafe-local-tfidf-v1",
+            "model": "commusafe-local-tfidf-v2",
             "confidence": round(confidence, 4),
-            "intent": entry.intent,
+            "intent": entry.main_intent,
+            "subintent": entry.intent,
             "entry_id": entry.id,
             "category": entry.category,
             "method": best["method"],
@@ -340,7 +354,33 @@ class LocalAssistantEngine:
     def _is_ambiguous(self, best: dict[str, Any], second: dict[str, Any] | None) -> bool:
         if not second:
             return False
+        if best["entry"].main_intent == second["entry"].main_intent:
+            return False
         return (best["confidence"] - second["confidence"]) < AMBIGUITY_MARGIN
+
+    def _clarification_options(self, candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        options = []
+        seen_main_intents = set()
+        for item in candidates:
+            entry = item["entry"]
+            if entry.main_intent in seen_main_intents:
+                continue
+            seen_main_intents.add(entry.main_intent)
+            options.append(
+                {
+                    "id": entry.id,
+                    "pregunta": entry.question,
+                    "categoria": entry.category,
+                    "intencion_principal": entry.main_intent,
+                    "subintencion": entry.intent,
+                    "confianza": round(item["confidence"], 4),
+                    "estado_verificacion": entry.verification_status,
+                    "vigencia": entry.validity_status,
+                }
+            )
+            if len(options) >= MAX_OPTIONS:
+                break
+        return options
 
     def _answer_payload(
         self,
@@ -358,9 +398,10 @@ class LocalAssistantEngine:
             "respuesta": entry.answer,
             "mode": mode,
             "provider": "local",
-            "model": "commusafe-local-tfidf-v1",
+            "model": "commusafe-local-tfidf-v2",
             "confidence": round(confidence, 4),
-            "intent": entry.intent,
+            "intent": entry.main_intent,
+            "subintent": entry.intent,
             "entry_id": entry.id,
             "category": entry.category,
             "method": method,
@@ -376,6 +417,43 @@ class LocalAssistantEngine:
             "latency_ms": self._elapsed_ms(started),
         }
 
+    def _exact_ambiguity_payload(self, entries: list[FAQEntry], started: float) -> dict[str, Any]:
+        options = [
+            {
+                "id": entry.id,
+                "pregunta": entry.question,
+                "categoria": entry.category,
+                "intencion_principal": entry.main_intent,
+                "subintencion": entry.intent,
+                "confianza": 1.0,
+                "estado_verificacion": entry.verification_status,
+                "vigencia": entry.validity_status,
+            }
+            for entry in entries[:MAX_OPTIONS]
+        ]
+        first = entries[0]
+        return {
+            "action": "clarify",
+            "respuesta": self._build_clarification(options),
+            "mode": "aclaracion",
+            "provider": "local",
+            "model": "commusafe-local-tfidf-v2",
+            "confidence": 1.0,
+            "intent": first.main_intent,
+            "subintent": first.intent,
+            "entry_id": first.id,
+            "category": first.category,
+            "method": "aclaracion_por_coincidencia_exacta_ambigua",
+            "verified": all(entry.verified for entry in entries),
+            "verification_status": first.verification_status,
+            "validity_status": first.validity_status,
+            "valid_from": first.valid_from,
+            "valid_until": first.valid_until,
+            "requires_validation": any(not entry.verified for entry in entries),
+            "options": options,
+            "latency_ms": self._elapsed_ms(started),
+        }
+
     def _safe_response(self, started: float, *, reason: str) -> dict[str, Any]:
         return {
             "action": "safe",
@@ -386,9 +464,10 @@ class LocalAssistantEngine:
             ),
             "mode": "segura",
             "provider": "local",
-            "model": "commusafe-local-tfidf-v1",
+            "model": "commusafe-local-tfidf-v2",
             "confidence": 0.0,
             "intent": "sin_intencion_confiable",
+            "subintent": "",
             "entry_id": "",
             "category": "seguridad_respuesta",
             "method": reason,
@@ -424,9 +503,10 @@ class LocalAssistantEngine:
         return {
             **knowledge_summary(),
             "categorias_detalle": dict(sorted(by_category.items())),
+            "colisiones_exactas_controladas": sum(1 for entries in self._exact_index.values() if len(entries) > 1),
             "umbral_alto": HIGH_CONFIDENCE_THRESHOLD,
             "umbral_medio": MEDIUM_CONFIDENCE_THRESHOLD,
-            "modelo": "commusafe-local-tfidf-v1",
+            "modelo": "commusafe-local-tfidf-v2",
         }
 
 

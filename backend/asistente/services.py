@@ -2,6 +2,7 @@
 
 import re
 import time
+from collections import Counter
 from decimal import Decimal, InvalidOperation
 
 try:
@@ -149,39 +150,23 @@ def _contexto_usuario(usuario):
     if not usuario or not getattr(usuario, "is_authenticated", False):
         return ""
 
-    lineas = [
-        f"Usuario autenticado: {usuario.nombre_completo}.",
-        f"Rol del usuario: {usuario.get_rol_display()}.",
-    ]
-    if usuario.es_residente and usuario.unidad_residencial:
-        lineas.append(f"Unidad residencial: {usuario.unidad_residencial}.")
-    elif usuario.es_vigilante:
-        lineas.append(f"Referencia operativa: {usuario.unidad_residencial or 'Portería'}.")
-    elif usuario.es_administrador:
-        lineas.append("Referencia operativa: Administración.")
+    lineas = [f"Rol del usuario autenticado: {usuario.get_rol_display()}."]
 
     incidentes = Incidente.objects.select_related("reportado_por").order_by("-fecha_reporte")
     if usuario.es_residente:
         incidentes = incidentes.filter(reportado_por=usuario)
-    incidentes = incidentes[:5]
+    incidentes = list(incidentes[:5])
     if incidentes:
-        lineas.append("Incidentes recientes visibles para el usuario:")
-        for incidente in incidentes:
-            lineas.append(
-                "- "
-                f"{incidente.titulo} | {incidente.get_categoria_display()} | "
-                f"{incidente.get_prioridad_display()} | {incidente.get_estado_display()} | "
-                f"{incidente.ubicacion_referencia or 'sin ubicación'}"
-            )
+        estados = Counter(incidente.get_estado_display() for incidente in incidentes)
+        resumen_estados = ", ".join(f"{estado}: {cantidad}" for estado, cantidad in sorted(estados.items()))
+        lineas.append(f"Incidentes recientes visibles: {len(incidentes)}. Resumen por estado: {resumen_estados}.")
 
-    avisos = Notificacion.objects.filter(
+    total_avisos = Notificacion.objects.filter(
         destinatario=usuario,
         tipo__in=[Notificacion.Tipo.AVISO_ADMIN, Notificacion.Tipo.EMERGENCIA],
-    ).order_by("-fecha_envio")[:5]
-    if avisos:
-        lineas.append("Avisos recientes del usuario:")
-        for aviso in avisos:
-            lineas.append(f"- {aviso.titulo}: {aviso.cuerpo[:140]}")
+    ).count()
+    if total_avisos:
+        lineas.append(f"Avisos administrativos o de emergencia disponibles: {total_avisos}.")
 
     return "\n".join(lineas)
 
@@ -416,6 +401,7 @@ def _payload_desde_local(local_result):
         "latencia_ms": local_result.get("latency_ms", 0),
         "metadata": {
             "entry_id": local_result.get("entry_id", ""),
+            "subintent": local_result.get("subintent", ""),
             "verified": local_result.get("verified", False),
             "verification_status": local_result.get("verification_status", ""),
             "validity_status": local_result.get("validity_status", ""),
@@ -490,7 +476,7 @@ def generar_respuesta_asistente(mensaje, historial=None, usuario=None, conversac
         "respuesta": _respuesta_segura_controlada(),
         "modo": "segura",
         "proveedor": "local",
-        "modelo_usado": "commusafe-local-tfidf-v1",
+        "modelo_usado": "commusafe-local-tfidf-v2",
         "confianza": local_result.get("confidence", 0),
         "intencion": local_result.get("intent", "sin_intencion_confiable"),
         "categoria": local_result.get("category", "seguridad_respuesta"),
@@ -502,6 +488,7 @@ def generar_respuesta_asistente(mensaje, historial=None, usuario=None, conversac
                 "action": local_result.get("action"),
                 "method": local_result.get("method"),
                 "entry_id": local_result.get("entry_id"),
+                "subintent": local_result.get("subintent", ""),
             },
             "llm_disponible": bool(funcion_llm),
             "llm_error": local_result.get("llm_error", ""),
@@ -520,6 +507,10 @@ def generar_respuesta_asistente(mensaje, historial=None, usuario=None, conversac
 def procesar_mensaje_conversacion(*, conversacion, mensaje, usuario):
     """Persiste el mensaje del usuario, genera respuesta y guarda la respuesta."""
 
+    conversacion = ConversacionAsistente.objects.select_for_update().get(
+        pk=conversacion.pk,
+        usuario=usuario,
+    )
     mensaje = mensaje.strip()
     historial = _historial_desde_conversacion(conversacion)
     if conversacion.titulo.lower().startswith("nueva conversaci"):

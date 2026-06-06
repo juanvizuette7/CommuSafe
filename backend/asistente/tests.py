@@ -17,11 +17,24 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .knowledge_base import KNOWLEDGE_BASE_SECTIONS, render_knowledge_base
-from .local_engine import normalize_text
+from .evaluation import build_challenge_dataset, build_dataset, calibrate_thresholds
+from .local_engine import (
+    AMBIGUITY_MARGIN,
+    HIGH_CONFIDENCE_THRESHOLD,
+    MEDIUM_CONFIDENCE_THRESHOLD,
+    normalize_text,
+    resolve_local_answer,
+)
 from .local_knowledge import FAQ_ENTRIES
 from .models import AsistenteRespuestaLog, ConversacionAsistente, MensajeAsistente
 from .nlp_flask_service import app as flask_app
-from .services import MAX_LLM_HISTORY_CHARS, MAX_LLM_HISTORY_MESSAGES, SYSTEM_PROMPT, _compactar_historial_para_ia
+from .services import (
+    MAX_LLM_HISTORY_CHARS,
+    MAX_LLM_HISTORY_MESSAGES,
+    SYSTEM_PROMPT,
+    _compactar_historial_para_ia,
+    construir_system_prompt,
+)
 from .throttles import AsistenteChatThrottle, AsistenteLecturaThrottle
 from .training_dataset import (
     EXAMPLES_PER_INTENT,
@@ -31,6 +44,7 @@ from .training_dataset import (
     dataset_summary,
     validate_professional_dataset,
 )
+from .taxonomy import MAIN_INTENTS, validate_taxonomy
 from .views import _api_llm_configurada, _extraer_texto_anthropic, _normalizar_historial, _respuesta_fallback
 from .views import ChatAsistenteView, ChatHealthView, ConversacionAsistenteViewSet
 
@@ -114,7 +128,8 @@ class ChatAsistenteFallbackTests(APITestCase):
         self.assertEqual(log.usuario, self.usuario)
         self.assertIn(log.modo, {"local", "semantica"})
         self.assertEqual(log.proveedor, "local")
-        self.assertTrue(log.intencion)
+        self.assertEqual(log.intencion, "reportar_incidente")
+        self.assertEqual(log.metadata["subintent"], "crear_incidente")
         self.assertIsNotNone(log.confianza)
 
     @override_settings(LLM_API_KEY="clave-real", GEMINI_API_KEY="", LLM_PROVIDER="anthropic")
@@ -290,10 +305,29 @@ class ChatAsistenteHelpersTests(APITestCase):
         self.assertNotIn("datos inventados", contenido)
         self.assertNotIn("datos simulados", contenido)
 
+    def test_contexto_enviado_a_ia_minimiza_datos_personales(self):
+        usuario = Usuario.objects.create_user(
+            email="privacidad-contexto@test.com",
+            password="Segura2026*",
+            nombre="NombrePrivado",
+            apellido="ApellidoPrivado",
+            unidad_residencial="Apto Privado 999",
+            rol=Usuario.Rol.RESIDENTE,
+        )
+
+        prompt = normalizar_texto(construir_system_prompt(usuario))
+
+        self.assertIn("rol del usuario autenticado", prompt)
+        self.assertNotIn("nombreprivado", prompt)
+        self.assertNotIn("apellidoprivado", prompt)
+        self.assertNotIn("apto privado 999", prompt)
+
     def test_base_local_es_diversa_verificable_y_vigente(self):
         self.assertGreaterEqual(len(FAQ_ENTRIES), 100)
         self.assertEqual(len({entry.id for entry in FAQ_ENTRIES}), len(FAQ_ENTRIES))
         self.assertEqual(len({entry.intent for entry in FAQ_ENTRIES}), len(FAQ_ENTRIES))
+        self.assertEqual(len({entry.main_intent for entry in FAQ_ENTRIES}), len(MAIN_INTENTS))
+        self.assertEqual(validate_taxonomy({entry.id for entry in FAQ_ENTRIES}), [])
         self.assertEqual(len({entry.question.lower() for entry in FAQ_ENTRIES}), len(FAQ_ENTRIES))
         self.assertGreaterEqual(len({entry.category for entry in FAQ_ENTRIES}), 10)
 
@@ -344,6 +378,55 @@ class ChatAsistenteHelpersTests(APITestCase):
         self.assertEqual(local.status_code, 200)
         self.assertEqual(local.json["action"], "answer")
 
+    def test_motor_expone_intencion_principal_y_subintencion(self):
+        resultado = resolve_local_answer("Como reporto un incidente?", "RESIDENTE")
+
+        self.assertEqual(resultado["action"], "answer")
+        self.assertEqual(resultado["intent"], "reportar_incidente")
+        self.assertEqual(resultado["subintent"], "crear_incidente")
+        self.assertEqual(resultado["provider"], "local")
+
+    def test_umbrales_activos_coinciden_con_calibracion(self):
+        splits = build_dataset()
+        calibracion = calibrate_thresholds(splits["validation"], build_challenge_dataset())
+
+        self.assertEqual(calibracion["umbral_alto"], HIGH_CONFIDENCE_THRESHOLD)
+        self.assertEqual(calibracion["umbral_medio"], MEDIUM_CONFIDENCE_THRESHOLD)
+        self.assertEqual(calibracion["margen_ambiguedad"], AMBIGUITY_MARGIN)
+        self.assertEqual(calibracion["respuestas_directas_incorrectas"], 0)
+
+    def test_motor_cubre_estilos_y_casos_de_seguridad(self):
+        casos = [
+            ("Como reporto un incidente?", "answer", "reportar_incidente"),
+            ("komo reporto un insidente", "answer", "reportar_incidente"),
+            ("parce no puedo entrar a la cuenta que hago", "answer", "acceso_sesion"),
+            (
+                "Tengo una situacion relacionada con un dano en una zona comun y necesito orientacion detallada.",
+                "answer",
+                "convivencia_entorno",
+            ),
+            ("quien gano el partido de futbol ayer", "safe", "sin_intencion_confiable"),
+        ]
+
+        for mensaje, accion, intencion in casos:
+            with self.subTest(mensaje=mensaje):
+                resultado = resolve_local_answer(mensaje, "RESIDENTE")
+                self.assertEqual(resultado["action"], accion)
+                self.assertEqual(resultado["intent"], intencion)
+
+        no_verificada = resolve_local_answer("Cual es el horario de zonas comunes?", "RESIDENTE")
+        self.assertEqual(no_verificada["action"], "answer")
+        self.assertEqual(no_verificada["mode"], "segura")
+        self.assertTrue(no_verificada["requires_validation"])
+
+        ambigua = resolve_local_answer("Tengo una duda con un reporte y una alerta", "RESIDENTE")
+        self.assertIn(ambigua["action"], {"clarify", "fallback_allowed"})
+        self.assertNotEqual(ambigua["action"], "answer")
+
+        ambigua_exacta = resolve_local_answer("musica alta", "RESIDENTE")
+        self.assertEqual(ambigua_exacta["action"], "clarify")
+        self.assertEqual(ambigua_exacta["method"], "aclaracion_por_coincidencia_exacta_ambigua")
+
 
 class AsistenteTrainingDatasetTests(APITestCase):
     """Pruebas del dataset profesional usado para entrenar y evaluar intenciones."""
@@ -352,7 +435,7 @@ class AsistenteTrainingDatasetTests(APITestCase):
         splits = build_professional_dataset(seed=42)
         errores = validate_professional_dataset(splits)
         resumen = dataset_summary(splits)
-        total_intenciones = len(FAQ_ENTRIES)
+        total_intenciones = len(MAIN_INTENTS)
 
         self.assertEqual(errores, [])
         self.assertEqual(resumen["total"], total_intenciones * EXAMPLES_PER_INTENT)
@@ -363,12 +446,18 @@ class AsistenteTrainingDatasetTests(APITestCase):
         self.assertEqual(resumen["max_ejemplos_por_intencion"], EXAMPLES_PER_INTENT)
 
         for split, ratio in SPLIT_RATIOS.items():
-            self.assertEqual(resumen["splits"][split], total_intenciones * ratio)
+            self.assertEqual(
+                resumen["splits"][split],
+                total_intenciones * len(REQUIRED_STYLES) * ratio,
+            )
 
-        expected_holdout = total_intenciones // len(REQUIRED_STYLES)
-        expected_train = total_intenciones - (expected_holdout * 2)
+        expected_holdout = total_intenciones * SPLIT_RATIOS["validation"]
+        expected_train = total_intenciones * SPLIT_RATIOS["train"]
         for style in REQUIRED_STYLES:
-            self.assertEqual(resumen["estilos"][style], total_intenciones)
+            self.assertEqual(
+                resumen["estilos"][style],
+                total_intenciones * sum(SPLIT_RATIOS.values()),
+            )
             self.assertEqual(resumen["estilos_por_split"]["train"][style], expected_train)
             self.assertEqual(resumen["estilos_por_split"]["validation"][style], expected_holdout)
             self.assertEqual(resumen["estilos_por_split"]["test"][style], expected_holdout)
@@ -381,14 +470,19 @@ class AsistenteTrainingDatasetTests(APITestCase):
                 conteo_split_por_intencion.setdefault(ejemplo.intent, Counter())[split] += 1
                 self.assertTrue(ejemplo.text)
                 self.assertTrue(ejemplo.entry_id)
+                self.assertTrue(ejemplo.subintent)
                 self.assertIn(ejemplo.style, REQUIRED_STYLES)
                 self.assertEqual(ejemplo.requires_admin_validation, not ejemplo.verified)
 
         self.assertEqual(set(conteo_por_intencion.values()), {EXAMPLES_PER_INTENT})
         for intent, conteo_split in conteo_split_por_intencion.items():
-            self.assertEqual(conteo_split["train"], SPLIT_RATIOS["train"], intent)
-            self.assertEqual(conteo_split["validation"], SPLIT_RATIOS["validation"], intent)
-            self.assertEqual(conteo_split["test"], SPLIT_RATIOS["test"], intent)
+            self.assertEqual(conteo_split["train"], len(REQUIRED_STYLES) * SPLIT_RATIOS["train"], intent)
+            self.assertEqual(
+                conteo_split["validation"],
+                len(REQUIRED_STYLES) * SPLIT_RATIOS["validation"],
+                intent,
+            )
+            self.assertEqual(conteo_split["test"], len(REQUIRED_STYLES) * SPLIT_RATIOS["test"], intent)
 
     def test_dataset_no_repite_frases_entre_particiones(self):
         splits = build_professional_dataset(seed=42)
@@ -417,9 +511,18 @@ class AsistenteTrainingDatasetTests(APITestCase):
         self.assertEqual(payload["estado"], "ok")
         self.assertEqual(payload["errores"], [])
         self.assertEqual(payload["resumen"]["json_exportado"], str(ruta_json))
-        self.assertEqual(len(exportado["splits"]["train"]), len(FAQ_ENTRIES) * SPLIT_RATIOS["train"])
-        self.assertEqual(len(exportado["splits"]["validation"]), len(FAQ_ENTRIES) * SPLIT_RATIOS["validation"])
-        self.assertEqual(len(exportado["splits"]["test"]), len(FAQ_ENTRIES) * SPLIT_RATIOS["test"])
+        self.assertEqual(
+            len(exportado["splits"]["train"]),
+            len(MAIN_INTENTS) * len(REQUIRED_STYLES) * SPLIT_RATIOS["train"],
+        )
+        self.assertEqual(
+            len(exportado["splits"]["validation"]),
+            len(MAIN_INTENTS) * len(REQUIRED_STYLES) * SPLIT_RATIOS["validation"],
+        )
+        self.assertEqual(
+            len(exportado["splits"]["test"]),
+            len(MAIN_INTENTS) * len(REQUIRED_STYLES) * SPLIT_RATIOS["test"],
+        )
 
 
 @override_settings(GEMINI_API_KEY="", LLM_PROVIDER="anthropic")

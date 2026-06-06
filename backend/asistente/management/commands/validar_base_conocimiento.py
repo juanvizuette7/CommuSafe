@@ -6,6 +6,7 @@ from pathlib import Path
 from django.core.management.base import BaseCommand, CommandError
 
 from asistente.local_knowledge import ALL_ROLES, FAQ_ENTRIES, knowledge_summary
+from asistente.taxonomy import validate_taxonomy
 
 
 SAFE_PENDING_TERMS = (
@@ -34,7 +35,8 @@ class Command(BaseCommand):
         resumen = knowledge_summary()
         resumen.update(
             {
-                "intenciones_unicas": len({entry.intent for entry in FAQ_ENTRIES}),
+                "intenciones_principales": len({entry.main_intent for entry in FAQ_ENTRIES}),
+                "subintenciones_unicas": len({entry.intent for entry in FAQ_ENTRIES}),
                 "preguntas_unicas": len({entry.question.lower().strip() for entry in FAQ_ENTRIES}),
                 "ids_unicos": len({entry.id for entry in FAQ_ENTRIES}),
                 "roles_validos": sorted(ALL_ROLES),
@@ -70,7 +72,8 @@ class Command(BaseCommand):
                     "criterios": [
                         "al_menos_100_preguntas_diferentes",
                         "ids_unicos",
-                        "intenciones_unicas",
+                        "taxonomia_principal_sin_fragmentacion",
+                        "subintenciones_unicas",
                         "categorias_multiples",
                         "roles_validos",
                         "metadatos_verificacion_y_vigencia",
@@ -85,7 +88,7 @@ class Command(BaseCommand):
     def _validar(self):
         errores = []
         ids = [entry.id for entry in FAQ_ENTRIES]
-        intents = [entry.intent for entry in FAQ_ENTRIES]
+        subintents = [entry.intent for entry in FAQ_ENTRIES]
         questions = [entry.question.lower().strip() for entry in FAQ_ENTRIES]
         categories = {entry.category for entry in FAQ_ENTRIES}
 
@@ -93,12 +96,13 @@ class Command(BaseCommand):
             errores.append("La base debe contener al menos 100 preguntas frecuentes.")
         if len(set(ids)) != len(ids):
             errores.append("Existen ids duplicados en la base de conocimiento.")
-        if len(set(intents)) != len(intents):
-            errores.append("Existen intenciones duplicadas; revisa redundancia de clases.")
+        if len(set(subintents)) != len(subintents):
+            errores.append("Existen subintenciones FAQ duplicadas; revisa redundancia de conocimiento.")
         if len(set(questions)) != len(questions):
             errores.append("Existen preguntas principales duplicadas.")
         if len(categories) < 10:
             errores.append("La base debe mantener una cobertura amplia de categorias.")
+        errores.extend(validate_taxonomy(set(ids)))
 
         for entry in FAQ_ENTRIES:
             if not entry.question.strip():

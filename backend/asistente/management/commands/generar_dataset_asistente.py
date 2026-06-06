@@ -56,6 +56,7 @@ class Command(BaseCommand):
                         fieldnames=[
                             "text",
                             "intent",
+                            "subintent",
                             "category",
                             "role",
                             "entry_id",

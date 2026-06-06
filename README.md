@@ -79,13 +79,13 @@ El sistema no reemplaza la labor humana de vigilancia o administracion. Su objet
 - Asistente conversacional orientado al contexto de Remansos del Norte.
 - Conversaciones persistentes por usuario.
 - Historial de mensajes almacenado en base de datos.
-- Base de conocimiento local con mas de 100 preguntas, variaciones, categorias e intenciones.
+- Base de conocimiento local con 108 FAQ verificables agrupadas en 20 intenciones principales.
 - Motor local-first con busqueda exacta, palabras clave, similitud TF-IDF, umbrales de confianza y respuestas seguras.
 - Escalamiento a Gemini o Anthropic cuando la pregunta pertenece al dominio pero requiere IA generativa.
 - Servicio Flask auxiliar opcional para inferencia local por HTTP.
 - Logs tecnicos de modo, proveedor, intencion, confianza, latencia y tokens estimados.
 - Evaluacion automatizada del asistente con precision, recall, F1, cobertura local y matriz de confusion resumida.
-- Dataset profesional de comprension de intenciones con 648 ejemplos balanceados en entrenamiento, validacion y prueba.
+- Dataset profesional de comprension de intenciones con 720 ejemplos balanceados en entrenamiento, validacion y prueba.
 
 ## Arquitectura Usada
 
@@ -281,6 +281,7 @@ CommuSafe/
       services.py
       knowledge_base.py
       local_knowledge.py
+      taxonomy.py
       local_engine.py
       training_dataset.py
       evaluation.py
