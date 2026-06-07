@@ -86,6 +86,7 @@ El sistema no reemplaza la labor humana de vigilancia o administracion. Su objet
 - Logs tecnicos de modo, proveedor, intencion, confianza, latencia y tokens estimados.
 - Evaluacion automatizada del asistente con precision, recall, F1, cobertura local y matriz de confusion resumida.
 - Dataset profesional de comprension de intenciones con 720 ejemplos balanceados en entrenamiento, validacion y prueba.
+- Comparacion reproducible de modelos locales: baseline por palabras clave, TF-IDF por palabra, TF-IDF por caracteres, ensambles y motor hibrido de produccion.
 
 ## Arquitectura Usada
 
@@ -285,6 +286,7 @@ CommuSafe/
       local_engine.py
       training_dataset.py
       evaluation.py
+      model_selection.py
       nlp_flask_service.py
       urls.py
       admin.py
@@ -494,6 +496,7 @@ cd backend
 python manage.py probar_asistente "Como reporto un incidente?"
 python manage.py generar_dataset_asistente
 python manage.py evaluar_asistente_local
+python manage.py evaluar_modelos_asistente --json ..\docs\evidencias\asistente_modelos.json --markdown ..\docs\evidencias\asistente_modelos.md
 python manage.py validar_base_conocimiento
 python -m pytest asistente/tests.py -q
 ```

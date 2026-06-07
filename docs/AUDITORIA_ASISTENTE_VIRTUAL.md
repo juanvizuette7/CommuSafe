@@ -19,7 +19,7 @@ Esta auditoria revisa exclusivamente el asistente virtual de CommuSafe a nivel b
 | Seguridad del servicio Flask | El servicio auxiliar podia quedar escuchando en todas las interfaces sin clave. | Por defecto escucha en `127.0.0.1`; si no hay `COMMUSAFE_NLP_SERVICE_KEY`, bloquea inferencia remota. | `backend/asistente/nlp_flask_service.py` |
 | Exposicion de informacion | El servicio `/knowledge` no debe exponerse remotamente sin control. | La misma proteccion de clave/local-only aplica a `/knowledge` e `/infer`. | Prueba `test_servicio_flask_restringe_acceso_remoto_sin_clave` |
 | Observabilidad | No habia medicion suficiente del comportamiento por respuesta. | Logs tecnicos con modo, proveedor, modelo, intencion, categoria, confianza, latencia, tokens estimados y metadatos. | Modelo `AsistenteRespuestaLog` |
-| Evaluacion | Faltaba comparacion clara entre estrategias locales. | Se agrego comando de evaluacion con baseline de palabras clave, TF-IDF puro e hibrido seleccionado. | `python manage.py evaluar_asistente_local` |
+| Evaluacion | Faltaba comparacion clara entre estrategias locales entrenadas y no entrenadas. | Se agrego entrenamiento/comparacion reproducible de baseline por palabras, TF-IDF por palabra, TF-IDF por caracteres, ensambles y motor hibrido de produccion. | `python manage.py evaluar_modelos_asistente` |
 | Fragmentacion de intenciones | Las 108 FAQ estaban tratadas como 108 clases con pocos ejemplos, lo que dificultaba generalizar y explicar la taxonomia. | Se conservaron las 108 FAQ como subintenciones y se agruparon en 20 intenciones principales mantenibles. | `backend/asistente/taxonomy.py` |
 | Dataset de entrenamiento | El asistente necesitaba datos separados y sin fuga para sustentar comprension de intenciones. | Se reconstruyo un dataset profesional con 720 ejemplos, 20 intenciones principales, train/validation/test y seis estilos balanceados. | `python manage.py generar_dataset_asistente` |
 | Umbrales de confianza | Los umbrales iniciales no tenian evidencia reproducible suficiente. | Se agrego calibracion por busqueda sobre validation y casos de reto; se seleccionaron 0.52, 0.28 y margen 0.04 con cero respuestas directas incorrectas en calibracion. | `calibrate_thresholds()` |
@@ -85,13 +85,14 @@ python -m pytest asistente/tests.py -q
 python -m pytest -q
 python manage.py generar_dataset_asistente
 python manage.py evaluar_asistente_local
+python manage.py evaluar_modelos_asistente --json ..\docs\evidencias\asistente_modelos.json --markdown ..\docs\evidencias\asistente_modelos.md
 ```
 
 Resultados verificados:
 
 ```text
-asistente/tests.py: 37 passed, 5 subtests passed
-suite completa backend: 162 passed, 11 subtests passed
+asistente/tests.py: 38 passed, 5 subtests passed
+suite completa backend: 163 passed, 11 subtests passed
 manage.py check: sin problemas
 makemigrations --check --dry-run: sin cambios pendientes
 validar_base_conocimiento: ok
@@ -145,27 +146,34 @@ Metricas del motor local:
 
 | Split | F1 |
 |---|---:|
-| Train | 0.8250 |
-| Validation | 0.8250 |
-| Test | 0.8167 |
+| Train | 0.8750 |
+| Validation | 0.8667 |
+| Test | 0.9167 |
 | Challenge | 0.5714 |
 
-Comparacion de estrategias:
+Comparacion de modelos locales:
 
 | Estrategia | Validation F1 | Test F1 | Challenge F1 |
 |---|---:|---:|---:|
-| Palabras clave baseline | 0.4750 | 0.5333 | 0.5714 |
-| TF-IDF semantico puro | 0.6583 | 0.6917 | 0.5714 |
-| Hibrido seleccionado | 0.8250 | 0.8250 | 0.5714 |
+| Baseline por palabras clave | 0.6000 | 0.6583 | 0.5714 |
+| TF-IDF centroides por palabra | 0.6417 | 0.6833 | 0.5714 |
+| TF-IDF centroides por caracteres | 0.6500 | 0.7000 | 0.5714 |
+| Ensamble palabra/caracter 0.35/0.65 | 0.6417 | 0.7083 | 0.5714 |
+| Hibrido local de produccion | 0.8667 | 0.9167 | 0.5714 |
 
 Comportamiento en test:
 
 | Resultado | Porcentaje |
 |---|---:|
-| Respuesta local directa | 69.17% |
-| Aclaracion | 15.83% |
-| Candidato a Gemini/Anthropic | 1.67% |
-| Respuesta segura | 13.33% |
+| Respuesta local directa | 74.17% |
+| Aclaracion | 20.83% |
+| Candidato a Gemini/Anthropic | 2.50% |
+| Respuesta segura | 2.50% |
+
+Evidencia exportada:
+
+- `docs/evidencias/asistente_modelos.json`
+- `docs/evidencias/asistente_modelos.md`
 
 Confusiones residuales identificadas:
 

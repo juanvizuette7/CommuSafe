@@ -397,8 +397,14 @@ FAQ_ENTRIES: tuple[FAQEntry, ...] = (
         "notificaciones",
         "Que son los avisos administrativos?",
         "Son comunicados enviados desde CommuSafe por administracion o vigilancia para informar mantenimiento, convivencia, seguridad, reuniones o instrucciones operativas.",
-        ("aviso", "administrativo", "comunicado", "mantenimiento"),
-        ("comunicado oficial", "mensaje de administracion", "avisos del conjunto", "informativo"),
+        ("aviso", "administrativo", "comunicado", "mantenimiento", "notificacion", "alerta"),
+        (
+            "comunicado oficial",
+            "mensaje de administracion",
+            "avisos del conjunto",
+            "informativo",
+            "aviso administrativo en notificaciones",
+        ),
     ),
     FAQEntry(
         "not_004",
@@ -471,8 +477,14 @@ FAQ_ENTRIES: tuple[FAQEntry, ...] = (
         "notificaciones",
         "Como se abre una notificacion en el panel web?",
         "En el panel web puedes hacer clic sobre la notificacion. Si esta vinculada a un incidente abre el caso; si es aviso muestra el detalle del comunicado.",
-        ("panel", "abrir", "notificacion", "aviso"),
-        ("click en notificacion", "ver aviso panel", "abrir incidente desde alerta", "notificaciones web"),
+        ("panel", "abrir", "notificacion", "aviso", "incidente", "alerta", "web"),
+        (
+            "click en notificacion",
+            "ver aviso panel",
+            "abrir incidente desde alerta",
+            "notificaciones web",
+            "abrir incidente desde alerta en notificaciones",
+        ),
         OPERATIVE_ROLES,
     ),
     FAQEntry(

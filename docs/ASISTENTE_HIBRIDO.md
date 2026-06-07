@@ -33,6 +33,7 @@ La arquitectura queda separada por responsabilidades:
 | Persistencia | `backend/asistente/models.py` | Conversaciones, mensajes y logs tecnicos de respuestas |
 | Evaluacion | `backend/asistente/evaluation.py` | Dataset local, metricas, cobertura y matriz de confusion resumida |
 | Dataset profesional | `backend/asistente/training_dataset.py` | Generacion balanceada de entrenamiento, validacion y prueba para intenciones del asistente |
+| Seleccion de modelo | `backend/asistente/model_selection.py` | Entrenamiento, comparacion, calibracion y seleccion reproducible de modelos locales |
 | Servicio auxiliar | `backend/asistente/nlp_flask_service.py` | Microservicio Flask opcional para inferencia local por HTTP |
 
 ## Base de conocimiento local
@@ -264,6 +265,14 @@ cd backend
 python manage.py evaluar_asistente_local
 ```
 
+Para entrenar, comparar y seleccionar el mejor enfoque local se usa:
+
+```powershell
+python manage.py evaluar_modelos_asistente --json ..\docs\evidencias\asistente_modelos.json --markdown ..\docs\evidencias\asistente_modelos.md
+```
+
+Este comando entrena modelos locales sobre `train`, calibra umbrales con `validation` y `challenge`, y mide la calidad final sobre `test`. La seleccion no usa la precision de entrenamiento como criterio principal.
+
 Metricas reportadas:
 
 - Precision micro.
@@ -276,37 +285,44 @@ Metricas reportadas:
 - Latencia promedio.
 - Matriz de confusion resumida.
 
-Resultado local verificado en desarrollo:
+Resultado local verificado en desarrollo despues de la auditoria de modelo:
 
 ```text
-train:      F1 0.8250
-validation: F1 0.8250
-test:       F1 0.8167
+train:      F1 0.8750
+validation: F1 0.8667
+test:       F1 0.9167
 challenge:  F1 0.5714
 ```
 
 Los splits `validation` y `test` contienen todos los estilos de pregunta: formal, informal, corta, larga, error ortografico y no tecnico. Esto permite medir capacidad real de generalizacion sin inflar resultados por fuga de datos.
 
-Comparacion de estrategias locales:
+Comparacion reproducible de estrategias locales entrenadas y evaluadas:
 
 | Estrategia | Validation F1 | Test F1 | Challenge F1 | Decision |
 |---|---:|---:|---:|---|
-| Palabras clave baseline | 0.4750 | 0.5333 | 0.5714 | Insuficiente como solucion unica |
-| TF-IDF semantico puro | 0.6583 | 0.6917 | 0.5714 | Mejora frente al baseline, pero falla en preguntas cortas o ambiguas |
-| Hibrido seleccionado | 0.8250 | 0.8250 | 0.5714 | Estrategia activa por mejor generalizacion y control de seguridad |
+| Baseline por palabras clave | 0.6000 | 0.6583 | 0.5714 | Insuficiente como solucion unica |
+| TF-IDF centroides por palabra | 0.6417 | 0.6833 | 0.5714 | Mejora el baseline, pero pierde precision en frases cortas |
+| TF-IDF centroides por caracteres | 0.6500 | 0.7000 | 0.5714 | Aporta robustez ante errores ortograficos |
+| Ensamble palabra/caracter 0.35/0.65 | 0.6417 | 0.7083 | 0.5714 | Mejor entre modelos entrenados puros, pero no supera la base de conocimiento |
+| Hibrido local de produccion | 0.8667 | 0.9167 | 0.5714 | Seleccionado por mejor generalizacion, trazabilidad y control de seguridad |
 
 Comportamiento medido en `test`:
 
 | Resultado | Porcentaje |
 |---|---:|
-| Respuesta local directa | 69.17% |
-| Solicitud de aclaracion | 15.83% |
-| Candidato a IA generativa | 1.67% |
-| Respuesta segura | 13.33% |
+| Respuesta local directa | 74.17% |
+| Solicitud de aclaracion | 20.83% |
+| Candidato a IA generativa | 2.50% |
+| Respuesta segura | 2.50% |
+
+El reporte completo con matriz de confusion y analisis de errores queda en:
+
+- `docs/evidencias/asistente_modelos.json`
+- `docs/evidencias/asistente_modelos.md`
 
 Las confusiones principales restantes se concentran entre clasificacion de incidentes y avisos, gestion de avisos y navegacion, y frases muy cortas que el filtro de dominio prefiere rechazar de forma segura.
 
-La comparacion se calcula con el comando `python manage.py evaluar_asistente_local`. El resultado debe interpretarse como evidencia tecnica inicial sobre la base registrada, no como reemplazo de pruebas con usuarios reales.
+La comparacion se calcula con el comando `python manage.py evaluar_modelos_asistente`. El resultado debe interpretarse como evidencia tecnica inicial sobre la base registrada, no como reemplazo de pruebas con usuarios reales.
 
 ## Pruebas
 
@@ -365,6 +381,12 @@ Evaluar cobertura local:
 
 ```powershell
 python manage.py evaluar_asistente_local
+```
+
+Entrenar y comparar modelos locales:
+
+```powershell
+python manage.py evaluar_modelos_asistente --json ..\docs\evidencias\asistente_modelos.json --markdown ..\docs\evidencias\asistente_modelos.md
 ```
 
 Validar diversidad, vigencia, roles y respuestas seguras:

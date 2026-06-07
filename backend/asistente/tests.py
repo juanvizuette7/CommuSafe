@@ -26,6 +26,7 @@ from .local_engine import (
     resolve_local_answer,
 )
 from .local_knowledge import FAQ_ENTRIES
+from .model_selection import train_compare_select_models
 from .models import AsistenteRespuestaLog, ConversacionAsistente, MensajeAsistente
 from .nlp_flask_service import app as flask_app
 from .services import (
@@ -522,6 +523,23 @@ class AsistenteTrainingDatasetTests(APITestCase):
         self.assertEqual(
             len(exportado["splits"]["test"]),
             len(MAIN_INTENTS) * len(REQUIRED_STYLES) * SPLIT_RATIOS["test"],
+        )
+
+    def test_comparacion_modelos_selecciona_por_generalizacion(self):
+        payload = train_compare_select_models(seed=42)
+        seleccionado = payload["modelo_seleccionado"]
+        ranking_ids = [row["id"] for row in payload["ranking"]]
+
+        self.assertEqual(seleccionado["id"], "hibrido_produccion_kb")
+        self.assertIn("tfidf_centroides_palabra", ranking_ids)
+        self.assertIn("tfidf_centroides_caracter", ranking_ids)
+        self.assertIn("ensamble_word_char_35", ranking_ids)
+        self.assertGreaterEqual(seleccionado["test_f1"], 0.90)
+        self.assertEqual(seleccionado["directas_incorrectas_test"], 0)
+        self.assertLess(
+            seleccionado["sobreajuste_train_test"],
+            0.10,
+            "La seleccion no debe depender de memorizar el entrenamiento.",
         )
 
 
