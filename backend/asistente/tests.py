@@ -36,6 +36,7 @@ from .services import (
     SYSTEM_PROMPT,
     _compactar_historial_para_ia,
     construir_system_prompt,
+    metricas_uso_asistente,
 )
 from .throttles import AsistenteChatThrottle, AsistenteLecturaThrottle
 from .training_dataset import (
@@ -707,7 +708,13 @@ class ChatAsistenteIAModeTests(APITestCase):
     def test_modo_ia_cuando_modelo_responde_texto(self, anthropic_mock):
         cliente = SimpleNamespace(
             messages=SimpleNamespace(
-                create=lambda **kwargs: SimpleNamespace(content=[SimpleNamespace(text="Respuesta IA")])
+                create=lambda **kwargs: SimpleNamespace(
+                    content=[
+                        SimpleNamespace(
+                            text="Respuesta IA sobre CommuSafe y Remansos del Norte para orientar el procedimiento."
+                        )
+                    ]
+                )
             )
         )
         anthropic_mock.return_value = cliente
@@ -724,7 +731,7 @@ class ChatAsistenteIAModeTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["modo"], "ia")
-        self.assertIn("Respuesta IA", response.data["respuesta"])
+        self.assertIn("CommuSafe", response.data["respuesta"])
 
     @override_settings(LLM_API_KEY="clave-real")
     @patch("asistente.services.Anthropic")
@@ -752,12 +759,88 @@ class ChatAsistenteIAModeTests(APITestCase):
         self.client.force_authenticate(self.usuario)
         response = self.client.post(
             self.url,
-            {"mensaje": "consulta operativa no registrada qwerty personalizada"},
+            {"mensaje": "procedimiento biometrico de porteria para QR temporal"},
             format="json",
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["modo"], "segura")
+
+    @override_settings(LLM_API_KEY="clave-real", LLM_DAILY_REQUEST_LIMIT=0)
+    @patch("asistente.services.Anthropic")
+    def test_cuota_bloquea_ia_externa_y_responde_seguro(self, anthropic_mock):
+        self.client.force_authenticate(self.usuario)
+        response = self.client.post(
+            self.url,
+            {"mensaje": "procedimiento biometrico de porteria para QR temporal"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["modo"], "segura")
+        anthropic_mock.assert_not_called()
+        log = AsistenteRespuestaLog.objects.latest("fecha_creacion")
+        self.assertEqual(log.metadata["cuota"]["motivo"], "limite_diario_alcanzado")
+
+    @override_settings(LLM_API_KEY="clave-real")
+    @patch("asistente.services.Anthropic")
+    def test_respuesta_generativa_fuera_de_dominio_se_descarta(self, anthropic_mock):
+        cliente = SimpleNamespace(
+            messages=SimpleNamespace(
+                create=lambda **kwargs: SimpleNamespace(
+                    content=[SimpleNamespace(text="La receta recomendada lleva pasta, tomate y queso.")]
+                )
+            )
+        )
+        anthropic_mock.return_value = cliente
+
+        self.client.force_authenticate(self.usuario)
+        response = self.client.post(
+            self.url,
+            {"mensaje": "procedimiento biometrico de porteria para QR temporal"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["modo"], "segura")
+        self.assertIn("No encuentro informacion verificada", response.data["respuesta"])
+        log = AsistenteRespuestaLog.objects.latest("fecha_creacion")
+        self.assertEqual(log.metadata["llm_error"], "sin_marcadores_del_dominio")
+
+    def test_metricas_miden_uso_gemini_aclaraciones_y_ahorro(self):
+        AsistenteRespuestaLog.objects.create(
+            usuario=self.usuario,
+            mensaje="local",
+            modo=AsistenteRespuestaLog.Modo.LOCAL,
+            proveedor="local",
+            metadata={"tokens_ahorrados_estimados": 100},
+        )
+        AsistenteRespuestaLog.objects.create(
+            usuario=self.usuario,
+            mensaje="aclaracion",
+            modo=AsistenteRespuestaLog.Modo.ACLARACION,
+            proveedor="local",
+            metadata={"tokens_ahorrados_estimados": 80},
+        )
+        AsistenteRespuestaLog.objects.create(
+            usuario=self.usuario,
+            mensaje="ia",
+            modo=AsistenteRespuestaLog.Modo.IA,
+            proveedor="gemini",
+            tokens_entrada=50,
+            tokens_salida=10,
+            metadata={},
+        )
+
+        metricas = metricas_uso_asistente(24)
+
+        self.assertEqual(metricas["consultas_totales"], 3)
+        self.assertEqual(metricas["resueltas_sin_gemini"], 2)
+        self.assertEqual(metricas["requieren_aclaracion"], 1)
+        self.assertEqual(metricas["usan_ia_externa"], 1)
+        self.assertEqual(metricas["usan_gemini"], 1)
+        self.assertEqual(metricas["tokens_ia_estimados"], 60)
+        self.assertEqual(metricas["tokens_ahorrados_estimados"], 180)
 
 
 @override_settings(LLM_API_KEY="", GEMINI_API_KEY="", LLM_PROVIDER="gemini")

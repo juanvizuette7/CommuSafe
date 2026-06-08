@@ -203,7 +203,14 @@ La respuesta segura impide que el asistente invente datos sobre valores, sancion
 
 ## IA generativa
 
-Cuando se usa IA real, el proveedor se resuelve desde variables de entorno:
+La IA generativa es respaldo, no motor principal. El orden obligatorio es:
+
+1. Motor local con base verificada.
+2. Aclaracion cuando hay varias respuestas posibles.
+3. Respuesta segura cuando la consulta esta fuera de dominio o no hay informacion verificable.
+4. IA externa solo si el motor local devuelve baja confianza, la consulta sigue siendo del dominio y la cuota permite usar respaldo.
+
+Cuando se usa IA real, el proveedor se resuelve desde variables de entorno y queda desacoplado mediante adaptadores:
 
 | Variable | Uso |
 |---|---|
@@ -211,8 +218,14 @@ Cuando se usa IA real, el proveedor se resuelve desde variables de entorno:
 | `GEMINI_API_KEY` | API key de Google AI Studio |
 | `GEMINI_MODEL` | Modelo Gemini activo |
 | `LLM_API_KEY` | API key alternativa de Anthropic |
+| `LLM_BACKUP_ENABLED` | Permite apagar completamente el respaldo generativo |
+| `LLM_TIMEOUT_SECONDS` | Tiempo maximo de espera para Gemini/Anthropic |
+| `LLM_MAX_OUTPUT_TOKENS` | Limite maximo de salida generativa |
+| `LLM_HOURLY_REQUEST_LIMIT` | Limite de consultas IA por hora |
+| `LLM_DAILY_REQUEST_LIMIT` | Limite de consultas IA por dia |
+| `LLM_DAILY_TOKEN_LIMIT` | Limite diario de tokens estimados |
 
-El prompt del sistema restringe al asistente al contexto de CommuSafe, evita Markdown decorativo, evita respuestas externas y solicita texto claro en espanol. El historial persistente de la conversacion se envia como contexto para mantener coherencia.
+El prompt del sistema restringe al asistente al contexto de CommuSafe, evita Markdown decorativo, evita respuestas externas y solicita texto claro en espanol. El historial persistente de la conversacion se envia como contexto para mantener coherencia, pero se compacta antes de salir hacia IA externa.
 
 Para controlar consumo de tokens, el historial completo permanece guardado en PostgreSQL, pero la ventana enviada al LLM se compacta a los ultimos mensajes relevantes:
 
@@ -221,6 +234,29 @@ Para controlar consumo de tokens, el historial completo permanece guardado en Po
 | Maximo de mensajes enviados a IA | 12 |
 | Maximo de caracteres de historial enviado a IA | 6000 |
 | Maximo de salida de Gemini/Anthropic | 700 tokens |
+| Timeout por llamada generativa | 8 segundos por defecto |
+| Limite por hora | 20 consultas IA por defecto |
+| Limite por dia | 80 consultas IA por defecto |
+| Limite diario de tokens | 120000 tokens estimados por defecto |
+
+Antes de aceptar una respuesta generativa, el backend valida que:
+
+- La respuesta no este vacia ni sea demasiado corta.
+- No contenga patrones genericos de modelo de lenguaje o temas externos.
+- Incluya marcadores del dominio como CommuSafe, Remansos, porteria, administracion, incidentes, vigilancia o reportes.
+- No entregue valores monetarios exactos sin indicar validacion con administracion.
+
+Si falla Gemini, se excede la cuota, vence el timeout o la respuesta parece inventada, el sistema devuelve una respuesta segura y registra el motivo en `AsistenteRespuestaLog.metadata`.
+
+El endpoint `GET /api/asistente/health/` expone metricas de las ultimas 24 horas:
+
+- Consultas totales.
+- Consultas resueltas sin Gemini.
+- Consultas que requirieron aclaracion.
+- Consultas que usaron IA externa.
+- Consultas que usaron Gemini.
+- Tokens estimados consumidos por IA.
+- Tokens estimados ahorrados por respuestas locales.
 
 ## Persistencia
 

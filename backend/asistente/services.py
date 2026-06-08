@@ -4,7 +4,11 @@ import logging
 import re
 import time
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor, TimeoutError
+from dataclasses import dataclass
+from datetime import timedelta
 from decimal import Decimal, InvalidOperation
+from typing import Callable
 
 import requests
 
@@ -22,6 +26,7 @@ except ImportError:  # pragma: no cover
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Count, Sum
 from django.utils import timezone
 
 from incidentes.models import Incidente
@@ -36,6 +41,45 @@ LOGGER = logging.getLogger(__name__)
 CONOCIMIENTO_REMANSOS = render_knowledge_base()
 MAX_LLM_HISTORY_MESSAGES = 12
 MAX_LLM_HISTORY_CHARS = 6000
+DEFAULT_LLM_MAX_OUTPUT_TOKENS = 700
+DEFAULT_LLM_TIMEOUT_SECONDS = 8.0
+DEFAULT_LLM_HOURLY_REQUEST_LIMIT = 20
+DEFAULT_LLM_DAILY_REQUEST_LIMIT = 80
+DEFAULT_LLM_DAILY_TOKEN_LIMIT = 120000
+DOMAIN_RESPONSE_TERMS = {
+    "administracion",
+    "administrador",
+    "asistente",
+    "aviso",
+    "commusafe",
+    "conjunto",
+    "incidente",
+    "notificacion",
+    "porteria",
+    "reporte",
+    "remansos",
+    "residente",
+    "seguridad",
+    "vigilancia",
+    "vigilante",
+}
+FORBIDDEN_GENERATIVE_PATTERNS = {
+    "como modelo de lenguaje",
+    "consulta en internet",
+    "no tengo restricciones",
+    "puedo ayudarte con cualquier tema",
+    "segun mi conocimiento general",
+}
+
+
+@dataclass(frozen=True)
+class LLMProviderAdapter:
+    """Proveedor generativo desacoplado de la orquestacion del asistente."""
+
+    name: str
+    model: str
+    configured: bool
+    caller: Callable | None
 
 
 SYSTEM_PROMPT = f"""
@@ -91,6 +135,30 @@ def _anthropic_configurada():
 
 def _api_llm_configurada():
     return _gemini_configurada() or _anthropic_configurada()
+
+
+def _llm_backup_enabled():
+    return bool(getattr(settings, "LLM_BACKUP_ENABLED", True))
+
+
+def _llm_max_output_tokens():
+    return int(getattr(settings, "LLM_MAX_OUTPUT_TOKENS", DEFAULT_LLM_MAX_OUTPUT_TOKENS))
+
+
+def _llm_timeout_seconds():
+    return float(getattr(settings, "LLM_TIMEOUT_SECONDS", DEFAULT_LLM_TIMEOUT_SECONDS))
+
+
+def _llm_hourly_request_limit():
+    return int(getattr(settings, "LLM_HOURLY_REQUEST_LIMIT", DEFAULT_LLM_HOURLY_REQUEST_LIMIT))
+
+
+def _llm_daily_request_limit():
+    return int(getattr(settings, "LLM_DAILY_REQUEST_LIMIT", DEFAULT_LLM_DAILY_REQUEST_LIMIT))
+
+
+def _llm_daily_token_limit():
+    return int(getattr(settings, "LLM_DAILY_TOKEN_LIMIT", DEFAULT_LLM_DAILY_TOKEN_LIMIT))
 
 
 def _normalizar_historial(historial):
@@ -302,7 +370,7 @@ def _llamar_anthropic(mensaje, historial, system_prompt):
     cliente = Anthropic(api_key=settings.LLM_API_KEY)
     respuesta = cliente.messages.create(
         model="claude-haiku-4-5-20251001",
-        max_tokens=700,
+        max_tokens=_llm_max_output_tokens(),
         system=system_prompt,
         messages=mensajes,
     )
@@ -317,25 +385,48 @@ def _llamar_gemini(mensaje, historial, system_prompt):
         contents=contenido,
         config=genai_types.GenerateContentConfig(
             system_instruction=system_prompt,
-            max_output_tokens=700,
+            max_output_tokens=_llm_max_output_tokens(),
             temperature=0.25,
         ),
     )
     return (getattr(respuesta, "text", "") or "").strip()
 
 
-def _resolver_proveedor():
-    proveedor_preferido = (getattr(settings, "LLM_PROVIDER", "gemini") or "gemini").lower().strip()
+def _llm_provider_registry():
+    return [
+        LLMProviderAdapter(
+            name="gemini",
+            model=getattr(settings, "GEMINI_MODEL", "gemini-2.5-flash-lite"),
+            configured=_gemini_configurada(),
+            caller=_llamar_gemini if _gemini_configurada() else None,
+        ),
+        LLMProviderAdapter(
+            name="anthropic",
+            model="claude-haiku-4-5-20251001",
+            configured=_anthropic_configurada(),
+            caller=_llamar_anthropic if _anthropic_configurada() else None,
+        ),
+    ]
 
-    if proveedor_preferido == "gemini" and _gemini_configurada():
-        return "gemini", _llamar_gemini
-    if proveedor_preferido == "anthropic" and _anthropic_configurada():
-        return "anthropic", _llamar_anthropic
-    if _gemini_configurada():
-        return "gemini", _llamar_gemini
-    if _anthropic_configurada():
-        return "anthropic", _llamar_anthropic
-    return "fallback", None
+
+def _resolver_adaptador_proveedor():
+    proveedor_preferido = (getattr(settings, "LLM_PROVIDER", "gemini") or "gemini").lower().strip()
+    providers = _llm_provider_registry()
+
+    for provider in providers:
+        if provider.name == proveedor_preferido and provider.configured:
+            return provider
+    for provider in providers:
+        if provider.configured:
+            return provider
+    return LLMProviderAdapter("fallback", "", False, None)
+
+
+def _resolver_proveedor():
+    """Contrato historico: devuelve nombre y callable del proveedor activo."""
+
+    provider = _resolver_adaptador_proveedor()
+    return provider.name, provider.caller
 
 
 def _modelo_por_proveedor(proveedor):
@@ -351,6 +442,139 @@ def _decimal_confianza(valor):
         return Decimal(str(round(float(valor or 0), 4)))
     except (InvalidOperation, TypeError, ValueError):
         return None
+
+
+def _tokens_ia_en_rango(fecha_inicio, proveedor=None):
+    queryset = AsistenteRespuestaLog.objects.filter(
+        modo=AsistenteRespuestaLog.Modo.IA,
+        fecha_creacion__gte=fecha_inicio,
+    )
+    if proveedor:
+        queryset = queryset.filter(proveedor=proveedor)
+    aggregate = queryset.aggregate(
+        total_entrada=Sum("tokens_entrada"),
+        total_salida=Sum("tokens_salida"),
+        total=Count("id"),
+    )
+    return {
+        "consultas": aggregate["total"] or 0,
+        "tokens": (aggregate["total_entrada"] or 0) + (aggregate["total_salida"] or 0),
+    }
+
+
+def _estado_cuota_llm(proveedor):
+    """Valida limites antes de usar IA externa para evitar gasto no controlado."""
+
+    now = timezone.now()
+    try:
+        uso_hora = _tokens_ia_en_rango(now - timedelta(hours=1), proveedor)
+        uso_dia = _tokens_ia_en_rango(now - timedelta(days=1), proveedor)
+    except Exception as exc:
+        LOGGER.warning("llm_quota_unavailable", extra={"provider": proveedor, "error": str(exc)})
+        return {
+            "permitido": False,
+            "motivo": "cuota_no_verificable",
+            "proveedor": proveedor,
+        }
+
+    hourly_limit = _llm_hourly_request_limit()
+    daily_limit = _llm_daily_request_limit()
+    daily_token_limit = _llm_daily_token_limit()
+    allowed = (
+        uso_hora["consultas"] < hourly_limit
+        and uso_dia["consultas"] < daily_limit
+        and uso_dia["tokens"] < daily_token_limit
+    )
+    reason = ""
+    if uso_hora["consultas"] >= hourly_limit:
+        reason = "limite_horario_alcanzado"
+    elif uso_dia["consultas"] >= daily_limit:
+        reason = "limite_diario_alcanzado"
+    elif uso_dia["tokens"] >= daily_token_limit:
+        reason = "limite_diario_tokens_alcanzado"
+
+    return {
+        "permitido": allowed,
+        "motivo": reason,
+        "proveedor": proveedor,
+        "uso_hora": uso_hora,
+        "uso_dia": uso_dia,
+        "limites": {
+            "consultas_hora": hourly_limit,
+            "consultas_dia": daily_limit,
+            "tokens_dia": daily_token_limit,
+        },
+    }
+
+
+def _estimar_tokens_entrada_ia(mensaje, historial_llm, system_prompt):
+    return (
+        _estimar_tokens(system_prompt)
+        + _estimar_tokens(mensaje)
+        + sum(_estimar_tokens(item["content"]) for item in historial_llm)
+    )
+
+
+def _agregar_metricas_ahorro(resultado, *, mensaje, usuario=None, historial=None):
+    """Registra ahorro estimado cuando la respuesta evita llamar a Gemini/LLM."""
+
+    historial_llm = _compactar_historial_para_ia(historial or [])
+    tokens_ahorrados = _estimar_tokens_entrada_ia(mensaje, historial_llm, construir_system_prompt(usuario))
+    metadata = resultado.setdefault("metadata", {})
+    metadata["tokens_ahorrados_estimados"] = tokens_ahorrados
+    metadata["gemini_evitado"] = True
+    metadata["politica_ia"] = "local_first"
+    resultado["tokens_ahorrados_estimados"] = tokens_ahorrados
+    return resultado
+
+
+def metricas_uso_asistente(horas=24):
+    """Mide uso local, aclaraciones, IA y ahorro estimado con base en logs."""
+
+    since = timezone.now() - timedelta(hours=int(horas or 24))
+    logs = list(
+        AsistenteRespuestaLog.objects.filter(fecha_creacion__gte=since).values(
+            "modo",
+            "proveedor",
+            "tokens_entrada",
+            "tokens_salida",
+            "metadata",
+        )
+    )
+    total = len(logs)
+    sin_gemini = 0
+    aclaraciones = 0
+    uso_ia = 0
+    uso_gemini = 0
+    tokens_ia = 0
+    tokens_ahorrados = 0
+
+    for log in logs:
+        modo = log["modo"]
+        proveedor = log["proveedor"]
+        metadata = log["metadata"] or {}
+        if proveedor != "gemini":
+            sin_gemini += 1
+        if modo == AsistenteRespuestaLog.Modo.ACLARACION:
+            aclaraciones += 1
+        if modo == AsistenteRespuestaLog.Modo.IA:
+            uso_ia += 1
+            tokens_ia += (log["tokens_entrada"] or 0) + (log["tokens_salida"] or 0)
+        if proveedor == "gemini":
+            uso_gemini += 1
+        tokens_ahorrados += int(metadata.get("tokens_ahorrados_estimados", 0) or 0)
+
+    return {
+        "ventana_horas": int(horas or 24),
+        "consultas_totales": total,
+        "resueltas_sin_gemini": sin_gemini,
+        "requieren_aclaracion": aclaraciones,
+        "usan_ia_externa": uso_ia,
+        "usan_gemini": uso_gemini,
+        "tokens_ia_estimados": tokens_ia,
+        "tokens_ahorrados_estimados": tokens_ahorrados,
+        "porcentaje_sin_gemini": round((sin_gemini / total) * 100, 2) if total else 0,
+    }
 
 
 def _nlp_service_configurado():
@@ -391,6 +615,54 @@ def _estimar_tokens(texto):
     if not texto:
         return 0
     return max(1, int(len(str(texto).split()) * 1.35))
+
+
+def _normalizar_para_validacion(texto):
+    texto = texto or ""
+    texto = texto.lower()
+    reemplazos = {
+        "á": "a",
+        "é": "e",
+        "í": "i",
+        "ó": "o",
+        "ú": "u",
+        "ñ": "n",
+    }
+    for original, reemplazo in reemplazos.items():
+        texto = texto.replace(original, reemplazo)
+    return texto
+
+
+def _validar_respuesta_generativa(texto):
+    """Bloquea respuestas externas si parecen fuera de dominio o no verificables."""
+
+    normalizado = _normalizar_para_validacion(texto)
+    if len(normalizado.split()) < 5:
+        return False, "respuesta_demasiado_corta"
+    if any(pattern in normalizado for pattern in FORBIDDEN_GENERATIVE_PATTERNS):
+        return False, "patron_generativo_no_permitido"
+    if not any(term in normalizado for term in DOMAIN_RESPONSE_TERMS):
+        return False, "sin_marcadores_del_dominio"
+    if re.search(r"\b(\$|cop|pesos?)\s*\d+", normalizado) and not any(
+        term in normalizado for term in ["administracion", "validar", "verificar", "no encuentro"]
+    ):
+        return False, "valor_monetario_no_verificado"
+    return True, "respuesta_validada"
+
+
+def _llamar_proveedor_con_timeout(provider, mensaje, historial_llm, system_prompt):
+    if provider.caller is None:
+        raise RuntimeError("Proveedor LLM no configurado.")
+
+    executor = ThreadPoolExecutor(max_workers=1)
+    future = executor.submit(provider.caller, mensaje, historial_llm, system_prompt)
+    try:
+        return future.result(timeout=_llm_timeout_seconds())
+    except TimeoutError as exc:
+        future.cancel()
+        raise TimeoutError(f"Tiempo de espera agotado para {provider.name}.") from exc
+    finally:
+        executor.shutdown(wait=False, cancel_futures=True)
 
 
 def _respuesta_segura_controlada():
@@ -462,6 +734,12 @@ def generar_respuesta_asistente(mensaje, historial=None, usuario=None, conversac
 
     if local_result["action"] in {"answer", "clarify", "safe"}:
         resultado = _payload_desde_local(local_result)
+        resultado = _agregar_metricas_ahorro(
+            resultado,
+            mensaje=mensaje,
+            usuario=usuario,
+            historial=historial,
+        )
         _registrar_respuesta_log(
             mensaje=mensaje,
             resultado=resultado,
@@ -470,43 +748,57 @@ def generar_respuesta_asistente(mensaje, historial=None, usuario=None, conversac
         )
         return resultado
 
-    proveedor, funcion_llm = _resolver_proveedor()
+    provider = _resolver_adaptador_proveedor()
+    proveedor = provider.name
     system_prompt = construir_system_prompt(usuario)
+    quota_status = _estado_cuota_llm(proveedor) if provider.configured else {"permitido": False, "motivo": "sin_proveedor_configurado"}
 
-    if funcion_llm is not None:
+    if _llm_backup_enabled() and provider.caller is not None and quota_status.get("permitido"):
         try:
             historial_llm = _compactar_historial_para_ia(historial)
-            texto = _limpiar_respuesta_ia(funcion_llm(mensaje, historial_llm, system_prompt))
+            tokens_entrada = _estimar_tokens_entrada_ia(mensaje, historial_llm, system_prompt)
+            texto = _limpiar_respuesta_ia(
+                _llamar_proveedor_con_timeout(provider, mensaje, historial_llm, system_prompt)
+            )
+            respuesta_valida, motivo_validacion = _validar_respuesta_generativa(texto)
             if texto:
                 latencia_ms = int((time.perf_counter() - inicio) * 1000)
-                resultado = {
-                    "respuesta": texto,
-                    "modo": "ia",
-                    "proveedor": proveedor,
-                    "modelo_usado": _modelo_por_proveedor(proveedor),
-                    "confianza": local_result.get("confidence", 0),
-                    "intencion": local_result.get("intent", "respaldo_generativo"),
-                    "categoria": local_result.get("category", "respaldo_generativo"),
-                    "metodo": "ia_con_contexto_verificado",
-                    "requiere_validacion": True,
-                    "latencia_ms": latencia_ms,
-                    "tokens_entrada": _estimar_tokens(system_prompt) + _estimar_tokens(mensaje),
-                    "tokens_salida": _estimar_tokens(texto),
-                    "metadata": {
-                        "local_confidence": local_result.get("confidence", 0),
-                        "local_method": local_result.get("method", ""),
-                        "historial_mensajes_enviados": len(historial_llm),
-                        "historial_caracteres_enviados": sum(len(item["content"]) for item in historial_llm),
-                        "tokens_estimados": True,
-                    },
-                }
-                _registrar_respuesta_log(
-                    mensaje=mensaje,
-                    resultado=resultado,
-                    usuario=usuario,
-                    conversacion=conversacion,
-                )
-                return resultado
+                if respuesta_valida:
+                    resultado = {
+                        "respuesta": texto,
+                        "modo": "ia",
+                        "proveedor": proveedor,
+                        "modelo_usado": provider.model,
+                        "confianza": local_result.get("confidence", 0),
+                        "intencion": local_result.get("intent", "respaldo_generativo"),
+                        "categoria": local_result.get("category", "respaldo_generativo"),
+                        "metodo": "ia_respaldo_controlado_con_contexto_verificado",
+                        "requiere_validacion": True,
+                        "latencia_ms": latencia_ms,
+                        "tokens_entrada": tokens_entrada,
+                        "tokens_salida": _estimar_tokens(texto),
+                        "metadata": {
+                            "local_confidence": local_result.get("confidence", 0),
+                            "local_method": local_result.get("method", ""),
+                            "historial_mensajes_enviados": len(historial_llm),
+                            "historial_caracteres_enviados": sum(len(item["content"]) for item in historial_llm),
+                            "tokens_estimados": True,
+                            "politica_ia": "respaldo_controlado",
+                            "cuota": quota_status,
+                            "validacion_respuesta": motivo_validacion,
+                            "timeout_segundos": _llm_timeout_seconds(),
+                        },
+                    }
+                    _registrar_respuesta_log(
+                        mensaje=mensaje,
+                        resultado=resultado,
+                        usuario=usuario,
+                        conversacion=conversacion,
+                    )
+                    return resultado
+                local_result["llm_error"] = motivo_validacion
+            else:
+                local_result["llm_error"] = "respuesta_vacia_del_proveedor"
         except Exception as exc:
             local_result["llm_error"] = str(exc)
 
@@ -514,7 +806,7 @@ def generar_respuesta_asistente(mensaje, historial=None, usuario=None, conversac
         "respuesta": _respuesta_segura_controlada(),
         "modo": "segura",
         "proveedor": "local",
-        "modelo_usado": "commusafe-local-tfidf-v2",
+        "modelo_usado": "commusafe-local-hybrid-v3",
         "confianza": local_result.get("confidence", 0),
         "intencion": local_result.get("intent", "sin_intencion_confiable"),
         "categoria": local_result.get("category", "seguridad_respuesta"),
@@ -528,10 +820,18 @@ def generar_respuesta_asistente(mensaje, historial=None, usuario=None, conversac
                 "entry_id": local_result.get("entry_id"),
                 "subintent": local_result.get("subintent", ""),
             },
-            "llm_disponible": bool(funcion_llm),
+            "llm_disponible": bool(provider.caller),
+            "llm_backup_enabled": _llm_backup_enabled(),
             "llm_error": local_result.get("llm_error", ""),
+            "cuota": quota_status,
         },
     }
+    resultado = _agregar_metricas_ahorro(
+        resultado,
+        mensaje=mensaje,
+        usuario=usuario,
+        historial=historial,
+    )
     _registrar_respuesta_log(
         mensaje=mensaje,
         resultado=resultado,

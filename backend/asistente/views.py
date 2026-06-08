@@ -19,6 +19,12 @@ from .serializers import (
 from .services import (
     _api_llm_configurada,
     _extraer_texto_anthropic,
+    _llm_backup_enabled,
+    _llm_daily_request_limit,
+    _llm_daily_token_limit,
+    _llm_hourly_request_limit,
+    _llm_max_output_tokens,
+    _llm_timeout_seconds,
     _modelo_por_proveedor,
     _nlp_service_configurado,
     _normalizar_historial,
@@ -26,6 +32,7 @@ from .services import (
     _respuesta_fallback,
     generar_respuesta_asistente,
     local_engine_stats,
+    metricas_uso_asistente,
     procesar_mensaje_conversacion,
 )
 from .throttles import AsistenteChatThrottle, AsistenteLecturaThrottle
@@ -67,6 +74,19 @@ class ChatHealthView(APIView):
                 "servicio_nlp_auxiliar": {
                     "configurado": _nlp_service_configurado(),
                     "uso": "opcional_para_inferencia_local_http",
+                },
+                "politica_ia": {
+                    "orden": "local -> aclaracion/respuesta_segura -> IA externa solo como respaldo",
+                    "gemini_primera_opcion": False,
+                    "respaldo_generativo_activo": _llm_backup_enabled(),
+                    "limites": {
+                        "timeout_segundos": _llm_timeout_seconds(),
+                        "salida_maxima_tokens": _llm_max_output_tokens(),
+                        "consultas_hora": _llm_hourly_request_limit(),
+                        "consultas_dia": _llm_daily_request_limit(),
+                        "tokens_dia": _llm_daily_token_limit(),
+                    },
+                    "metricas_24h": metricas_uso_asistente(24),
                 },
             },
             status=status.HTTP_200_OK,

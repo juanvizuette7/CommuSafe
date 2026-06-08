@@ -81,9 +81,10 @@ El sistema no reemplaza la labor humana de vigilancia o administracion. Su objet
 - Historial de mensajes almacenado en base de datos.
 - Base de conocimiento local con 108 FAQ verificables agrupadas en 20 intenciones principales.
 - Motor local-first con busqueda exacta, normalizacion, palabras clave, similitud TF-IDF, clasificacion de intencion, cache, reglas de negocio, umbrales de confianza y respuestas seguras.
-- Escalamiento a Gemini o Anthropic cuando la pregunta pertenece al dominio pero requiere IA generativa.
+- Gemini o Anthropic funcionan solo como respaldo controlado: nunca son la primera opcion y solo se usan ante baja confianza local dentro del dominio.
+- Control de uso IA con cuotas por hora/dia, limite diario de tokens, timeout, validacion anti-invencion y respuesta segura si el proveedor falla.
 - Servicio Flask auxiliar opcional para inferencia local por HTTP, evaluacion, reentrenamiento logico y seleccion de respuestas.
-- Logs tecnicos de modo, proveedor, intencion, confianza, latencia y tokens estimados.
+- Logs tecnicos de modo, proveedor, intencion, confianza, latencia, tokens estimados y ahorro de tokens por resolver localmente.
 - Evaluacion automatizada del asistente con precision, recall, F1, cobertura local y matriz de confusion resumida.
 - Dataset profesional de comprension de intenciones con 720 ejemplos balanceados en entrenamiento, validacion y prueba.
 - Comparacion reproducible de modelos locales: baseline por palabras clave, TF-IDF por palabra, TF-IDF por caracteres, ensambles y motor hibrido de produccion.
@@ -439,6 +440,12 @@ El archivo real `backend/.env` no debe versionarse. En produccion las variables 
 | `GEMINI_MODEL` | Modelo Gemini activo |
 | `LLM_PROVIDER` | Proveedor IA configurado |
 | `LLM_API_KEY` | Alternativa Anthropic |
+| `LLM_BACKUP_ENABLED` | Activa o desactiva el respaldo generativo |
+| `LLM_TIMEOUT_SECONDS` | Tiempo maximo de espera para Gemini/Anthropic |
+| `LLM_MAX_OUTPUT_TOKENS` | Maximo de tokens de salida generativa |
+| `LLM_HOURLY_REQUEST_LIMIT` | Limite de consultas IA por hora |
+| `LLM_DAILY_REQUEST_LIMIT` | Limite de consultas IA por dia |
+| `LLM_DAILY_TOKEN_LIMIT` | Limite diario de tokens estimados en IA |
 | `FIREBASE_CREDENTIALS_JSON_BASE64` | Credenciales Firebase Admin codificadas |
 | `COMMUSAFE_NLP_SERVICE_URL` | URL opcional del servicio Flask auxiliar, por ejemplo `http://127.0.0.1:5055` |
 | `COMMUSAFE_NLP_SERVICE_KEY` | Clave opcional para proteger el servicio Flask auxiliar |
