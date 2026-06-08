@@ -54,6 +54,8 @@ from .views import ChatAsistenteView, ChatHealthView, ConversacionAsistenteViewS
 
 
 Usuario = get_user_model()
+TEST_LLM_API_KEY = "test-llm-key"
+TEST_GEMINI_API_KEY = "test-gemini-key"
 
 
 def normalizar_texto(texto):
@@ -136,7 +138,7 @@ class ChatAsistenteFallbackTests(APITestCase):
         self.assertEqual(log.metadata["subintent"], "crear_incidente")
         self.assertIsNotNone(log.confianza)
 
-    @override_settings(LLM_API_KEY="clave-real", GEMINI_API_KEY="", LLM_PROVIDER="anthropic")
+    @override_settings(LLM_API_KEY=TEST_LLM_API_KEY, GEMINI_API_KEY="", LLM_PROVIDER="anthropic")
     @patch("asistente.services.Anthropic")
     def test_preguntas_conocidas_no_usan_ia_externa(self, anthropic_mock):
         self.client.force_authenticate(self.usuario)
@@ -255,7 +257,7 @@ class ChatAsistenteFallbackTests(APITestCase):
         self.assertIn("1.", response.data["respuesta"])
         self.assertGreaterEqual(len(response.data["metadata"]["options"]), 2)
 
-    @override_settings(LLM_API_KEY="clave-real", GEMINI_API_KEY="", LLM_PROVIDER="anthropic")
+    @override_settings(LLM_API_KEY=TEST_LLM_API_KEY, GEMINI_API_KEY="", LLM_PROVIDER="anthropic")
     @patch("asistente.services.Anthropic")
     def test_bloquea_inyeccion_y_no_usa_ia_externa(self, anthropic_mock):
         self.client.force_authenticate(self.usuario)
@@ -277,7 +279,7 @@ class ChatAsistenteFallbackTests(APITestCase):
             {
                 "mensaje": (
                     "Mi correo es residente@test.com, mi celular es 3001234567 "
-                    "y mi api_key=AIzaSyDFBoJOarY3QZr2SBG3NNkpecKbQqdEi-k"
+                    "y mi api_key=valor-ficticio-de-prueba"
                 )
             },
             format="json",
@@ -286,10 +288,10 @@ class ChatAsistenteFallbackTests(APITestCase):
         log = AsistenteRespuestaLog.objects.latest("fecha_creacion")
         self.assertNotIn("residente@test.com", log.mensaje)
         self.assertNotIn("3001234567", log.mensaje)
-        self.assertNotIn("AIzaSyDFBo", log.mensaje)
+        self.assertNotIn("valor-ficticio-de-prueba", log.mensaje)
         self.assertIn("[EMAIL_REDACTADO]", log.mensaje)
 
-    @override_settings(LLM_API_KEY="clave-real", GEMINI_API_KEY="", LLM_PROVIDER="anthropic")
+    @override_settings(LLM_API_KEY=TEST_LLM_API_KEY, GEMINI_API_KEY="", LLM_PROVIDER="anthropic")
     @patch("asistente.services.Anthropic")
     def test_historial_legado_no_confiable_no_suplanta_asistente(self, anthropic_mock):
         llamadas = {}
@@ -342,13 +344,13 @@ class ChatAsistenteHelpersTests(APITestCase):
             self.assertFalse(_api_llm_configurada())
         with override_settings(LLM_API_KEY="REEMPLAZAR_KEY", GEMINI_API_KEY=""):
             self.assertFalse(_api_llm_configurada())
-        with override_settings(LLM_API_KEY="clave-real", GEMINI_API_KEY=""):
+        with override_settings(LLM_API_KEY=TEST_LLM_API_KEY, GEMINI_API_KEY=""):
             self.assertTrue(_api_llm_configurada())
-        with override_settings(LLM_API_KEY="", GEMINI_API_KEY="clave-real"):
+        with override_settings(LLM_API_KEY="", GEMINI_API_KEY=TEST_GEMINI_API_KEY):
             with patch("asistente.services.genai", object()):
                 self.assertTrue(_api_llm_configurada())
 
-        with override_settings(LLM_API_KEY="", GEMINI_API_KEY="clave-real"):
+        with override_settings(LLM_API_KEY="", GEMINI_API_KEY=TEST_GEMINI_API_KEY):
             with patch("asistente.services.genai", None):
                 self.assertFalse(_api_llm_configurada())
 
@@ -879,7 +881,7 @@ class ChatAsistenteIAModeTests(APITestCase):
         )
         self.url = reverse("asistente:chat")
 
-    @override_settings(LLM_API_KEY="clave-real")
+    @override_settings(LLM_API_KEY=TEST_LLM_API_KEY)
     @patch("asistente.services.Anthropic")
     def test_modo_ia_cuando_modelo_responde_texto(self, anthropic_mock):
         cliente = SimpleNamespace(
@@ -909,7 +911,7 @@ class ChatAsistenteIAModeTests(APITestCase):
         self.assertEqual(response.data["modo"], "ia")
         self.assertIn("CommuSafe", response.data["respuesta"])
 
-    @override_settings(LLM_API_KEY="clave-real")
+    @override_settings(LLM_API_KEY=TEST_LLM_API_KEY)
     @patch("asistente.services.Anthropic")
     def test_modo_fallback_si_modelo_devuelve_vacio(self, anthropic_mock):
         cliente = SimpleNamespace(
@@ -929,7 +931,7 @@ class ChatAsistenteIAModeTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["modo"], "segura")
 
-    @override_settings(LLM_API_KEY="clave-real")
+    @override_settings(LLM_API_KEY=TEST_LLM_API_KEY)
     @patch("asistente.services.Anthropic", side_effect=Exception("fallo"))
     def test_modo_fallback_si_hay_excepcion_ia(self, _anthropic_mock):
         self.client.force_authenticate(self.usuario)
@@ -942,7 +944,7 @@ class ChatAsistenteIAModeTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["modo"], "segura")
 
-    @override_settings(LLM_API_KEY="clave-real", LLM_DAILY_REQUEST_LIMIT=0)
+    @override_settings(LLM_API_KEY=TEST_LLM_API_KEY, LLM_DAILY_REQUEST_LIMIT=0)
     @patch("asistente.services.Anthropic")
     def test_cuota_bloquea_ia_externa_y_responde_seguro(self, anthropic_mock):
         self.client.force_authenticate(self.usuario)
@@ -958,7 +960,7 @@ class ChatAsistenteIAModeTests(APITestCase):
         log = AsistenteRespuestaLog.objects.latest("fecha_creacion")
         self.assertEqual(log.metadata["cuota"]["motivo"], "limite_diario_alcanzado")
 
-    @override_settings(LLM_API_KEY="clave-real")
+    @override_settings(LLM_API_KEY=TEST_LLM_API_KEY)
     @patch("asistente.services.Anthropic")
     def test_respuesta_generativa_fuera_de_dominio_se_descarta(self, anthropic_mock):
         cliente = SimpleNamespace(

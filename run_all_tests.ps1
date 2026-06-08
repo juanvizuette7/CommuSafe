@@ -27,10 +27,10 @@ $HealthUrl = "https://commusafe.onrender.com/health/"
 $Results = New-Object System.Collections.Generic.List[object]
 
 if (-not $env:SECRET_KEY) {
-    $env:SECRET_KEY = "commusafe-local-test-secret-key-for-qa-script-2026"
+    $env:SECRET_KEY = "test-" + [Guid]::NewGuid().ToString("N") + [Guid]::NewGuid().ToString("N")
 }
 if (-not $env:JWT_SIGNING_KEY) {
-    $env:JWT_SIGNING_KEY = "commusafe-local-test-jwt-signing-key-for-qa-script-2026"
+    $env:JWT_SIGNING_KEY = "test-jwt-" + [Guid]::NewGuid().ToString("N") + [Guid]::NewGuid().ToString("N")
 }
 if (-not $env:DEBUG) {
     $env:DEBUG = "True"

@@ -456,7 +456,7 @@ El archivo real `backend/.env` no debe versionarse. En produccion las variables 
 | `EMAIL_HOST_PASSWORD` | Password de aplicacion SMTP |
 | `DEFAULT_FROM_EMAIL` | Remitente del sistema |
 
-Archivos sensibles como `.env`, credenciales Firebase y `google-services.json` no deben exponerse en el repositorio publico.
+Archivos sensibles como `.env`, credenciales Firebase, `google-services.json`, APKs generados y bases de datos locales no deben exponerse en el repositorio publico. La politica completa esta documentada en `docs/SEGURIDAD_CREDENCIALES.md`.
 
 ## Instalacion Local Del Backend
 

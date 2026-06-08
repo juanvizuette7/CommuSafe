@@ -38,26 +38,28 @@ Revisar o crear estas variables en el servicio web:
 
 ```env
 DJANGO_SETTINGS_MODULE=commusafe_backend.settings_prod
-SECRET_KEY=valor_seguro_generado_por_render
+SECRET_KEY=
 DEBUG=False
 ALLOWED_HOSTS=.onrender.com,commusafe.onrender.com
 CSRF_TRUSTED_ORIGINS=https://*.onrender.com,https://commusafe.onrender.com
 SERVE_MEDIA_FILES=True
 LLM_PROVIDER=gemini
 GEMINI_MODEL=gemini-2.5-flash-lite
-GEMINI_API_KEY=TU_API_KEY_REAL_DE_GOOGLE_AI_STUDIO
-FIREBASE_CREDENTIALS_JSON_BASE64=JSON_BASE64_DE_FIREBASE_ADMIN
-PROD_ADMIN_EMAIL=correo_real_del_administrador
-PROD_ADMIN_PASSWORD=contrasena_segura_del_administrador
-PROD_ADMIN_NOMBRE=Nombre
-PROD_ADMIN_APELLIDO=Apellido
-PROD_ADMIN_TELEFONO=3000000000
-EMAIL_HOST_USER=correo_smtp_real
-EMAIL_HOST_PASSWORD=app_password_smtp
-DEFAULT_FROM_EMAIL=CommuSafe <correo_smtp_real>
+GEMINI_API_KEY=
+FIREBASE_CREDENTIALS_JSON_BASE64=
+PROD_ADMIN_EMAIL=
+PROD_ADMIN_PASSWORD=
+PROD_ADMIN_NOMBRE=
+PROD_ADMIN_APELLIDO=
+PROD_ADMIN_TELEFONO=
+EMAIL_HOST_USER=
+EMAIL_HOST_PASSWORD=
+DEFAULT_FROM_EMAIL=
 ```
 
 No se debe ejecutar `cargar_demo` en produccion. El despliegue real arranca con base limpia y crea solo el administrador indicado por las variables `PROD_ADMIN_*`.
+
+Los valores reales se configuran exclusivamente en el panel de entorno de Render o en archivos locales privados no versionados. Nunca deben copiarse en el repositorio, en pruebas ni en documentacion.
 
 ## 4. Configurar IA real
 
