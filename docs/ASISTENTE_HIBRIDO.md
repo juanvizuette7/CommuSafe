@@ -27,7 +27,7 @@ La arquitectura queda separada por responsabilidades:
 |---|---|---|
 | Base de conocimiento | `backend/asistente/local_knowledge.py` | Preguntas frecuentes, variaciones, categorias, palabras clave, roles permitidos y trazabilidad de cada entrada |
 | Taxonomia | `backend/asistente/taxonomy.py` | Agrupacion mantenible de FAQ y subtemas en intenciones principales |
-| Motor local | `backend/asistente/local_engine.py` | Coincidencia exacta, scoring por palabras clave, TF-IDF, umbrales de confianza y respuesta segura |
+| Motor local | `backend/asistente/local_engine.py` | Coincidencia exacta, normalizacion, palabras clave, TF-IDF, clasificacion de intencion, reglas de negocio, cache, umbrales de confianza y respuesta segura |
 | Servicio LLM | `backend/asistente/services.py` | Orquestacion local-first, contexto del usuario, historial conversacional, Gemini/Anthropic y logs |
 | API REST | `backend/asistente/views.py` | Chat rapido, conversaciones persistentes, mensajes, health check y acciones REST |
 | Persistencia | `backend/asistente/models.py` | Conversaciones, mensajes y logs tecnicos de respuestas |
@@ -183,12 +183,13 @@ Flujo aplicado:
 
 1. Normaliza texto, tildes, puntuacion y errores ortograficos frecuentes.
 2. Busca coincidencia exacta en preguntas, variaciones y palabras clave.
-3. Calcula similitud por palabras clave, coincidencia lexica y TF-IDF.
-4. Recupera la FAQ concreta y su respuesta preparada.
-5. Responde localmente si la confianza es alta.
-6. Pide aclaracion si la confianza es media o existe ambiguedad entre intenciones principales.
-7. Permite Gemini o Anthropic solo si la consulta es del dominio y queda en baja confianza.
-8. Responde de forma segura si esta fuera del dominio, el proveedor falla o no hay informacion verificada.
+3. Aplica reglas de negocio de alta precision para casos operativos claros.
+4. Calcula similitud por palabras clave, coincidencia lexica, TF-IDF por FAQ y clasificacion de intencion por centroides.
+5. Recupera la FAQ concreta y su respuesta preparada.
+6. Responde localmente si la confianza es alta.
+7. Pide aclaracion si la confianza es media o existe ambiguedad entre intenciones principales.
+8. Permite Gemini o Anthropic solo si la consulta es del dominio y queda en baja confianza.
+9. Responde de forma segura si esta fuera del dominio, el proveedor falla o no hay informacion verificada.
 
 Los umbrales actuales fueron seleccionados mediante busqueda reproducible sobre validation y casos de reto:
 
@@ -288,9 +289,9 @@ Metricas reportadas:
 Resultado local verificado en desarrollo despues de la auditoria de modelo:
 
 ```text
-train:      F1 0.8750
-validation: F1 0.8667
-test:       F1 0.9167
+train:      F1 0.8771
+validation: F1 0.8583
+test:       F1 0.9000
 challenge:  F1 0.5714
 ```
 
@@ -300,19 +301,19 @@ Comparacion reproducible de estrategias locales entrenadas y evaluadas:
 
 | Estrategia | Validation F1 | Test F1 | Challenge F1 | Decision |
 |---|---:|---:|---:|---|
-| Baseline por palabras clave | 0.6000 | 0.6583 | 0.5714 | Insuficiente como solucion unica |
-| TF-IDF centroides por palabra | 0.6417 | 0.6833 | 0.5714 | Mejora el baseline, pero pierde precision en frases cortas |
-| TF-IDF centroides por caracteres | 0.6500 | 0.7000 | 0.5714 | Aporta robustez ante errores ortograficos |
-| Ensamble palabra/caracter 0.35/0.65 | 0.6417 | 0.7083 | 0.5714 | Mejor entre modelos entrenados puros, pero no supera la base de conocimiento |
-| Hibrido local de produccion | 0.8667 | 0.9167 | 0.5714 | Seleccionado por mejor generalizacion, trazabilidad y control de seguridad |
+| Baseline por palabras clave | 0.6000 | 0.6500 | 0.5714 | Insuficiente como solucion unica |
+| TF-IDF centroides por palabra | 0.6583 | 0.6667 | 0.5714 | Mejora el baseline, pero pierde precision en frases cortas |
+| TF-IDF centroides por caracteres | 0.6583 | 0.7000 | 0.5714 | Aporta robustez ante errores ortograficos |
+| Ensamble palabra/caracter 0.35/0.65 | 0.6500 | 0.7083 | 0.5714 | Mejor entre modelos entrenados puros, pero no supera la base de conocimiento |
+| Hibrido local de produccion | 0.8583 | 0.9000 | 0.5714 | Seleccionado por mejor generalizacion, trazabilidad y control de seguridad |
 
 Comportamiento medido en `test`:
 
 | Resultado | Porcentaje |
 |---|---:|
-| Respuesta local directa | 74.17% |
-| Solicitud de aclaracion | 20.83% |
-| Candidato a IA generativa | 2.50% |
+| Respuesta local directa | 66.67% |
+| Solicitud de aclaracion | 26.67% |
+| Candidato a IA generativa | 4.17% |
 | Respuesta segura | 2.50% |
 
 El reporte completo con matriz de confusion y analisis de errores queda en:

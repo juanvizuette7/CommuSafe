@@ -8,7 +8,7 @@ Esta auditoria revisa exclusivamente el asistente virtual de CommuSafe a nivel b
 
 | Area auditada | Riesgo identificado | Correccion aplicada | Evidencia |
 |---|---|---|---|
-| Dependencia de IA generativa | El asistente podia depender demasiado de Gemini/Anthropic para preguntas frecuentes. | Se mantiene arquitectura local-first con base de conocimiento de 108 entradas, coincidencia exacta, palabras clave, TF-IDF y respuesta segura. | `backend/asistente/local_knowledge.py`, `backend/asistente/local_engine.py` |
+| Dependencia de IA generativa | El asistente podia depender demasiado de Gemini/Anthropic para preguntas frecuentes. | Se mantiene arquitectura local-first con base de conocimiento de 108 entradas, coincidencia exacta, normalizacion, palabras clave, TF-IDF, clasificacion de intencion, reglas de negocio y respuesta segura. | `backend/asistente/local_knowledge.py`, `backend/asistente/local_engine.py` |
 | Consumo de tokens | El historial persistente podia crecer y aumentar el costo si se enviaba completo al LLM. | Se agrego compactacion de historial antes de IA: maximo 12 mensajes y 6000 caracteres. La base de datos conserva el historial completo. | `MAX_LLM_HISTORY_MESSAGES`, `MAX_LLM_HISTORY_CHARS`, `_compactar_historial_para_ia()` |
 | Respuestas inconsistentes | La IA podria usar formato Markdown excesivo, inventar informacion o salir del dominio. | Prompt restringido al dominio, limpieza de Markdown decorativo, fallback seguro y logs de modo/intencion/confianza. | `SYSTEM_PROMPT`, `_limpiar_respuesta_ia()`, `AsistenteRespuestaLog` |
 | Privacidad frente al proveedor IA | El contexto generativo incluia datos personales y detalles operativos innecesarios. | El contexto externo se minimizo a rol y conteos agregados; no envia nombre, unidad, titulos, ubicaciones ni cuerpos de avisos. | `_contexto_usuario()`, `test_contexto_enviado_a_ia_minimiza_datos_personales` |
@@ -23,7 +23,7 @@ Esta auditoria revisa exclusivamente el asistente virtual de CommuSafe a nivel b
 | Fragmentacion de intenciones | Las 108 FAQ estaban tratadas como 108 clases con pocos ejemplos, lo que dificultaba generalizar y explicar la taxonomia. | Se conservaron las 108 FAQ como subintenciones y se agruparon en 20 intenciones principales mantenibles. | `backend/asistente/taxonomy.py` |
 | Dataset de entrenamiento | El asistente necesitaba datos separados y sin fuga para sustentar comprension de intenciones. | Se reconstruyo un dataset profesional con 720 ejemplos, 20 intenciones principales, train/validation/test y seis estilos balanceados. | `python manage.py generar_dataset_asistente` |
 | Umbrales de confianza | Los umbrales iniciales no tenian evidencia reproducible suficiente. | Se agrego calibracion por busqueda sobre validation y casos de reto; se seleccionaron 0.52, 0.28 y margen 0.04 con cero respuestas directas incorrectas en calibracion. | `calibrate_thresholds()` |
-| Errores ortograficos | El filtro de dominio rechazaba algunas preguntas utiles antes de clasificarlas. | Se agrego normalizacion de errores frecuentes y vocabulario cotidiano, conservando rechazo seguro fuera de dominio. | `COMMON_TOKEN_CORRECTIONS`, `normalize_text()` |
+| Errores ortograficos y variaciones | El filtro de dominio rechazaba algunas preguntas utiles antes de clasificarlas. | Se agrego normalizacion de errores frecuentes, pluralizacion simple, vocabulario cotidiano y clasificacion por intencion principal, conservando rechazo seguro fuera de dominio. | `COMMON_TOKEN_CORRECTIONS`, `tokenize()`, `_classify_intents()` |
 | Colisiones exactas | Siete variaciones cortas podian corresponder a mas de una FAQ y el indice conservaba solo una. | El indice exacto conserva todos los candidatos y solicita aclaracion cuando una frase es realmente ambigua. | `_exact_ambiguity_payload()`, `colisiones_exactas_controladas` |
 | Documentacion | La arquitectura hibrida necesitaba explicacion sustentable. | Se agrego documentacion especifica de arquitectura, pruebas, seguridad, metricas y comandos. | `docs/ASISTENTE_HIBRIDO.md` |
 
@@ -146,28 +146,28 @@ Metricas del motor local:
 
 | Split | F1 |
 |---|---:|
-| Train | 0.8750 |
-| Validation | 0.8667 |
-| Test | 0.9167 |
+| Train | 0.8771 |
+| Validation | 0.8583 |
+| Test | 0.9000 |
 | Challenge | 0.5714 |
 
 Comparacion de modelos locales:
 
 | Estrategia | Validation F1 | Test F1 | Challenge F1 |
 |---|---:|---:|---:|
-| Baseline por palabras clave | 0.6000 | 0.6583 | 0.5714 |
-| TF-IDF centroides por palabra | 0.6417 | 0.6833 | 0.5714 |
+| Baseline por palabras clave | 0.6000 | 0.6500 | 0.5714 |
+| TF-IDF centroides por palabra | 0.6583 | 0.6667 | 0.5714 |
 | TF-IDF centroides por caracteres | 0.6500 | 0.7000 | 0.5714 |
-| Ensamble palabra/caracter 0.35/0.65 | 0.6417 | 0.7083 | 0.5714 |
-| Hibrido local de produccion | 0.8667 | 0.9167 | 0.5714 |
+| Ensamble palabra/caracter 0.35/0.65 | 0.6500 | 0.7083 | 0.5714 |
+| Hibrido local de produccion | 0.8583 | 0.9000 | 0.5714 |
 
 Comportamiento en test:
 
 | Resultado | Porcentaje |
 |---|---:|
-| Respuesta local directa | 74.17% |
-| Aclaracion | 20.83% |
-| Candidato a Gemini/Anthropic | 2.50% |
+| Respuesta local directa | 66.67% |
+| Aclaracion | 26.67% |
+| Candidato a Gemini/Anthropic | 4.17% |
 | Respuesta segura | 2.50% |
 
 Evidencia exportada:

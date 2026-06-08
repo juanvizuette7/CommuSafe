@@ -1,8 +1,9 @@
 """Motor local de recuperacion e intenciones para CommuBot.
 
 No depende de servicios externos. Combina coincidencia exacta, palabras clave y
-similitud TF-IDF ligera para responder preguntas frecuentes sin consumir IA
-generativa. El motor es stateless para usuarios y seguro para concurrencia.
+similitud TF-IDF ligera con clasificacion de intencion para responder preguntas
+frecuentes sin consumir IA generativa. El motor es stateless para usuarios y
+seguro para concurrencia.
 """
 
 from __future__ import annotations
@@ -32,6 +33,7 @@ COMMON_TOKEN_CORRECTIONS = {
     "komo": "como",
     "notificasion": "notificacion",
     "parkiadero": "parqueadero",
+    "report": "reporte",
     "segurida": "seguridad",
     "veiculo": "vehiculo",
 }
@@ -77,6 +79,7 @@ DOMAIN_TERMS = {
     "acceso",
     "administracion",
     "administrador",
+    "administrativo",
     "ajuste",
     "ajustes",
     "alerta",
@@ -181,6 +184,8 @@ def tokenize(text: str) -> list[str]:
         if token in STOPWORDS or len(token) <= 1:
             continue
         tokens.append(token)
+        if len(token) > 7 and token.endswith("ciones"):
+            tokens.append(f"{token[:-6]}cion")
         if len(token) > 4 and token.endswith("s"):
             tokens.append(token[:-1])
     return tokens
@@ -195,14 +200,19 @@ class LocalAssistantEngine:
         self._exact_index: dict[str, list[FAQEntry]] = {}
         self._entry_tokens: dict[str, Counter[str]] = {}
         self._entry_keywords: dict[str, set[str]] = {}
+        self._intent_keywords: dict[str, set[str]] = {}
         self._idf: dict[str, float] = {}
         self._vectors: dict[str, dict[str, float]] = {}
         self._norms: dict[str, float] = {}
+        self._intent_vectors: dict[str, dict[str, float]] = {}
+        self._intent_norms: dict[str, float] = {}
         self._build_index()
 
     def _build_index(self) -> None:
         document_frequency: Counter[str] = Counter()
         raw_documents: dict[str, Counter[str]] = {}
+        raw_intent_documents: dict[str, Counter[str]] = defaultdict(Counter)
+        intent_keywords: dict[str, set[str]] = defaultdict(set)
 
         for entry in self.entries:
             searchable_chunks = [normalize_text(text) for text in entry.searchable_texts()]
@@ -216,6 +226,8 @@ class LocalAssistantEngine:
             raw_documents[entry.id] = tokens
             self._entry_tokens[entry.id] = tokens
             self._entry_keywords[entry.id] = set(tokenize(" ".join(entry.keywords)))
+            raw_intent_documents[entry.main_intent].update(tokens)
+            intent_keywords[entry.main_intent].update(self._entry_keywords[entry.id])
             for token in tokens:
                 document_frequency[token] += 1
 
@@ -230,6 +242,12 @@ class LocalAssistantEngine:
             norm = math.sqrt(sum(value * value for value in vector.values())) or 1.0
             self._vectors[entry_id] = vector
             self._norms[entry_id] = norm
+        for intent_id, tokens in raw_intent_documents.items():
+            vector = {token: count * self._idf.get(token, 1.0) for token, count in tokens.items()}
+            norm = math.sqrt(sum(value * value for value in vector.values())) or 1.0
+            self._intent_vectors[intent_id] = vector
+            self._intent_norms[intent_id] = norm
+        self._intent_keywords = dict(intent_keywords)
 
     def resolve(self, message: str, role: str = "RESIDENTE") -> dict[str, Any]:
         started = time.perf_counter()
@@ -254,6 +272,17 @@ class LocalAssistantEngine:
             )
         if len(exact_entries) > 1:
             return self._exact_ambiguity_payload(exact_entries, started)
+
+        business_entry = self._business_rule_entry(normalized, role)
+        if business_entry:
+            return self._answer_payload(
+                business_entry,
+                confidence=0.96,
+                method="regla_negocio",
+                mode="local",
+                started=started,
+                score_parts={"regla": 1.0},
+            )
 
         query_tokens = set(tokenize(normalized))
         if query_tokens and not (query_tokens & DOMAIN_TERMS):
@@ -285,7 +314,7 @@ class LocalAssistantEngine:
                 "respuesta": self._build_clarification(options),
                 "mode": "aclaracion",
                 "provider": "local",
-                "model": "commusafe-local-tfidf-v2",
+                "model": "commusafe-local-hybrid-v3",
                 "confidence": round(confidence, 4),
                 "intent": entry.main_intent,
                 "subintent": entry.intent,
@@ -307,7 +336,7 @@ class LocalAssistantEngine:
             "respuesta": "",
             "mode": "baja_confianza",
             "provider": "local",
-            "model": "commusafe-local-tfidf-v2",
+            "model": "commusafe-local-hybrid-v3",
             "confidence": round(confidence, 4),
             "intent": entry.main_intent,
             "subintent": entry.intent,
@@ -332,15 +361,24 @@ class LocalAssistantEngine:
         query_vector = {token: count * self._idf.get(token, 1.0) for token, count in query_tokens.items()}
         query_norm = math.sqrt(sum(value * value for value in query_vector.values())) or 1.0
         query_token_set = set(query_tokens)
+        intent_scores = self._classify_intents(query_vector, query_norm, query_token_set)
         candidates = []
 
         for entry in get_entries_for_role(role):
             semantic = self._cosine(entry.id, query_vector, query_norm)
             keyword = self._keyword_score(entry.id, query_token_set)
             lexical = self._lexical_overlap(entry.id, query_token_set)
-            confidence = max(semantic * 0.78 + keyword * 0.22, keyword * 0.9, lexical * 0.72)
+            intent_score = intent_scores.get(entry.main_intent, 0.0)
+            confidence = max(
+                semantic * 0.58 + keyword * 0.20 + lexical * 0.08 + intent_score * 0.14,
+                keyword * 0.9,
+                lexical * 0.72,
+                intent_score * 0.64 if semantic > 0.12 or keyword > 0 else 0.0,
+            )
             method = "semantica_tfidf"
-            if keyword >= semantic and keyword >= lexical:
+            if intent_score >= semantic and intent_score >= keyword and intent_score >= lexical:
+                method = "clasificacion_intencion"
+            elif keyword >= semantic and keyword >= lexical:
                 method = "palabras_clave"
             elif lexical > semantic:
                 method = "coincidencia_lexica"
@@ -354,16 +392,51 @@ class LocalAssistantEngine:
                         "semantica": round(semantic, 4),
                         "keywords": round(keyword, 4),
                         "lexica": round(lexical, 4),
+                        "intencion": round(intent_score, 4),
                     },
                 }
             )
 
         return sorted(candidates, key=lambda item: item["confidence"], reverse=True)
 
+    def _business_rule_entry(self, normalized: str, role: str) -> FAQEntry | None:
+        """Aplica reglas deterministicas para consultas operativas de alta precision."""
+
+        tokens = set(tokenize(normalized))
+        rules = [
+            ({"entrar", "cuenta"}, "uso_001"),
+            ({"aviso", "administrativo"}, "not_003"),
+            ({"comunicado", "administracion"}, "not_003"),
+        ]
+        for required_tokens, entry_id in rules:
+            entry = self._entry_by_id.get(entry_id)
+            if entry and required_tokens <= tokens and self._role_allowed(entry, role):
+                return entry
+        return None
+
     def _cosine(self, entry_id: str, query_vector: dict[str, float], query_norm: float) -> float:
         vector = self._vectors.get(entry_id, {})
         dot = sum(query_vector[token] * vector.get(token, 0.0) for token in query_vector)
         return max(0.0, min(1.0, dot / (query_norm * self._norms.get(entry_id, 1.0))))
+
+    def _classify_intents(
+        self,
+        query_vector: dict[str, float],
+        query_norm: float,
+        query_tokens: set[str],
+    ) -> dict[str, float]:
+        """Clasifica intenciones principales como senal adicional de recuperacion."""
+
+        scores = {}
+        for intent_id, vector in self._intent_vectors.items():
+            dot = sum(query_vector[token] * vector.get(token, 0.0) for token in query_vector)
+            semantic = max(0.0, min(1.0, dot / (query_norm * self._intent_norms.get(intent_id, 1.0))))
+            keywords = self._intent_keywords.get(intent_id, set())
+            keyword_score = 0.0
+            if keywords:
+                keyword_score = min(1.0, len(query_tokens & keywords) / max(2, min(len(keywords), 8)))
+            scores[intent_id] = max(semantic * 0.72 + keyword_score * 0.28, keyword_score * 0.82)
+        return scores
 
     def _keyword_score(self, entry_id: str, query_tokens: set[str]) -> float:
         keywords = self._entry_keywords.get(entry_id, set())
@@ -428,7 +501,7 @@ class LocalAssistantEngine:
             "respuesta": entry.answer,
             "mode": mode,
             "provider": "local",
-            "model": "commusafe-local-tfidf-v2",
+            "model": "commusafe-local-hybrid-v3",
             "confidence": round(confidence, 4),
             "intent": entry.main_intent,
             "subintent": entry.intent,
@@ -467,7 +540,7 @@ class LocalAssistantEngine:
             "respuesta": self._build_clarification(options),
             "mode": "aclaracion",
             "provider": "local",
-            "model": "commusafe-local-tfidf-v2",
+            "model": "commusafe-local-hybrid-v3",
             "confidence": 1.0,
             "intent": first.main_intent,
             "subintent": first.intent,
@@ -494,7 +567,7 @@ class LocalAssistantEngine:
             ),
             "mode": "segura",
             "provider": "local",
-            "model": "commusafe-local-tfidf-v2",
+            "model": "commusafe-local-hybrid-v3",
             "confidence": 0.0,
             "intent": "sin_intencion_confiable",
             "subintent": "",
@@ -534,9 +607,10 @@ class LocalAssistantEngine:
             **knowledge_summary(),
             "categorias_detalle": dict(sorted(by_category.items())),
             "colisiones_exactas_controladas": sum(1 for entries in self._exact_index.values() if len(entries) > 1),
+            "clasificador_intenciones": "centroides_tfidf_por_intencion",
             "umbral_alto": HIGH_CONFIDENCE_THRESHOLD,
             "umbral_medio": MEDIUM_CONFIDENCE_THRESHOLD,
-            "modelo": "commusafe-local-tfidf-v2",
+            "modelo": "commusafe-local-hybrid-v3",
         }
 
 

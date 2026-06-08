@@ -80,7 +80,7 @@ El sistema no reemplaza la labor humana de vigilancia o administracion. Su objet
 - Conversaciones persistentes por usuario.
 - Historial de mensajes almacenado en base de datos.
 - Base de conocimiento local con 108 FAQ verificables agrupadas en 20 intenciones principales.
-- Motor local-first con busqueda exacta, palabras clave, similitud TF-IDF, umbrales de confianza y respuestas seguras.
+- Motor local-first con busqueda exacta, normalizacion, palabras clave, similitud TF-IDF, clasificacion de intencion, cache, reglas de negocio, umbrales de confianza y respuestas seguras.
 - Escalamiento a Gemini o Anthropic cuando la pregunta pertenece al dominio pero requiere IA generativa.
 - Servicio Flask auxiliar opcional para inferencia local por HTTP.
 - Logs tecnicos de modo, proveedor, intencion, confianza, latencia y tokens estimados.
