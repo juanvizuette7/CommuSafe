@@ -20,6 +20,7 @@ from .services import (
     _api_llm_configurada,
     _extraer_texto_anthropic,
     _modelo_por_proveedor,
+    _nlp_service_configurado,
     _normalizar_historial,
     _resolver_proveedor,
     _respuesta_fallback,
@@ -63,6 +64,10 @@ class ChatHealthView(APIView):
                 "configurado": bool(funcion_llm),
                 "arquitectura": "hibrida_local_primero",
                 "motor_local": local_engine_stats(),
+                "servicio_nlp_auxiliar": {
+                    "configurado": _nlp_service_configurado(),
+                    "uso": "opcional_para_inferencia_local_http",
+                },
             },
             status=status.HTTP_200_OK,
         )

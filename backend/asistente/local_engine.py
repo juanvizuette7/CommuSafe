@@ -599,6 +599,37 @@ class LocalAssistantEngine:
     def export_entries(self) -> list[dict[str, Any]]:
         return [entry.to_dict() for entry in self.entries]
 
+    def explain_candidates(self, message: str, role: str = "RESIDENTE", limit: int = 5) -> dict[str, Any]:
+        """Devuelve candidatos ordenados sin exponer estructuras internas mutables."""
+
+        started = time.perf_counter()
+        normalized = normalize_text(message)
+        role = (role or "RESIDENTE").upper()
+        safe_limit = min(max(int(limit or 5), 1), 10)
+        candidates = self._score_candidates(normalized, role) if normalized else []
+        return {
+            "mensaje_normalizado": normalized,
+            "rol": role,
+            "total_candidatos": len(candidates),
+            "candidatos": [
+                {
+                    "id": item["entry"].id,
+                    "pregunta": item["entry"].question,
+                    "categoria": item["entry"].category,
+                    "intencion_principal": item["entry"].main_intent,
+                    "subintencion": item["entry"].intent,
+                    "confianza": round(item["confidence"], 4),
+                    "metodo": item["method"],
+                    "score_parts": item["score_parts"],
+                    "estado_verificacion": item["entry"].verification_status,
+                    "vigencia": item["entry"].validity_status,
+                    "requiere_validacion": not item["entry"].verified,
+                }
+                for item in candidates[:safe_limit]
+            ],
+            "latencia_ms": self._elapsed_ms(started),
+        }
+
     def stats(self) -> dict[str, Any]:
         by_category: dict[str, int] = defaultdict(int)
         for entry in self.entries:
@@ -630,4 +661,22 @@ def resolve_local_answer(message: str, role: str = "RESIDENTE") -> dict[str, Any
 
 
 def local_engine_stats() -> dict[str, Any]:
-    return ENGINE.stats()
+    cache_info = resolve_local_answer_cached.cache_info()
+    return {
+        **ENGINE.stats(),
+        "cache": {
+            "hits": cache_info.hits,
+            "misses": cache_info.misses,
+            "maxsize": cache_info.maxsize,
+            "currsize": cache_info.currsize,
+        },
+    }
+
+
+def explain_local_candidates(message: str, role: str = "RESIDENTE", limit: int = 5) -> dict[str, Any]:
+    return ENGINE.explain_candidates(message, role, limit)
+
+
+def clear_local_engine_cache() -> dict[str, Any]:
+    resolve_local_answer_cached.cache_clear()
+    return local_engine_stats()

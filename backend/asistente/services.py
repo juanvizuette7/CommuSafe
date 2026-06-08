@@ -1,9 +1,12 @@
 """Servicios del asistente virtual persistente."""
 
+import logging
 import re
 import time
 from collections import Counter
 from decimal import Decimal, InvalidOperation
+
+import requests
 
 try:
     from anthropic import Anthropic
@@ -29,6 +32,7 @@ from .local_engine import local_engine_stats, resolve_local_answer
 from .models import AsistenteRespuestaLog, ConversacionAsistente, MensajeAsistente
 
 
+LOGGER = logging.getLogger(__name__)
 CONOCIMIENTO_REMANSOS = render_knowledge_base()
 MAX_LLM_HISTORY_MESSAGES = 12
 MAX_LLM_HISTORY_CHARS = 6000
@@ -349,6 +353,40 @@ def _decimal_confianza(valor):
         return None
 
 
+def _nlp_service_configurado():
+    return bool(getattr(settings, "COMMUSAFE_NLP_SERVICE_URL", "").strip())
+
+
+def _resolver_con_servicio_nlp(mensaje, rol):
+    """Usa el servicio Flask auxiliar si esta configurado; Django conserva fallback interno."""
+
+    service_url = getattr(settings, "COMMUSAFE_NLP_SERVICE_URL", "").strip().rstrip("/")
+    if not service_url:
+        return None
+
+    headers = {"Content-Type": "application/json"}
+    service_key = getattr(settings, "COMMUSAFE_NLP_SERVICE_KEY", "").strip()
+    if service_key:
+        headers["X-CommuSafe-NLP-Key"] = service_key
+
+    try:
+        response = requests.post(
+            f"{service_url}/v1/infer",
+            json={"mensaje": mensaje, "rol": rol},
+            headers=headers,
+            timeout=float(getattr(settings, "COMMUSAFE_NLP_SERVICE_TIMEOUT", 2.5)),
+        )
+        response.raise_for_status()
+        payload = response.json()
+        result = payload.get("resultado")
+        if isinstance(result, dict) and result.get("action"):
+            result.setdefault("service_bridge", "flask")
+            return result
+    except (requests.RequestException, ValueError, TypeError) as exc:
+        LOGGER.warning("nlp_service_unavailable", extra={"error": str(exc)})
+    return None
+
+
 def _estimar_tokens(texto):
     if not texto:
         return 0
@@ -420,7 +458,7 @@ def generar_respuesta_asistente(mensaje, historial=None, usuario=None, conversac
     inicio = time.perf_counter()
     historial = historial or []
     rol = getattr(usuario, "rol", "RESIDENTE") if usuario else "RESIDENTE"
-    local_result = resolve_local_answer(mensaje, rol)
+    local_result = _resolver_con_servicio_nlp(mensaje, rol) or resolve_local_answer(mensaje, rol)
 
     if local_result["action"] in {"answer", "clarify", "safe"}:
         resultado = _payload_desde_local(local_result)

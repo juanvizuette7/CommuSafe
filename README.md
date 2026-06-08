@@ -82,7 +82,7 @@ El sistema no reemplaza la labor humana de vigilancia o administracion. Su objet
 - Base de conocimiento local con 108 FAQ verificables agrupadas en 20 intenciones principales.
 - Motor local-first con busqueda exacta, normalizacion, palabras clave, similitud TF-IDF, clasificacion de intencion, cache, reglas de negocio, umbrales de confianza y respuestas seguras.
 - Escalamiento a Gemini o Anthropic cuando la pregunta pertenece al dominio pero requiere IA generativa.
-- Servicio Flask auxiliar opcional para inferencia local por HTTP.
+- Servicio Flask auxiliar opcional para inferencia local por HTTP, evaluacion, reentrenamiento logico y seleccion de respuestas.
 - Logs tecnicos de modo, proveedor, intencion, confianza, latencia y tokens estimados.
 - Evaluacion automatizada del asistente con precision, recall, F1, cobertura local y matriz de confusion resumida.
 - Dataset profesional de comprension de intenciones con 720 ejemplos balanceados en entrenamiento, validacion y prueba.
@@ -440,7 +440,9 @@ El archivo real `backend/.env` no debe versionarse. En produccion las variables 
 | `LLM_PROVIDER` | Proveedor IA configurado |
 | `LLM_API_KEY` | Alternativa Anthropic |
 | `FIREBASE_CREDENTIALS_JSON_BASE64` | Credenciales Firebase Admin codificadas |
+| `COMMUSAFE_NLP_SERVICE_URL` | URL opcional del servicio Flask auxiliar, por ejemplo `http://127.0.0.1:5055` |
 | `COMMUSAFE_NLP_SERVICE_KEY` | Clave opcional para proteger el servicio Flask auxiliar |
+| `COMMUSAFE_NLP_SERVICE_TIMEOUT` | Timeout corto para que Django vuelva al motor interno si Flask no responde |
 | `COMMUSAFE_NLP_HOST` | Host del servicio Flask auxiliar; por defecto `127.0.0.1` |
 | `COMMUSAFE_NLP_PORT` | Puerto opcional del servicio Flask auxiliar |
 | `EMAIL_HOST_USER` | Correo emisor si se activa SMTP |
@@ -500,6 +502,27 @@ python manage.py evaluar_modelos_asistente --json ..\docs\evidencias\asistente_m
 python manage.py validar_base_conocimiento
 python -m pytest asistente/tests.py -q
 ```
+
+Servicio Flask auxiliar del asistente:
+
+```powershell
+cd backend
+python -m asistente.nlp_flask_service
+```
+
+```powershell
+curl -X POST http://127.0.0.1:5055/v1/infer -H "Content-Type: application/json" -d "{\"mensaje\":\"Como reporto un incidente?\",\"rol\":\"RESIDENTE\",\"incluir_candidatos\":true}"
+```
+
+Para usarlo desde Django sin reemplazar el motor interno:
+
+```env
+COMMUSAFE_NLP_SERVICE_URL=http://127.0.0.1:5055
+COMMUSAFE_NLP_SERVICE_KEY=CLAVE_INTERNA_SEGURA
+COMMUSAFE_NLP_SERVICE_TIMEOUT=2.5
+```
+
+Si el servicio Flask se cae o no responde, Django continua con el motor local embebido.
 
 Flutter:
 

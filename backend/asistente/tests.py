@@ -4,6 +4,7 @@ import json
 import tempfile
 import unicodedata
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
 from io import StringIO
 from pathlib import Path
 from types import SimpleNamespace
@@ -377,7 +378,150 @@ class ChatAsistenteHelpersTests(APITestCase):
 
         self.assertEqual(remoto.status_code, 403)
         self.assertEqual(local.status_code, 200)
-        self.assertEqual(local.json["action"], "answer")
+        self.assertEqual(local.json["resultado"]["action"], "answer")
+
+    def test_servicio_flask_expone_api_versionada_y_batch(self):
+        client = flask_app.test_client()
+
+        health = client.get("/v1/health")
+        inferencia = client.post(
+            "/v1/infer",
+            json={"mensaje": "Como reporto un incidente?", "rol": "RESIDENTE", "incluir_candidatos": True},
+            environ_base={"REMOTE_ADDR": "127.0.0.1"},
+        )
+        lote = client.post(
+            "/v1/infer/batch",
+            json={
+                "items": [
+                    {"mensaje": "Como reporto un incidente?", "rol": "RESIDENTE"},
+                    {"mensaje": "No puedo entrar a mi cuenta", "rol": "RESIDENTE"},
+                ]
+            },
+            environ_base={"REMOTE_ADDR": "127.0.0.1"},
+        )
+
+        self.assertEqual(health.status_code, 200)
+        self.assertEqual(health.json["version_api"], "v1")
+        self.assertIn("cache", health.json)
+        self.assertEqual(inferencia.status_code, 200)
+        self.assertEqual(inferencia.json["resultado"]["action"], "answer")
+        self.assertIn("seleccion_respuesta", inferencia.json)
+        self.assertEqual(lote.status_code, 200)
+        self.assertEqual(len(lote.json["resultados"]), 2)
+
+    def test_servicio_flask_valida_payload_y_protege_con_clave(self):
+        client = flask_app.test_client()
+
+        with patch.dict("os.environ", {"COMMUSAFE_NLP_SERVICE_KEY": "clave-servicio"}, clear=False):
+            sin_clave = client.post(
+                "/v1/infer",
+                json={"mensaje": "Como reporto un incidente?", "rol": "RESIDENTE"},
+                environ_base={"REMOTE_ADDR": "127.0.0.1"},
+            )
+            con_clave = client.post(
+                "/v1/infer",
+                json={"mensaje": "Como reporto un incidente?", "rol": "RESIDENTE"},
+                headers={"X-CommuSafe-NLP-Key": "clave-servicio"},
+                environ_base={"REMOTE_ADDR": "203.0.113.10"},
+            )
+            invalido = client.post(
+                "/v1/infer",
+                json={"mensaje": "", "rol": "RESIDENTE"},
+                headers={"X-CommuSafe-NLP-Key": "clave-servicio"},
+                environ_base={"REMOTE_ADDR": "203.0.113.10"},
+            )
+
+        self.assertEqual(sin_clave.status_code, 401)
+        self.assertEqual(con_clave.status_code, 200)
+        self.assertEqual(invalido.status_code, 400)
+
+    def test_servicio_flask_evaluacion_y_reentrenamiento_auxiliar(self):
+        client = flask_app.test_client()
+
+        with patch("asistente.nlp_flask_service.evaluate_all", return_value={"validation": {"f1_micro": 0.85}}):
+            evaluacion = client.post(
+                "/v1/evaluate",
+                json={},
+                environ_base={"REMOTE_ADDR": "127.0.0.1"},
+            )
+        with patch(
+            "asistente.nlp_flask_service.train_compare_select_models",
+            return_value={"modelo_seleccionado": {"id": "hibrido_produccion_kb"}, "ranking": []},
+        ):
+            seleccion = client.post(
+                "/v1/models/select",
+                json={},
+                environ_base={"REMOTE_ADDR": "127.0.0.1"},
+            )
+        reentrenamiento = client.post(
+            "/v1/retrain",
+            json={},
+            environ_base={"REMOTE_ADDR": "127.0.0.1"},
+        )
+
+        self.assertEqual(evaluacion.status_code, 200)
+        self.assertEqual(evaluacion.json["servicio"]["operacion"], "evaluacion")
+        self.assertEqual(seleccion.status_code, 200)
+        self.assertEqual(seleccion.json["modelo_seleccionado"]["id"], "hibrido_produccion_kb")
+        self.assertEqual(reentrenamiento.status_code, 200)
+        self.assertEqual(reentrenamiento.json["estado"], "ok")
+
+    def test_servicio_flask_responde_solicitudes_concurrentes(self):
+        mensajes = [
+            "Como reporto un incidente?",
+            "No puedo entrar a mi cuenta",
+            "Que hago si hay ruido de noche?",
+            "Donde veo las notificaciones?",
+        ]
+
+        def llamar_servicio(mensaje):
+            local_client = flask_app.test_client()
+            response = local_client.post(
+                "/v1/infer",
+                json={"mensaje": mensaje, "rol": "RESIDENTE"},
+                environ_base={"REMOTE_ADDR": "127.0.0.1"},
+            )
+            return response.status_code, response.json["resultado"]["action"]
+
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            resultados = list(executor.map(llamar_servicio, mensajes))
+
+        self.assertTrue(all(status_code == 200 for status_code, _action in resultados))
+        self.assertTrue(all(action in {"answer", "clarify", "safe", "fallback_allowed"} for _status, action in resultados))
+
+    @override_settings(
+        COMMUSAFE_NLP_SERVICE_URL="http://nlp.local",
+        COMMUSAFE_NLP_SERVICE_KEY="clave-servicio",
+        COMMUSAFE_NLP_SERVICE_TIMEOUT=1.0,
+    )
+    @patch("asistente.services.requests.post")
+    def test_django_puede_usar_servicio_flask_auxiliar_si_esta_configurado(self, post_mock):
+        usuario = Usuario.objects.create_user(
+            email="nlp-flask@test.com",
+            password="Segura2026*",
+            nombre="NLP",
+            apellido="Servicio",
+            unidad_residencial="Apto 101 Torre A",
+            rol=Usuario.Rol.RESIDENTE,
+        )
+        respuesta_nlp = resolve_local_answer("Como reporto un incidente?", "RESIDENTE")
+        post_mock.return_value = SimpleNamespace(
+            raise_for_status=lambda: None,
+            json=lambda: {"resultado": respuesta_nlp},
+        )
+
+        self.client.force_authenticate(usuario)
+        response = self.client.post(
+            reverse("asistente:chat"),
+            {"mensaje": "Como reporto un incidente?"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["proveedor"], "local")
+        self.assertTrue(post_mock.called)
+        _, kwargs = post_mock.call_args
+        self.assertEqual(kwargs["headers"]["X-CommuSafe-NLP-Key"], "clave-servicio")
 
     def test_motor_expone_intencion_principal_y_subintencion(self):
         resultado = resolve_local_answer("Como reporto un incidente?", "RESIDENTE")

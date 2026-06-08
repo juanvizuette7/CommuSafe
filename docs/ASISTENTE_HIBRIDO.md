@@ -34,7 +34,7 @@ La arquitectura queda separada por responsabilidades:
 | Evaluacion | `backend/asistente/evaluation.py` | Dataset local, metricas, cobertura y matriz de confusion resumida |
 | Dataset profesional | `backend/asistente/training_dataset.py` | Generacion balanceada de entrenamiento, validacion y prueba para intenciones del asistente |
 | Seleccion de modelo | `backend/asistente/model_selection.py` | Entrenamiento, comparacion, calibracion y seleccion reproducible de modelos locales |
-| Servicio auxiliar | `backend/asistente/nlp_flask_service.py` | Microservicio Flask opcional para inferencia local por HTTP |
+| Servicio auxiliar | `backend/asistente/nlp_flask_service.py` | Microservicio Flask opcional para inferencia local por HTTP, lote, candidatos, evaluacion, seleccion de modelo y reentrenamiento logico |
 
 ## Base de conocimiento local
 
@@ -236,26 +236,49 @@ Cada usuario solo puede listar, abrir, enviar mensajes y eliminar sus propias co
 
 ## Servicio Flask auxiliar
 
-El archivo `backend/asistente/nlp_flask_service.py` expone un servicio auxiliar opcional:
+El archivo `backend/asistente/nlp_flask_service.py` expone un servicio auxiliar opcional. No reemplaza a Django: actua como proceso especializado para comprension local, inferencia, evaluacion y mantenimiento del motor NLP. Django puede usarlo si `COMMUSAFE_NLP_SERVICE_URL` esta configurada; si el servicio no responde, vuelve automaticamente al motor local embebido.
 
 ```powershell
 cd backend
 python -m asistente.nlp_flask_service
 ```
 
+Para un proceso WSGI separado:
+
+```powershell
+gunicorn asistente.nlp_flask_service:app --bind 127.0.0.1:5055 --workers 2 --threads 4
+```
+
 Endpoints:
 
 | Metodo | Ruta | Descripcion |
 |---|---|---|
-| `GET` | `/health` | Estado del motor local |
-| `POST` | `/infer` | Inferencia local para una pregunta |
-| `GET` | `/knowledge` | Resumen de la base de conocimiento |
+| `GET` | `/v1/health` | Estado del motor local, cache, seguridad y version del servicio |
+| `POST` | `/v1/infer` | Inferencia local para una pregunta |
+| `POST` | `/v1/infer/batch` | Inferencia por lote con limite configurable |
+| `POST` | `/v1/candidates` | Candidatos de respuesta ordenados por confianza |
+| `GET` | `/v1/knowledge` | Resumen y entradas de la base de conocimiento |
+| `POST` | `/v1/evaluate` | Evaluacion local reproducible del motor |
+| `POST` | `/v1/models/select` | Entrenamiento, comparacion y seleccion del mejor modelo local |
+| `POST` | `/v1/retrain` | Limpieza de cache, validacion del dataset y preparacion para recarga |
 
-Si se define `COMMUSAFE_NLP_SERVICE_KEY`, las peticiones deben enviar el header `X-CommuSafe-NLP-Key`.
+Las rutas antiguas `/health`, `/infer` y `/knowledge` se conservan como compatibilidad. Si se define `COMMUSAFE_NLP_SERVICE_KEY`, las peticiones deben enviar el header `X-CommuSafe-NLP-Key`.
 
-El procesamiento principal permanece integrado en Django porque comparte autenticacion, roles, persistencia y servicios de negocio. Flask no es necesario para el chat de produccion; se conserva como adaptador auxiliar opcional para pruebas de inferencia, evaluacion o integraciones NLP aisladas. Reutiliza el mismo `ENGINE`, por lo que no duplica la logica de clasificacion.
+El procesamiento principal permanece integrado en Django porque comparte autenticacion, roles, persistencia y servicios de negocio. Flask reutiliza el mismo `ENGINE`, por lo que no duplica la logica de clasificacion. Las operaciones pesadas de evaluacion y seleccion se protegen con bloqueo interno para evitar ejecuciones simultaneas inconsistentes.
 
-Por seguridad, el servicio escucha por defecto en `127.0.0.1`. Para exponerlo a otra interfaz se debe configurar conscientemente `COMMUSAFE_NLP_HOST` y protegerlo con `COMMUSAFE_NLP_SERVICE_KEY`.
+Por seguridad, el servicio escucha por defecto en `127.0.0.1`. Para exponerlo a otra interfaz se debe configurar conscientemente `COMMUSAFE_NLP_HOST` y protegerlo con `COMMUSAFE_NLP_SERVICE_KEY`. Las respuestas incluyen `X-CommuSafe-Request-ID` y latencia para facilitar diagnostico.
+
+Variables opcionales:
+
+| Variable | Uso |
+|---|---|
+| `COMMUSAFE_NLP_SERVICE_URL` | URL que Django usa para delegar inferencia a Flask |
+| `COMMUSAFE_NLP_SERVICE_KEY` | Clave interna para proteger llamadas HTTP |
+| `COMMUSAFE_NLP_SERVICE_TIMEOUT` | Timeout de Django hacia Flask |
+| `COMMUSAFE_NLP_HOST` | Host donde escucha Flask |
+| `COMMUSAFE_NLP_PORT` | Puerto de Flask |
+| `COMMUSAFE_NLP_MAX_BATCH_SIZE` | Tamano maximo de inferencia por lote |
+| `COMMUSAFE_NLP_MAX_MESSAGE_LENGTH` | Longitud maxima por mensaje |
 
 ## Evaluacion y metricas
 
