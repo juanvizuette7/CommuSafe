@@ -23,6 +23,10 @@ Esta auditoria revisa exclusivamente el asistente virtual de CommuSafe a nivel b
 | Integracion auxiliar | Un microservicio podria romper el chat si se cae. | Django solo delega a Flask cuando `COMMUSAFE_NLP_SERVICE_URL` esta configurada; ante timeout o error usa el motor local interno. | `_resolver_con_servicio_nlp()` |
 | Observabilidad | No habia medicion suficiente del comportamiento por respuesta. | Logs tecnicos con modo, proveedor, modelo, intencion, categoria, confianza, latencia, tokens estimados y metadatos. | Modelo `AsistenteRespuestaLog` |
 | Ahorro de Gemini | No era visible cuantas consultas evitaban IA externa. | El health del asistente expone consultas sin Gemini, aclaraciones, uso IA, uso Gemini y tokens estimados ahorrados. | `metricas_uso_asistente()`, `/api/asistente/health/` |
+| Proteccion de metricas | El health detallado podia exponer cache, modelo, cuotas y metricas a cualquier usuario autenticado. | Residentes reciben estado operativo simple; administradores, vigilantes y staff mantienen diagnostico completo. | `ChatHealthView`, `docs/SEGURIDAD_ASISTENTE.md` |
+| Prompt injection | Un usuario podia intentar revelar instrucciones internas, claves o manipular el contexto antes de escalar a IA. | Se bloquean intentos de manipulacion y se responde localmente sin llamar a Gemini/Anthropic. | `test_bloquea_inyeccion_y_no_usa_ia_externa` |
+| Historial no confiable | El endpoint legado aceptaba historial de cliente y podria recibir mensajes falsos del asistente. | El historial legado se trata como no confiable: solo conserva mensajes del usuario, descarta instrucciones sospechosas y limita volumen. | `test_historial_legado_no_confiable_no_suplanta_asistente` |
+| Secretos en trazabilidad | Un usuario podia pegar API keys, tokens, telefonos o correos y quedar registrados en logs tecnicos. | Los logs redactan secretos, tokens, API keys, correos y telefonos antes de persistir. | `test_log_redacta_secretos_y_datos_de_contacto` |
 | Evaluacion | Faltaba comparacion clara entre estrategias locales entrenadas y no entrenadas. | Se agrego entrenamiento/comparacion reproducible de baseline por palabras, TF-IDF por palabra, TF-IDF por caracteres, ensambles y motor hibrido de produccion, ejecutable por comando Django o endpoint Flask protegido. | `python manage.py evaluar_modelos_asistente`, `/v1/models/select` |
 | Fragmentacion de intenciones | Las 108 FAQ estaban tratadas como 108 clases con pocos ejemplos, lo que dificultaba generalizar y explicar la taxonomia. | Se conservaron las 108 FAQ como subintenciones y se agruparon en 20 intenciones principales mantenibles. | `backend/asistente/taxonomy.py` |
 | Dataset de entrenamiento | El asistente necesitaba datos separados y sin fuga para sustentar comprension de intenciones. | Se reconstruyo un dataset profesional con 720 ejemplos, 20 intenciones principales, train/validation/test y seis estilos balanceados. | `python manage.py generar_dataset_asistente` |
@@ -77,6 +81,9 @@ Esto reduce costo, latencia y riesgo de enviar contexto innecesario.
 - El cache se indexa por mensaje normalizado y rol, y cada solicitud recibe una copia aislada del resultado.
 - Las respuestas no exponen credenciales ni datos privados.
 - El servicio Flask auxiliar no reemplaza el backend principal y queda protegido para uso local o con clave.
+- El endpoint de health solo entrega metricas internas a administracion, vigilancia o staff.
+- Los intentos de revelar prompt, claves o modificar reglas del asistente se bloquean antes de llamar a IA externa.
+- Los logs tecnicos redactan secretos pegados accidentalmente por usuarios.
 
 ## Pruebas ejecutadas
 
@@ -96,8 +103,8 @@ python manage.py probar_resiliencia_asistente --requests 80 --workers 8
 Resultados verificados:
 
 ```text
-asistente/tests.py: 50 passed, 5 subtests passed
-suite completa backend: 175 passed, 11 subtests passed
+asistente/tests.py: 55 passed, 5 subtests passed
+suite completa backend: 180 passed, 11 subtests passed
 manage.py check: sin problemas
 makemigrations --check --dry-run: sin cambios pendientes
 validar_base_conocimiento: ok

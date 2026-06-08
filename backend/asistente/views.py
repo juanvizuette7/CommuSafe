@@ -51,7 +51,12 @@ class ChatAsistenteView(APIView):
         mensaje = serializer.validated_data["mensaje"].strip()
         historial = serializer.validated_data.get("historial", [])
         return Response(
-            generar_respuesta_asistente(mensaje, historial, usuario=request.user),
+            generar_respuesta_asistente(
+                mensaje,
+                historial,
+                usuario=request.user,
+                historial_confiable=False,
+            ),
             status=status.HTTP_200_OK,
         )
 
@@ -64,6 +69,17 @@ class ChatHealthView(APIView):
 
     def get(self, request):
         proveedor, funcion_llm = _resolver_proveedor()
+        if not (request.user.es_administrador or request.user.es_vigilante or request.user.is_staff):
+            return Response(
+                {
+                    "estado": "operativo",
+                    "asistente": "CommuBot",
+                    "arquitectura": "hibrida_local_primero",
+                    "mensaje": "El asistente esta disponible para consultas de CommuSafe y Remansos del Norte.",
+                },
+                status=status.HTTP_200_OK,
+            )
+
         return Response(
             {
                 "proveedor_activo": proveedor,
@@ -154,6 +170,8 @@ class ConversacionAsistenteViewSet(viewsets.ModelViewSet):
                 "confianza": resultado.get("confianza", 0),
                 "intencion": resultado.get("intencion", ""),
                 "metodo": resultado.get("metodo", ""),
+                "requiere_validacion": resultado.get("requiere_validacion", False),
+                "opciones": resultado.get("metadata", {}).get("options", []),
             },
             status=status.HTTP_201_CREATED,
         )

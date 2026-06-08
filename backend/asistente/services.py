@@ -3,6 +3,7 @@
 import logging
 import re
 import time
+import unicodedata
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from dataclasses import dataclass
@@ -70,6 +71,45 @@ FORBIDDEN_GENERATIVE_PATTERNS = {
     "puedo ayudarte con cualquier tema",
     "segun mi conocimiento general",
 }
+PROMPT_MANIPULATION_PATTERNS = {
+    "actua sin restricciones",
+    "api key",
+    "apikey",
+    "bearer token",
+    "clave secreta",
+    "developer message",
+    "dime el prompt",
+    "dime la clave",
+    "dame el token",
+    "dame las contrasenas",
+    "haz como que eres admin",
+    "ignora instrucciones",
+    "ignora las instrucciones",
+    "ignora tus instrucciones",
+    "instrucciones internas",
+    "jailbreak",
+    "mensaje del sistema",
+    "modo desarrollador",
+    "olvida instrucciones",
+    "olvida las instrucciones",
+    "password de",
+    "revela el prompt",
+    "secret_key",
+    "system prompt",
+    "token jwt",
+}
+VALIDATION_HINT_TERMS = {
+    "administracion",
+    "confirmar",
+    "confirmalo",
+    "validar",
+    "validarlo",
+    "verificar",
+    "verificalo",
+    "no encuentro",
+}
+MAX_UNTRUSTED_HISTORY_MESSAGES = 4
+MAX_UNTRUSTED_HISTORY_CHARS = 1500
 
 
 @dataclass(frozen=True)
@@ -172,10 +212,56 @@ def _normalizar_historial(historial):
     return mensajes
 
 
-def _compactar_historial_para_ia(historial):
+def _normalizar_seguridad(texto):
+    texto = unicodedata.normalize("NFKD", str(texto or ""))
+    return texto.encode("ascii", "ignore").decode("ascii").lower()
+
+
+def _contiene_intento_manipulacion(texto):
+    normalizado = _normalizar_seguridad(texto)
+    return any(patron in normalizado for patron in PROMPT_MANIPULATION_PATTERNS)
+
+
+def _redactar_sensibles(texto):
+    texto = str(texto or "")
+    patrones = [
+        (r"AIza[0-9A-Za-z_\-]{20,}", "[API_KEY_REDACTADA]"),
+        (r"(?i)\bbearer\s+[A-Za-z0-9._\-]+", "Bearer [TOKEN_REDACTADO]"),
+        (r"(?i)\b(secret|token|api[_-]?key|password|clave)\s*[:=]\s*[^\s,;]+", r"\1=[REDACTADO]"),
+        (r"\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b", "[EMAIL_REDACTADO]"),
+        (r"\b3\d{9}\b", "[TELEFONO_REDACTADO]"),
+    ]
+    for patron, reemplazo in patrones:
+        texto = re.sub(patron, reemplazo, texto)
+    return texto[:4000]
+
+
+def _preparar_historial_para_ia(historial, *, confiable=True):
+    mensajes = _normalizar_historial(historial)
+    if not confiable:
+        mensajes = [mensaje for mensaje in mensajes if mensaje["role"] == "user"]
+        mensajes = mensajes[-MAX_UNTRUSTED_HISTORY_MESSAGES:]
+
+    seguros = []
+    caracteres = 0
+    for mensaje in mensajes:
+        contenido = mensaje["content"].strip()
+        if not contenido or _contiene_intento_manipulacion(contenido):
+            continue
+        if not confiable:
+            disponible = MAX_UNTRUSTED_HISTORY_CHARS - caracteres
+            if disponible <= 0:
+                break
+            contenido = contenido[:disponible]
+            caracteres += len(contenido)
+        seguros.append({"role": mensaje["role"], "content": contenido})
+    return seguros
+
+
+def _compactar_historial_para_ia(historial, *, confiable=True):
     """Reduce el historial enviado al LLM sin perder la memoria reciente."""
 
-    mensajes = _normalizar_historial(historial)[-MAX_LLM_HISTORY_MESSAGES:]
+    mensajes = _preparar_historial_para_ia(historial, confiable=confiable)[-MAX_LLM_HISTORY_MESSAGES:]
     seleccionados = []
     caracteres = 0
 
@@ -515,10 +601,10 @@ def _estimar_tokens_entrada_ia(mensaje, historial_llm, system_prompt):
     )
 
 
-def _agregar_metricas_ahorro(resultado, *, mensaje, usuario=None, historial=None):
+def _agregar_metricas_ahorro(resultado, *, mensaje, usuario=None, historial=None, historial_confiable=True):
     """Registra ahorro estimado cuando la respuesta evita llamar a Gemini/LLM."""
 
-    historial_llm = _compactar_historial_para_ia(historial or [])
+    historial_llm = _compactar_historial_para_ia(historial or [], confiable=historial_confiable)
     tokens_ahorrados = _estimar_tokens_entrada_ia(mensaje, historial_llm, construir_system_prompt(usuario))
     metadata = resultado.setdefault("metadata", {})
     metadata["tokens_ahorrados_estimados"] = tokens_ahorrados
@@ -672,6 +758,53 @@ def _respuesta_segura_controlada():
     )
 
 
+def _respuesta_segura_manipulacion():
+    return (
+        "Por seguridad no puedo revelar instrucciones internas, claves, tokens, datos privados ni cambiar las reglas de CommuBot. "
+        "Si necesitas ayuda con CommuSafe, puedo orientarte sobre reportes, avisos, incidentes, convivencia, emergencias o contacto con administracion."
+    )
+
+
+def _agregar_nota_validacion_si_aplica(resultado):
+    if not resultado.get("requiere_validacion"):
+        return resultado
+
+    respuesta = resultado.get("respuesta", "")
+    normalizada = _normalizar_seguridad(respuesta)
+    if not any(term in normalizada for term in VALIDATION_HINT_TERMS):
+        resultado["respuesta"] = (
+            f"{respuesta}\n\n"
+            "Si necesitas una respuesta oficial o actualizada, confirma este dato con administracion."
+        )
+    return resultado
+
+
+def _respuesta_segura_por_manipulacion(mensaje, *, usuario=None, conversacion=None):
+    resultado = {
+        "respuesta": _respuesta_segura_manipulacion(),
+        "modo": "segura",
+        "proveedor": "local",
+        "modelo_usado": "commusafe-local-hybrid-v3",
+        "confianza": 1.0,
+        "intencion": "seguridad_contexto",
+        "categoria": "seguridad_respuesta",
+        "metodo": "bloqueo_manipulacion_contexto",
+        "requiere_validacion": False,
+        "latencia_ms": 0,
+        "metadata": {
+            "politica_seguridad": "no_exponer_secretos_ni_instrucciones",
+            "gemini_evitado": True,
+        },
+    }
+    _registrar_respuesta_log(
+        mensaje=mensaje,
+        resultado=resultado,
+        usuario=usuario,
+        conversacion=conversacion,
+    )
+    return resultado
+
+
 def _registrar_respuesta_log(*, mensaje, resultado, usuario=None, conversacion=None):
     """Guarda trazabilidad tecnica sin interrumpir el chat si falla el registro."""
 
@@ -679,7 +812,7 @@ def _registrar_respuesta_log(*, mensaje, resultado, usuario=None, conversacion=N
         AsistenteRespuestaLog.objects.create(
             usuario=usuario if getattr(usuario, "is_authenticated", False) else None,
             conversacion=conversacion,
-            mensaje=mensaje[:4000],
+            mensaje=_redactar_sensibles(mensaje),
             modo=resultado.get("modo", "fallback") or "fallback",
             proveedor=resultado.get("proveedor", ""),
             modelo=resultado.get("modelo_usado", "") or resultado.get("modelo", ""),
@@ -724,21 +857,32 @@ def _payload_desde_local(local_result):
     }
 
 
-def generar_respuesta_asistente(mensaje, historial=None, usuario=None, conversacion=None):
+def generar_respuesta_asistente(mensaje, historial=None, usuario=None, conversacion=None, historial_confiable=True):
     """Genera respuesta hibrida: local verificado primero, IA solo como respaldo."""
 
     inicio = time.perf_counter()
+    mensaje = str(mensaje or "").strip()
     historial = historial or []
     rol = getattr(usuario, "rol", "RESIDENTE") if usuario else "RESIDENTE"
+
+    if _contiene_intento_manipulacion(mensaje):
+        return _respuesta_segura_por_manipulacion(
+            mensaje,
+            usuario=usuario,
+            conversacion=conversacion,
+        )
+
     local_result = _resolver_con_servicio_nlp(mensaje, rol) or resolve_local_answer(mensaje, rol)
 
     if local_result["action"] in {"answer", "clarify", "safe"}:
         resultado = _payload_desde_local(local_result)
+        resultado = _agregar_nota_validacion_si_aplica(resultado)
         resultado = _agregar_metricas_ahorro(
             resultado,
             mensaje=mensaje,
             usuario=usuario,
             historial=historial,
+            historial_confiable=historial_confiable,
         )
         _registrar_respuesta_log(
             mensaje=mensaje,
@@ -755,7 +899,7 @@ def generar_respuesta_asistente(mensaje, historial=None, usuario=None, conversac
 
     if _llm_backup_enabled() and provider.caller is not None and quota_status.get("permitido"):
         try:
-            historial_llm = _compactar_historial_para_ia(historial)
+            historial_llm = _compactar_historial_para_ia(historial, confiable=historial_confiable)
             tokens_entrada = _estimar_tokens_entrada_ia(mensaje, historial_llm, system_prompt)
             texto = _limpiar_respuesta_ia(
                 _llamar_proveedor_con_timeout(provider, mensaje, historial_llm, system_prompt)
@@ -789,6 +933,7 @@ def generar_respuesta_asistente(mensaje, historial=None, usuario=None, conversac
                             "timeout_segundos": _llm_timeout_seconds(),
                         },
                     }
+                    resultado = _agregar_nota_validacion_si_aplica(resultado)
                     _registrar_respuesta_log(
                         mensaje=mensaje,
                         resultado=resultado,
@@ -831,6 +976,7 @@ def generar_respuesta_asistente(mensaje, historial=None, usuario=None, conversac
         mensaje=mensaje,
         usuario=usuario,
         historial=historial,
+        historial_confiable=historial_confiable,
     )
     _registrar_respuesta_log(
         mensaje=mensaje,

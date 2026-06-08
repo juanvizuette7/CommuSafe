@@ -587,11 +587,11 @@ class LocalAssistantEngine:
 
     def _build_clarification(self, options: list[dict[str, Any]]) -> str:
         lines = [
-            "Puedo ayudarte, pero necesito precisar mejor la consulta. ¿Te refieres a una de estas opciones?"
+            "Puedo ayudarte, pero necesito precisar mejor la consulta. Elige una opcion o escribeme mas detalles:"
         ]
         for index, option in enumerate(options, start=1):
             lines.append(f"{index}. {option['pregunta']}")
-        lines.append("Responde con el numero o escribe mas detalles para orientarte mejor.")
+        lines.append("Responde con el numero de la opcion o cuentame un poco mas para orientarte mejor.")
         return "\n".join(lines)
 
     def _elapsed_ms(self, started: float) -> int:
