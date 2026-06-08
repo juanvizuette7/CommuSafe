@@ -333,6 +333,14 @@ python manage.py evaluar_modelos_asistente --json ..\docs\evidencias\asistente_m
 
 Este comando entrena modelos locales sobre `train`, calibra umbrales con `validation` y `challenge`, y mide la calidad final sobre `test`. La seleccion no usa la precision de entrenamiento como criterio principal.
 
+Para revisar concurrencia, aislamiento de cache y comportamiento sin IA externa:
+
+```powershell
+python manage.py probar_resiliencia_asistente --requests 80 --workers 8
+```
+
+Resultado verificado el 2026-06-08: 80 solicitudes, 8 workers, 80 exitosas, 0 errores, 0 contaminaciones de cache, p95 de 0.817 ms y sin uso de IA externa. La evidencia completa esta en `docs/evidencias/asistente_resiliencia.md`.
+
 Metricas reportadas:
 
 - Precision micro.

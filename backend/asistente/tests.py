@@ -10,6 +10,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import patch
 
+import requests
 from django.contrib.auth import get_user_model
 from django.core.management import call_command
 from django.test import override_settings
@@ -363,6 +364,17 @@ class ChatAsistenteHelpersTests(APITestCase):
         self.assertIn('"estado": "ok"', contenido)
         self.assertIn("al_menos_100_preguntas_diferentes", contenido)
 
+    def test_comando_resiliencia_asistente_verifica_cache_y_concurrencia(self):
+        salida = StringIO()
+        call_command("probar_resiliencia_asistente", requests=12, workers=4, stdout=salida)
+        resultado = json.loads(salida.getvalue())
+
+        self.assertEqual(resultado["estado"], "ok")
+        self.assertEqual(resultado["solicitudes"], 12)
+        self.assertEqual(resultado["exitosas"], 12)
+        self.assertEqual(resultado["contaminaciones_cache"], 0)
+        self.assertFalse(resultado["ia_externa_usada"])
+
     def test_servicio_flask_restringe_acceso_remoto_sin_clave(self):
         client = flask_app.test_client()
 
@@ -523,6 +535,68 @@ class ChatAsistenteHelpersTests(APITestCase):
         self.assertTrue(post_mock.called)
         _, kwargs = post_mock.call_args
         self.assertEqual(kwargs["headers"]["X-CommuSafe-NLP-Key"], "clave-servicio")
+
+    @override_settings(
+        COMMUSAFE_NLP_SERVICE_URL="http://nlp.local",
+        COMMUSAFE_NLP_SERVICE_KEY="clave-servicio",
+        COMMUSAFE_NLP_SERVICE_TIMEOUT=0.2,
+    )
+    @patch("asistente.services.requests.post", side_effect=requests.Timeout("servicio sin respuesta"))
+    def test_django_recupera_con_motor_local_si_flask_no_responde(self, post_mock):
+        usuario = Usuario.objects.create_user(
+            email="nlp-timeout@test.com",
+            password="Segura2026*",
+            nombre="NLP",
+            apellido="Timeout",
+            unidad_residencial="Apto 102 Torre A",
+            rol=Usuario.Rol.RESIDENTE,
+        )
+
+        self.client.force_authenticate(usuario)
+        response = self.client.post(
+            reverse("asistente:chat"),
+            {"mensaje": "Como reporto un incidente?"},
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["proveedor"], "local")
+        self.assertEqual(response.data["modo"], "local")
+        self.assertTrue(post_mock.called)
+
+    def test_cache_local_no_filtra_mutaciones_entre_respuestas(self):
+        primera = resolve_local_answer("procedimiento biometrico de porteria para QR temporal", "RESIDENTE")
+        primera["llm_error"] = "contaminado"
+        primera.setdefault("metadata", {})["marca_externa"] = "no_debe_filtrarse"
+
+        segunda = resolve_local_answer("procedimiento biometrico de porteria para QR temporal", "RESIDENTE")
+
+        self.assertNotIn("llm_error", segunda)
+        self.assertNotIn("metadata", segunda)
+
+    def test_cache_local_es_aislado_en_solicitudes_concurrentes(self):
+        mensajes = [
+            "Como reporto un incidente?",
+            "No puedo entrar a mi cuenta",
+            "Que hago si hay ruido de noche?",
+            "Donde veo las notificaciones?",
+            "procedimiento biometrico de porteria para QR temporal",
+        ] * 8
+
+        def resolver(indice_mensaje):
+            indice, mensaje = indice_mensaje
+            resultado = resolve_local_answer(mensaje, "RESIDENTE")
+            resultado["marca_hilo"] = indice
+            return resultado["action"], resultado.get("intent")
+
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            resultados = list(executor.map(resolver, enumerate(mensajes)))
+
+        posterior = resolve_local_answer("Como reporto un incidente?", "RESIDENTE")
+
+        self.assertEqual(len(resultados), len(mensajes))
+        self.assertTrue(all(action in {"answer", "clarify", "safe", "fallback_allowed"} for action, _intent in resultados))
+        self.assertNotIn("marca_hilo", posterior)
 
     def test_motor_expone_intencion_principal_y_subintencion(self):
         resultado = resolve_local_answer("Como reporto un incidente?", "RESIDENTE")

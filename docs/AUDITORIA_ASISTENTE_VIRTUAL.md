@@ -16,6 +16,7 @@ Esta auditoria revisa exclusivamente el asistente virtual de CommuSafe a nivel b
 | Falta de conocimiento local | El asistente necesitaba respuestas preparadas para normas, procedimientos y uso del sistema. | Base local con preguntas, variaciones, categorias, keywords, roles, estado de verificacion y trazabilidad. | `local_knowledge.py` |
 | Mantenimiento futuro | La base necesitaba una forma objetiva de validar diversidad, vigencia y seguridad. | Se agrego comando de validacion/exportacion de base de conocimiento. | `python manage.py validar_base_conocimiento` |
 | Concurrencia | Multiples usuarios no deben mezclar conversaciones ni dos mensajes simultaneos deben construir contexto desactualizado. | Motor local stateless con cache por texto/rol, conversaciones filtradas por usuario y bloqueo transaccional por conversacion durante el envio. | `ConversacionAsistenteViewSet.get_queryset()`, `select_for_update()`, `resolve_local_answer_cached()` |
+| Aislamiento de cache | `lru_cache` podia devolver el mismo diccionario mutable entre solicitudes repetidas, permitiendo contaminacion accidental de metadatos o errores de fallback. | `resolve_local_answer()` ahora devuelve una copia defensiva del resultado cacheado. Se agregaron pruebas unitarias y prueba de carga que intentan contaminar el cache. | `test_cache_local_no_filtra_mutaciones_entre_respuestas`, `python manage.py probar_resiliencia_asistente` |
 | Abuso del endpoint | No habia limite especifico para mensajes del asistente. | Se agregaron throttles por usuario: 30 mensajes/minuto para chat y 120 lecturas/minuto. | `backend/asistente/throttles.py`, `views.py` |
 | Seguridad del servicio Flask | El servicio auxiliar podia quedar escuchando en todas las interfaces sin clave. | Por defecto escucha en `127.0.0.1`; si no hay `COMMUSAFE_NLP_SERVICE_KEY`, bloquea inferencia remota; si hay clave usa header `X-CommuSafe-NLP-Key`. | `backend/asistente/nlp_flask_service.py` |
 | Exposicion de informacion | El servicio `/knowledge` no debe exponerse remotamente sin control. | La misma proteccion de clave/local-only aplica a conocimiento, inferencia, lote, evaluacion, seleccion y reentrenamiento. | Pruebas Flask del asistente |
@@ -73,7 +74,7 @@ Esto reduce costo, latencia y riesgo de enviar contexto innecesario.
 - Todos los endpoints Django del asistente requieren autenticacion.
 - Cada usuario solo accede a sus propias conversaciones.
 - El motor local no guarda estado por usuario.
-- El cache se indexa por mensaje normalizado y rol.
+- El cache se indexa por mensaje normalizado y rol, y cada solicitud recibe una copia aislada del resultado.
 - Las respuestas no exponen credenciales ni datos privados.
 - El servicio Flask auxiliar no reemplaza el backend principal y queda protegido para uso local o con clave.
 
@@ -89,18 +90,37 @@ python -m pytest -q
 python manage.py generar_dataset_asistente
 python manage.py evaluar_asistente_local
 python manage.py evaluar_modelos_asistente --json ..\docs\evidencias\asistente_modelos.json --markdown ..\docs\evidencias\asistente_modelos.md
+python manage.py probar_resiliencia_asistente --requests 80 --workers 8
 ```
 
 Resultados verificados:
 
 ```text
-asistente/tests.py: 38 passed, 5 subtests passed
-suite completa backend: 163 passed, 11 subtests passed
+asistente/tests.py: 50 passed, 5 subtests passed
+suite completa backend: 175 passed, 11 subtests passed
 manage.py check: sin problemas
 makemigrations --check --dry-run: sin cambios pendientes
 validar_base_conocimiento: ok
 generar_dataset_asistente: ok, 720 ejemplos, 0 errores
+probar_resiliencia_asistente: 80 solicitudes, 8 workers, 80 exitosas, 0 errores, 0 contaminaciones de cache
 ```
+
+Prueba de resiliencia concurrente:
+
+| Indicador | Resultado |
+|---|---:|
+| Solicitudes concurrentes simuladas | 80 |
+| Workers | 8 |
+| Solicitudes exitosas | 80 |
+| Errores | 0 |
+| Contaminaciones de cache detectadas | 0 |
+| Latencia p50 | 0.028 ms |
+| Latencia p95 | 0.817 ms |
+| Latencia maxima | 1.179 ms |
+| Throughput aproximado | 5414.22 req/s |
+| IA externa usada | No |
+
+Evidencia: `docs/evidencias/asistente_resiliencia.md`
 
 Estado de base de conocimiento:
 

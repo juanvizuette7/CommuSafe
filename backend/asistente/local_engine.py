@@ -13,6 +13,7 @@ import re
 import time
 import unicodedata
 from collections import Counter, defaultdict
+from copy import deepcopy
 from functools import lru_cache
 from typing import Any
 
@@ -657,7 +658,10 @@ def resolve_local_answer_cached(message: str, role: str = "RESIDENTE") -> dict[s
 
 
 def resolve_local_answer(message: str, role: str = "RESIDENTE") -> dict[str, Any]:
-    return resolve_local_answer_cached(message, role)
+    # lru_cache comparte el mismo objeto entre llamadas. Django puede enriquecer
+    # el resultado con errores de fallback o metadatos, por eso cada request recibe
+    # una copia defensiva y nunca el diccionario cacheado mutable.
+    return deepcopy(resolve_local_answer_cached(message, role))
 
 
 def local_engine_stats() -> dict[str, Any]:
