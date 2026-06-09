@@ -25,9 +25,9 @@ from flask import Flask, g, jsonify, request
 
 from .evaluation import evaluate_all
 from .local_engine import (
-    ENGINE,
     clear_local_engine_cache,
     explain_local_candidates,
+    export_local_entries,
     local_engine_stats,
     resolve_local_answer,
 )
@@ -115,7 +115,7 @@ def create_app() -> Flask:
                 "version_api": "v1",
                 "uptime_segundos": int(time.time() - STARTED_AT),
                 "seguridad": _security_status(),
-                "motor": ENGINE.stats(),
+                "motor": local_engine_stats(),
                 "cache": _cache_stats(),
             }
         )
@@ -177,9 +177,12 @@ def create_app() -> Flask:
     @require_service_key
     def knowledge():
         incluir_entradas = request.args.get("entries", "1") != "0"
-        payload: dict[str, Any] = {"stats": ENGINE.stats(), "servicio": _service_metadata("conocimiento")}
+        payload: dict[str, Any] = {
+            "stats": local_engine_stats(),
+            "servicio": _service_metadata("conocimiento"),
+        }
         if incluir_entradas:
-            payload["entries"] = ENGINE.export_entries()
+            payload["entries"] = export_local_entries()
         return jsonify(payload)
 
     @app.post("/v1/candidates")
@@ -236,8 +239,8 @@ def create_app() -> Flask:
                     "motor": stats,
                     "accion": "cache_recargada_y_dataset_validado",
                     "nota": (
-                        "El motor local usa base de conocimiento versionada en codigo. "
-                        "Para incorporar nuevas FAQ, actualiza local_knowledge.py y reinicia el proceso."
+                        "El motor local recargo el catalogo inicial y las entradas administradas "
+                        "aprobadas y vigentes disponibles para este proceso."
                     ),
                     "servicio": _service_metadata(
                         "reentrenamiento_logico",
@@ -296,7 +299,7 @@ def _service_metadata(operation: str, latencia_ms: int | None = None) -> dict[st
         "version_api": "v1",
         "request_id": g.get("request_id", ""),
         "thread_safe": True,
-        "modelo_activo": ENGINE.stats().get("modelo", "commusafe-local-hybrid-v3"),
+        "modelo_activo": local_engine_stats().get("modelo", "commusafe-local-hybrid-v3"),
     }
     if latencia_ms is not None:
         payload["latencia_ms"] = latencia_ms

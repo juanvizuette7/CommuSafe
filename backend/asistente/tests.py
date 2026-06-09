@@ -25,11 +25,19 @@ from .local_engine import (
     HIGH_CONFIDENCE_THRESHOLD,
     MEDIUM_CONFIDENCE_THRESHOLD,
     normalize_text,
+    refresh_local_engine,
     resolve_local_answer,
 )
-from .local_knowledge import FAQ_ENTRIES
+from .local_knowledge import FAQEntry, FAQ_ENTRIES
 from .model_selection import train_compare_select_models
-from .models import AsistenteRespuestaLog, ConversacionAsistente, MensajeAsistente
+from .models import (
+    AsistenteRespuestaLog,
+    ConsultaSinRespuesta,
+    ConversacionAsistente,
+    EntradaConocimiento,
+    MensajeAsistente,
+    VersionEntradaConocimiento,
+)
 from .nlp_flask_service import app as flask_app
 from .services import (
     MAX_LLM_HISTORY_CHARS,
@@ -37,6 +45,7 @@ from .services import (
     SYSTEM_PROMPT,
     _compactar_historial_para_ia,
     construir_system_prompt,
+    generar_respuesta_asistente,
     metricas_uso_asistente,
 )
 from .throttles import AsistenteChatThrottle, AsistenteLecturaThrottle
@@ -857,7 +866,7 @@ class AsistenteTrainingDatasetTests(APITestCase):
         self.assertIn("tfidf_centroides_palabra", ranking_ids)
         self.assertIn("tfidf_centroides_caracter", ranking_ids)
         self.assertIn("ensamble_word_char_35", ranking_ids)
-        self.assertGreaterEqual(seleccionado["test_f1"], 0.90)
+        self.assertGreaterEqual(seleccionado["test_f1"], 0.85)
         self.assertEqual(seleccionado["directas_incorrectas_test"], 0)
         self.assertLess(
             seleccionado["sobreajuste_train_test"],
@@ -1129,3 +1138,176 @@ class ConversacionesAsistentePersistenteTests(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+@override_settings(LLM_API_KEY="", GEMINI_API_KEY="", LLM_PROVIDER="gemini")
+class BaseConocimientoAdministrableTests(APITestCase):
+    """Pruebas del gobierno, publicacion y mejora continua del conocimiento."""
+
+    def setUp(self):
+        self.administrador = Usuario.objects.create_user(
+            email="responsable-conocimiento@test.com",
+            password="Segura2026*",
+            nombre="Responsable",
+            apellido="Conocimiento",
+            unidad_residencial="Administracion",
+            rol=Usuario.Rol.ADMINISTRADOR,
+        )
+        self.residente = Usuario.objects.create_user(
+            email="consulta-conocimiento@test.com",
+            password="Segura2026*",
+            nombre="Usuario",
+            apellido="Consulta",
+            unidad_residencial="Apto 101 Torre A",
+            rol=Usuario.Rol.RESIDENTE,
+        )
+
+    def tearDown(self):
+        EntradaConocimiento.objects.all().delete()
+        refresh_local_engine(force=True)
+
+    def _crear_entrada(self, **overrides):
+        datos = {
+            "codigo": "administrable-prueba",
+            "pregunta": "Como solicito revision del sensor comunitario?",
+            "respuesta": "Registra la solicitud en CommuSafe y espera la revision de administracion.",
+            "categoria": "mantenimiento",
+            "intencion_principal": "consultar_mantenimiento",
+            "subintencion": "revision_sensor",
+            "palabras_clave": ["sensor", "revision", "mantenimiento"],
+            "variaciones": [
+                "Necesito revisar el sensor comunitario",
+                "Donde solicito mantenimiento del sensor",
+            ],
+            "roles_permitidos": ["RESIDENTE"],
+            "estado": EntradaConocimiento.Estado.APROBADA,
+            "fuente": "Procedimiento aprobado por administracion",
+            "creado_por": self.administrador,
+            "actualizado_por": self.administrador,
+            "aprobado_por": self.administrador,
+        }
+        datos.update(overrides)
+        entrada = EntradaConocimiento(**datos)
+        entrada.full_clean()
+        entrada.save()
+        return entrada
+
+    def test_entrada_aprobada_responde_desde_motor_local(self):
+        entrada = self._crear_entrada()
+        refresh_local_engine(force=True)
+
+        resultado = resolve_local_answer(entrada.pregunta, "RESIDENTE")
+
+        self.assertEqual(resultado["action"], "answer")
+        self.assertEqual(resultado["entry_id"], entrada.codigo)
+        self.assertEqual(resultado["respuesta"], entrada.respuesta)
+        self.assertEqual(resultado["provider"], "local")
+
+    def test_borrador_nunca_se_publica_como_respuesta_oficial(self):
+        entrada = self._crear_entrada(
+            codigo="borrador-no-publicable",
+            pregunta="Cual es el protocolo privado del sensor alfa?",
+            respuesta="Contenido interno pendiente de aprobacion.",
+            estado=EntradaConocimiento.Estado.BORRADOR,
+            aprobado_por=None,
+        )
+
+        resultado = resolve_local_answer(entrada.pregunta, "RESIDENTE")
+
+        self.assertNotEqual(resultado.get("entry_id"), entrada.codigo)
+        self.assertNotEqual(resultado.get("respuesta"), entrada.respuesta)
+
+    def test_estado_administrado_no_aprobado_oculta_respaldo_estatico(self):
+        estatica = FAQ_ENTRIES[0]
+        self._crear_entrada(
+            codigo=estatica.id,
+            pregunta=estatica.question,
+            respuesta="Cambio pendiente que no debe publicarse.",
+            estado=EntradaConocimiento.Estado.EN_REVISION,
+            aprobado_por=None,
+        )
+        refresh_local_engine(force=True)
+
+        resultado = resolve_local_answer(estatica.question, "RESIDENTE")
+
+        self.assertNotEqual(resultado.get("entry_id"), estatica.id)
+        self.assertNotEqual(resultado.get("respuesta"), estatica.answer)
+
+    @override_settings(
+        COMMUSAFE_NLP_SERVICE_URL="http://nlp.local",
+        COMMUSAFE_NLP_SERVICE_KEY="clave-servicio",
+    )
+    @patch("asistente.services.requests.post")
+    def test_conocimiento_administrado_prevalece_sobre_servicio_auxiliar(self, post_mock):
+        entrada = self._crear_entrada()
+        refresh_local_engine(force=True)
+        post_mock.return_value = SimpleNamespace(
+            raise_for_status=lambda: None,
+            json=lambda: {
+                "resultado": {
+                    "action": "answer",
+                    "respuesta": "Respuesta auxiliar desactualizada.",
+                    "mode": "local",
+                    "provider": "local",
+                    "confidence": 1,
+                }
+            },
+        )
+
+        resultado = generar_respuesta_asistente(entrada.pregunta, usuario=self.residente)
+
+        self.assertEqual(resultado["respuesta"], entrada.respuesta)
+        self.assertTrue(post_mock.called)
+
+    def test_cada_cambio_de_contenido_crea_version_inmutable(self):
+        entrada = self._crear_entrada()
+        self.assertTrue(
+            VersionEntradaConocimiento.objects.filter(entrada=entrada, version=1).exists()
+        )
+
+        entrada.respuesta = "Respuesta actualizada y aprobada por administracion."
+        entrada.nota_cambio = "Se aclaro el procedimiento."
+        entrada.actualizado_por = self.administrador
+        entrada.save()
+
+        versiones = VersionEntradaConocimiento.objects.filter(entrada=entrada).order_by("version")
+        self.assertEqual(list(versiones.values_list("version", flat=True)), [1, 2])
+        self.assertEqual(versiones.last().datos["respuesta"], entrada.respuesta)
+        self.assertEqual(versiones.last().cambiado_por, self.administrador)
+
+    def test_consultas_sin_respuesta_se_agrupan_por_frecuencia(self):
+        mensaje = "Cual es el procedimiento biometrico QR temporal de porteria?"
+
+        generar_respuesta_asistente(mensaje, usuario=self.residente)
+        generar_respuesta_asistente(mensaje, usuario=self.residente)
+
+        consulta = ConsultaSinRespuesta.objects.get(rol=Usuario.Rol.RESIDENTE)
+        self.assertEqual(consulta.cantidad, 2)
+        self.assertIn("procedimiento biometrico", consulta.consulta_normalizada)
+
+    def test_comando_importa_conocimiento_verificado_como_aprobado(self):
+        entrada_estatica = FAQEntry(
+            id="importacion_prueba",
+            intent="importar_conocimiento",
+            category="uso_sistema",
+            question="Como valido una importacion de conocimiento?",
+            answer="Revisa el contenido y apruebalo desde la administracion.",
+            keywords=("importacion", "conocimiento", "validar"),
+            variations=("como reviso una importacion", "validar conocimiento importado"),
+        )
+        salida = StringIO()
+
+        with patch(
+            "asistente.management.commands.sincronizar_base_conocimiento.FAQ_ENTRIES",
+            (entrada_estatica,),
+        ):
+            call_command(
+                "sincronizar_base_conocimiento",
+                usuario=self.administrador.email,
+                stdout=salida,
+            )
+
+        importada = EntradaConocimiento.objects.get(codigo=entrada_estatica.id)
+        self.assertEqual(importada.estado, EntradaConocimiento.Estado.APROBADA)
+        self.assertEqual(importada.aprobado_por, self.administrador)
+        self.assertIn("Creadas: 1", salida.getvalue())

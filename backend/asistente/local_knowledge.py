@@ -44,6 +44,7 @@ class FAQEntry:
     change_trace: tuple[str, ...] = (
         "2026-06-05: Entrada creada para motor hibrido local de CommuSafe.",
     )
+    main_intent_override: str = ""
 
     def searchable_texts(self) -> Iterable[str]:
         yield self.question
@@ -56,7 +57,7 @@ class FAQEntry:
 
     @property
     def main_intent(self) -> str:
-        return get_main_intent_id(self.id)
+        return self.main_intent_override or get_main_intent_id(self.id)
 
     @property
     def validity_status(self) -> str:

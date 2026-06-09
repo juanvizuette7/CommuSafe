@@ -25,12 +25,13 @@ La arquitectura queda separada por responsabilidades:
 
 | Capa | Archivo | Responsabilidad |
 |---|---|---|
-| Base de conocimiento | `backend/asistente/local_knowledge.py` | Preguntas frecuentes, variaciones, categorias, palabras clave, roles permitidos y trazabilidad de cada entrada |
+| Catalogo inicial | `backend/asistente/local_knowledge.py` | Respaldo inicial de preguntas frecuentes y metadatos de comprension |
+| Repositorio administrable | `backend/asistente/knowledge_repository.py` y modelos de conocimiento | Combina el respaldo con contenido aprobado y vigente administrado en base de datos |
 | Taxonomia | `backend/asistente/taxonomy.py` | Agrupacion mantenible de FAQ y subtemas en intenciones principales |
 | Motor local | `backend/asistente/local_engine.py` | Coincidencia exacta, normalizacion, palabras clave, TF-IDF, clasificacion de intencion, reglas de negocio, cache, umbrales de confianza y respuesta segura |
 | Servicio LLM | `backend/asistente/services.py` | Orquestacion local-first, contexto del usuario, historial conversacional, Gemini/Anthropic y logs |
 | API REST | `backend/asistente/views.py` | Chat rapido, conversaciones persistentes, mensajes, health check y acciones REST |
-| Persistencia | `backend/asistente/models.py` | Conversaciones, mensajes y logs tecnicos de respuestas |
+| Persistencia | `backend/asistente/models.py` | Conversaciones, mensajes, logs, entradas administrables, versiones y consultas sin respuesta |
 | Evaluacion | `backend/asistente/evaluation.py` | Dataset local, metricas, cobertura y matriz de confusion resumida |
 | Dataset profesional | `backend/asistente/training_dataset.py` | Generacion balanceada de entrenamiento, validacion y prueba para intenciones del asistente |
 | Seleccion de modelo | `backend/asistente/model_selection.py` | Entrenamiento, comparacion, calibracion y seleccion reproducible de modelos locales |
@@ -71,7 +72,9 @@ Cada entrada define:
 - `source`: fuente interna registrada para trazabilidad.
 - `change_trace`: motivo o historial de la entrada.
 
-Esto permite ampliar la informacion sin modificar toda la logica del asistente.
+Esto permite ampliar la informacion sin modificar toda la logica del asistente. Para mantenimiento posterior a la entrega, las entradas se crean, revisan, aprueban, versionan y desactivan desde Django Admin. El procedimiento completo se encuentra en `docs/GESTION_CONOCIMIENTO_ASISTENTE.md`.
+
+Solo las entradas administradas con estado `APROBADA` y vigencia activa se incorporan al motor. Una entrada en borrador, revision, inactiva o rechazada nunca se presenta como informacion oficial. Cada cambio conserva una version inmutable con responsable y fecha.
 
 Estado actual verificado:
 
@@ -190,6 +193,8 @@ Flujo aplicado:
 7. Pide aclaracion si la confianza es media o existe ambiguedad entre intenciones principales.
 8. Permite Gemini o Anthropic solo si la consulta es del dominio y queda en baja confianza.
 9. Responde de forma segura si esta fuera del dominio, el proveedor falla o no hay informacion verificada.
+
+El motor interno de Django es la fuente autoritativa porque conoce el estado administrado de cada entrada. Si el servicio Flask auxiliar esta configurado, su resultado solo complementa consultas que el repositorio interno no puede resolver; nunca reemplaza una respuesta aprobada ni reactiva contenido desactivado.
 
 Los umbrales actuales fueron seleccionados mediante busqueda reproducible sobre validation y casos de reto:
 

@@ -80,6 +80,8 @@ El sistema no reemplaza la labor humana de vigilancia o administracion. Su objet
 - Conversaciones persistentes por usuario.
 - Historial de mensajes almacenado en base de datos.
 - Base de conocimiento local con 108 FAQ verificables agrupadas en 20 intenciones principales.
+- Base de conocimiento administrable desde Django Admin con revisión, aprobación, vigencia, desactivación, versionado y auditoría por responsable.
+- Detección de consultas frecuentes sin respuesta para convertir necesidades reales en nuevo conocimiento verificado.
 - Motor local-first con busqueda exacta, normalizacion, palabras clave, similitud TF-IDF, clasificacion de intencion, cache, reglas de negocio, umbrales de confianza y respuestas seguras.
 - Gemini o Anthropic funcionan solo como respaldo controlado: nunca son la primera opcion y solo se usan ante baja confianza local dentro del dominio.
 - Control de uso IA con cuotas por hora/dia, limite diario de tokens, timeout, validacion anti-invencion y respuesta segura si el proveedor falla.

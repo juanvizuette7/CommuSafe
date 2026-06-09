@@ -1,6 +1,7 @@
 """Servicios del asistente virtual persistente."""
 
 import logging
+import hashlib
 import re
 import time
 import unicodedata
@@ -26,7 +27,7 @@ except ImportError:  # pragma: no cover
     genai_types = None
 
 from django.conf import settings
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Count, Sum
 from django.utils import timezone
 
@@ -34,8 +35,8 @@ from incidentes.models import Incidente
 from notificaciones.models import Notificacion
 
 from .knowledge_base import render_knowledge_base
-from .local_engine import local_engine_stats, resolve_local_answer
-from .models import AsistenteRespuestaLog, ConversacionAsistente, MensajeAsistente
+from .local_engine import local_engine_stats, normalize_text, resolve_local_answer
+from .models import AsistenteRespuestaLog, ConsultaSinRespuesta, ConversacionAsistente, MensajeAsistente
 
 
 LOGGER = logging.getLogger(__name__)
@@ -857,6 +858,66 @@ def _payload_desde_local(local_result):
     }
 
 
+def _registrar_consulta_sin_respuesta(mensaje, rol, local_result):
+    """Agrupa vacios reales de conocimiento sin guardar datos sensibles."""
+
+    accion = local_result.get("action")
+    metodo = local_result.get("method", "")
+    if accion != "fallback_allowed" and not (accion == "safe" and metodo == "sin_candidatos"):
+        return
+
+    consulta_normalizada = normalize_text(mensaje)
+    if not consulta_normalizada:
+        return
+
+    huella = hashlib.sha256(consulta_normalizada.encode("utf-8")).hexdigest()
+    confianza = local_result.get("confidence")
+    try:
+        confianza = Decimal(str(confianza)) if confianza is not None else None
+    except (InvalidOperation, TypeError, ValueError):
+        confianza = None
+
+    for intento in range(2):
+        try:
+            with transaction.atomic():
+                consulta, creada = ConsultaSinRespuesta.objects.select_for_update().get_or_create(
+                    huella=huella,
+                    rol=(rol or "RESIDENTE").upper(),
+                    defaults={
+                        "consulta_muestra": _redactar_sensibles(mensaje),
+                        "consulta_normalizada": consulta_normalizada,
+                        "confianza_maxima": confianza,
+                        "intencion_sugerida": local_result.get("intent", ""),
+                    },
+                )
+                if creada:
+                    return
+
+                consulta.cantidad += 1
+                if confianza is not None and (
+                    consulta.confianza_maxima is None or confianza > consulta.confianza_maxima
+                ):
+                    consulta.confianza_maxima = confianza
+                if not consulta.intencion_sugerida:
+                    consulta.intencion_sugerida = local_result.get("intent", "")
+                consulta.save(
+                    update_fields=[
+                        "cantidad",
+                        "confianza_maxima",
+                        "intencion_sugerida",
+                        "fecha_ultima_consulta",
+                    ]
+                )
+                return
+        except IntegrityError:
+            if intento == 0:
+                continue
+            LOGGER.exception("Colision persistente al registrar una consulta sin respuesta.")
+        except Exception:
+            LOGGER.exception("No fue posible registrar una consulta sin respuesta.")
+            return
+
+
 def generar_respuesta_asistente(mensaje, historial=None, usuario=None, conversacion=None, historial_confiable=True):
     """Genera respuesta hibrida: local verificado primero, IA solo como respaldo."""
 
@@ -872,7 +933,16 @@ def generar_respuesta_asistente(mensaje, historial=None, usuario=None, conversac
             conversacion=conversacion,
         )
 
-    local_result = _resolver_con_servicio_nlp(mensaje, rol) or resolve_local_answer(mensaje, rol)
+    resultado_interno = resolve_local_answer(mensaje, rol)
+    _registrar_consulta_sin_respuesta(mensaje, rol, resultado_interno)
+    resultado_auxiliar = _resolver_con_servicio_nlp(mensaje, rol)
+    local_result = resultado_interno
+    if (
+        resultado_auxiliar
+        and resultado_interno.get("action") in {"fallback_allowed", "safe"}
+        and resultado_auxiliar.get("action") in {"answer", "clarify"}
+    ):
+        local_result = resultado_auxiliar
 
     if local_result["action"] in {"answer", "clarify", "safe"}:
         resultado = _payload_desde_local(local_result)

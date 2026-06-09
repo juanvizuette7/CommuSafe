@@ -15,9 +15,11 @@ import unicodedata
 from collections import Counter, defaultdict
 from copy import deepcopy
 from functools import lru_cache
+from threading import RLock
 from typing import Any
 
-from .local_knowledge import FAQEntry, FAQ_ENTRIES, get_entries_for_role, knowledge_summary
+from .knowledge_repository import ENTRADAS_ESTATICAS_CONTROLADAS, obtener_snapshot_conocimiento
+from .local_knowledge import FAQEntry
 
 
 HIGH_CONFIDENCE_THRESHOLD = 0.52
@@ -195,7 +197,7 @@ def tokenize(text: str) -> list[str]:
 class LocalAssistantEngine:
     """Indice en memoria para resolver preguntas frecuentes."""
 
-    def __init__(self, entries: tuple[FAQEntry, ...] = FAQ_ENTRIES):
+    def __init__(self, entries: tuple[FAQEntry, ...] = ENTRADAS_ESTATICAS_CONTROLADAS):
         self.entries = entries
         self._entry_by_id = {entry.id: entry for entry in entries}
         self._exact_index: dict[str, list[FAQEntry]] = {}
@@ -365,7 +367,9 @@ class LocalAssistantEngine:
         intent_scores = self._classify_intents(query_vector, query_norm, query_token_set)
         candidates = []
 
-        for entry in get_entries_for_role(role):
+        for entry in self.entries:
+            if not self._role_allowed(entry, role):
+                continue
             semantic = self._cosine(entry.id, query_vector, query_norm)
             keyword = self._keyword_score(entry.id, query_token_set)
             lexical = self._lexical_overlap(entry.id, query_token_set)
@@ -636,7 +640,12 @@ class LocalAssistantEngine:
         for entry in self.entries:
             by_category[entry.category] += 1
         return {
-            **knowledge_summary(),
+            "total_faq": len(self.entries),
+            "verificadas": sum(1 for entry in self.entries if entry.verified),
+            "pendientes_validacion": sum(1 for entry in self.entries if not entry.verified),
+            "vigentes": sum(1 for entry in self.entries if entry.is_active()),
+            "vencidas": sum(1 for entry in self.entries if not entry.is_active()),
+            "categorias": len(by_category),
             "categorias_detalle": dict(sorted(by_category.items())),
             "colisiones_exactas_controladas": sum(1 for entries in self._exact_index.values() if len(entries) > 1),
             "clasificador_intenciones": "centroides_tfidf_por_intencion",
@@ -647,6 +656,10 @@ class LocalAssistantEngine:
 
 
 ENGINE = LocalAssistantEngine()
+ENGINE_REVISION = "static"
+ENGINE_LAST_CHECK = 0.0
+ENGINE_REFRESH_SECONDS = 5.0
+ENGINE_LOCK = RLock()
 
 
 @lru_cache(maxsize=512)
@@ -657,17 +670,41 @@ def resolve_local_answer_cached(message: str, role: str = "RESIDENTE") -> dict[s
     return ENGINE.resolve(normalized, (role or "RESIDENTE").upper())
 
 
+def refresh_local_engine(force: bool = False) -> bool:
+    """Recarga atomica del indice cuando cambia conocimiento aprobado."""
+
+    global ENGINE, ENGINE_LAST_CHECK, ENGINE_REVISION
+
+    now = time.monotonic()
+    with ENGINE_LOCK:
+        if not force and now - ENGINE_LAST_CHECK < ENGINE_REFRESH_SECONDS:
+            return False
+
+        entries, revision = obtener_snapshot_conocimiento()
+        ENGINE_LAST_CHECK = now
+        if revision == ENGINE_REVISION:
+            return False
+
+        ENGINE = LocalAssistantEngine(entries)
+        ENGINE_REVISION = revision
+        resolve_local_answer_cached.cache_clear()
+        return True
+
+
 def resolve_local_answer(message: str, role: str = "RESIDENTE") -> dict[str, Any]:
     # lru_cache comparte el mismo objeto entre llamadas. Django puede enriquecer
     # el resultado con errores de fallback o metadatos, por eso cada request recibe
     # una copia defensiva y nunca el diccionario cacheado mutable.
+    refresh_local_engine()
     return deepcopy(resolve_local_answer_cached(message, role))
 
 
 def local_engine_stats() -> dict[str, Any]:
+    refresh_local_engine()
     cache_info = resolve_local_answer_cached.cache_info()
     return {
         **ENGINE.stats(),
+        "revision_conocimiento": ENGINE_REVISION,
         "cache": {
             "hits": cache_info.hits,
             "misses": cache_info.misses,
@@ -678,9 +715,16 @@ def local_engine_stats() -> dict[str, Any]:
 
 
 def explain_local_candidates(message: str, role: str = "RESIDENTE", limit: int = 5) -> dict[str, Any]:
+    refresh_local_engine()
     return ENGINE.explain_candidates(message, role, limit)
+
+
+def export_local_entries() -> list[dict[str, Any]]:
+    refresh_local_engine()
+    return ENGINE.export_entries()
 
 
 def clear_local_engine_cache() -> dict[str, Any]:
     resolve_local_answer_cached.cache_clear()
+    refresh_local_engine(force=True)
     return local_engine_stats()
