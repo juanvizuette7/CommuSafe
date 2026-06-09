@@ -93,6 +93,30 @@ Validaciones ejecutadas:
 
 El servicio público de Render respondió correctamente en `/health/`, pero las credenciales académicas conocidas no autenticaron antes del despliegue de esta reconstrucción. Esto confirma que no debe afirmarse que la nueva base ya contiene los registros locales hasta completar y verificar el despliegue.
 
+## Resultado verificado en Neon
+
+El 9 de junio de 2026 se actualizó el comando de compilación del servicio Render y se desplegó el commit de reconstrucción. La variable privada `DATABASE_URL` fue verificada sin imprimir su contenido y apunta a Neon.
+
+Validación pública posterior al despliegue:
+
+| Flujo | Resultado |
+|---|---|
+| Health check | `200` |
+| Login administrador | `200` |
+| Login residente | `200` |
+| Login vigilante | `200` |
+| Panel web y dashboard | `200` |
+| Usuarios visibles para administrador | 9 |
+| Incidentes visibles para administrador y vigilante | 4 |
+| Incidentes propios del residente de prueba | 1 |
+| Conversación persistente del residente de prueba | 1 |
+| Notificaciones segmentadas | Disponibles para los tres roles |
+| Asistente virtual | Respuesta local no vacía |
+
+El total de usuarios es nueve porque Neon ya contenía una cuenta administrativa creada mediante variables privadas de producción. El comando conservó esa cuenta y agregó únicamente las cuentas faltantes.
+
+Para el primer inicio de sesión mediante API se debe aceptar la política de tratamiento de datos. La aplicación móvil y el panel web gestionan este flujo desde su interfaz.
+
 ## Restricciones
 
 - No versionar `.env`, SQLite, dumps, backups, archivos multimedia privados, logs o credenciales.
