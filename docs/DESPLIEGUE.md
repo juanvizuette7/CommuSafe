@@ -16,12 +16,12 @@ Este documento describe el despliegue real del backend de CommuSafe en Render.co
 El archivo `render.yaml` crea:
 
 1. Un servicio web Python llamado `commusafe`.
-2. Una base de datos PostgreSQL llamada `commusafe-db`.
+2. Una conexión privada mediante `DATABASE_URL` hacia PostgreSQL en Neon.
 
 El servicio web ejecuta:
 
 ```bash
-pip install -r backend/requirements.txt && cd backend && python manage.py migrate && python manage.py crear_admin_produccion && python manage.py collectstatic --noinput
+pip install -r backend/requirements.txt && cd backend && python manage.py migrate && python manage.py crear_admin_produccion && python manage.py reconstruir_base_segura && python manage.py collectstatic --noinput
 ```
 
 Como comando de inicio ejecuta:
@@ -32,7 +32,7 @@ cd backend && gunicorn commusafe_backend.wsgi:application --bind 0.0.0.0:$PORT -
 
 ## 3. Variables de entorno requeridas
 
-Render configura automáticamente `DATABASE_URL` desde la base de datos PostgreSQL declarada en el Blueprint.
+`DATABASE_URL` se configura como secreto privado en Render usando la cadena de conexión entregada por Neon.
 
 Revisar o crear estas variables en el servicio web:
 
@@ -52,12 +52,14 @@ PROD_ADMIN_PASSWORD=
 PROD_ADMIN_NOMBRE=
 PROD_ADMIN_APELLIDO=
 PROD_ADMIN_TELEFONO=
+RECOVERY_ADMIN_PASSWORD=
+RECOVERY_USER_PASSWORD=
 EMAIL_HOST_USER=
 EMAIL_HOST_PASSWORD=
 DEFAULT_FROM_EMAIL=
 ```
 
-No se debe ejecutar `cargar_demo` en produccion. El despliegue real arranca con base limpia y crea solo el administrador indicado por las variables `PROD_ADMIN_*`.
+No se debe ejecutar `cargar_demo` ni `preparar_lanzamiento` en producción. Para recuperar una base nueva se usa `reconstruir_base_segura`, que completa registros faltantes sin borrar ni sobrescribir datos existentes.
 
 Los valores reales se configuran exclusivamente en el panel de entorno de Render o en archivos locales privados no versionados. Nunca deben copiarse en el repositorio, en pruebas ni en documentacion.
 

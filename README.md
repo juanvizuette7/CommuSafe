@@ -18,6 +18,8 @@ CommuSafe centraliza informacion que normalmente se pierde en llamadas, chats in
 
 El sistema no reemplaza la labor humana de vigilancia o administracion. Su objetivo es ordenar la informacion, acelerar la comunicacion y dejar evidencia verificable de cada proceso operativo.
 
+La recuperación segura de una base PostgreSQL nueva se documenta en `docs/RECUPERACION_BASE_DATOS.md`. El comando `reconstruir_base_segura` es idempotente y no elimina ni sobrescribe registros existentes.
+
 ## Caracteristicas Principales
 
 ### Gestion De Usuarios Y Seguridad
@@ -171,7 +173,7 @@ Otras reglas implementadas:
 | API REST | Django REST Framework | Endpoints consumidos por Flutter |
 | Autenticacion | SimpleJWT | Access token y refresh token |
 | Base local | SQLite | Desarrollo local |
-| Base produccion | PostgreSQL en Render | Persistencia real |
+| Base produccion | PostgreSQL en Neon | Persistencia real |
 | Variables de entorno | python-decouple | Configuracion segura |
 | CORS | django-cors-headers | Acceso desde app movil y clientes externos |
 | Filtros API | django-filter | Filtros avanzados en endpoints |
@@ -194,7 +196,7 @@ Otras reglas implementadas:
 | Imagenes movil | image_picker, cached_network_image | Camara, galeria y cache |
 | Notificaciones movil | firebase_messaging, flutter_local_notifications | Push y notificaciones locales |
 | Utilidades movil | intl, url_launcher, shimmer, badges, google_fonts | Fechas, llamadas, UI y carga visual |
-| Despliegue | Render | Backend HTTPS y PostgreSQL |
+| Despliegue | Render + Neon | Backend HTTPS y PostgreSQL |
 
 ## Modulos Del Backend
 
@@ -438,7 +440,7 @@ El archivo real `backend/.env` no debe versionarse. En produccion las variables 
 | `DEBUG` | `False` en produccion |
 | `ALLOWED_HOSTS` | Dominios permitidos |
 | `CSRF_TRUSTED_ORIGINS` | Origenes HTTPS confiables |
-| `DATABASE_URL` | Conexion PostgreSQL de Render |
+| `DATABASE_URL` | Conexion PostgreSQL privada de Neon |
 | `GEMINI_API_KEY` | IA real para el asistente |
 | `GEMINI_MODEL` | Modelo Gemini activo |
 | `LLM_PROVIDER` | Proveedor IA configurado |

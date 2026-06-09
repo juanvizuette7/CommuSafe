@@ -3,7 +3,7 @@ services:
     name: commusafe
     env: python
     plan: free
-    buildCommand: pip install -r backend/requirements.txt && cd backend && python manage.py migrate && python manage.py crear_admin_produccion && python manage.py collectstatic --noinput
+    buildCommand: pip install -r backend/requirements.txt && cd backend && python manage.py migrate && python manage.py crear_admin_produccion && python manage.py reconstruir_base_segura && python manage.py collectstatic --noinput
     startCommand: cd backend && gunicorn commusafe_backend.wsgi:application --bind 0.0.0.0:$PORT --worker-class gthread --workers 1 --threads 4 --timeout 120 --access-logfile - --error-logfile -
     healthCheckPath: /health/
     envVars:
@@ -22,9 +22,7 @@ services:
       - key: SERVE_MEDIA_FILES
         value: "True"
       - key: DATABASE_URL
-        fromDatabase:
-          name: commusafe-db
-          property: connectionString
+        sync: false
       - key: LLM_PROVIDER
         value: gemini
       - key: GEMINI_MODEL
@@ -51,9 +49,3 @@ services:
         sync: false
       - key: PROD_ADMIN_TELEFONO
         sync: false
-
-databases:
-  - name: commusafe-db
-    plan: free
-    databaseName: commusafe
-    user: commusafe
