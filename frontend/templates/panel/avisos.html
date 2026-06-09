@@ -13,7 +13,9 @@
             </p>
         </div>
 
-        <form method="post" class="space-y-6 p-6" x-data="{ audiencia: '{% if audiencias %}{{ audiencias.0.0 }}{% else %}RESIDENTES{% endif %}', repetir: false }">
+        <form method="post" class="space-y-6 p-6"
+              x-data="{ audiencia: '{% if audiencias %}{{ audiencias.0.0 }}{% else %}RESIDENTES{% endif %}', repetir: false, enviando: false }"
+              @submit="if (enviando) { $event.preventDefault(); } else { enviando = true; }">
             {% csrf_token %}
 
             <div>
@@ -166,9 +168,10 @@
                 </div>
             </div>
 
-            <button type="submit" class="flex w-full items-center justify-center gap-3 rounded-2xl bg-primary px-5 py-4 text-sm font-black uppercase tracking-[0.14em] text-white shadow-soft transition hover:bg-accent">
-                <span>&#128276;</span>
-                <span>Enviar aviso</span>
+            <button type="submit" :disabled="enviando" class="flex w-full items-center justify-center gap-3 rounded-2xl bg-primary px-5 py-4 text-sm font-black uppercase tracking-[0.14em] text-white shadow-soft transition hover:bg-accent disabled:cursor-wait disabled:opacity-70">
+                <span x-show="!enviando">&#128276;</span>
+                <span x-show="enviando" class="h-5 w-5 animate-spin rounded-full border-2 border-white/40 border-t-white"></span>
+                <span x-text="enviando ? 'Enviando aviso...' : 'Enviar aviso'"></span>
             </button>
         </form>
     </article>

@@ -35,6 +35,13 @@ class Notificacion(models.Model):
         related_name="notificaciones",
     )
     enviada_push = models.BooleanField(default=False)
+    deduplicacion_clave = models.CharField(
+        max_length=64,
+        unique=True,
+        null=True,
+        blank=True,
+        editable=False,
+    )
 
     class Meta:
         verbose_name = "Notificación"

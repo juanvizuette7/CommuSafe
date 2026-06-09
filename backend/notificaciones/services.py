@@ -1,11 +1,14 @@
 """Servicios de negocio para notificaciones internas y push."""
 
 import base64
+import hashlib
 import json
 import logging
 import os
+from datetime import timedelta
 
 from django.conf import settings
+from django.db import transaction
 from django.utils import timezone
 
 try:
@@ -23,6 +26,7 @@ from .models import AvisoProgramado, Notificacion
 
 logger = logging.getLogger(__name__)
 _firebase_app = None
+VENTANA_DEDUPLICACION = timedelta(minutes=5)
 
 
 class AudienciaAviso:
@@ -101,7 +105,50 @@ def _intentar_enviar_push(*, usuario, titulo, cuerpo, incidente=None):
 
 
 def _crear_registro_y_enviar_push(*, destinatario, titulo, cuerpo, tipo, incidente_relacionado=None):
-    """Crea la notificacion en base de datos y luego intenta enviarla por push."""
+    """Crea y envia una notificacion, omitiendo reintentos identicos recientes."""
+
+    ahora = timezone.now()
+    incidente_id = incidente_relacionado.id if incidente_relacionado else None
+    existente = Notificacion.objects.filter(
+        destinatario=destinatario,
+        titulo=titulo,
+        cuerpo=cuerpo,
+        tipo=tipo,
+        incidente_relacionado_id=incidente_id,
+        fecha_envio__gte=ahora - VENTANA_DEDUPLICACION,
+    ).first()
+    if existente:
+        return existente
+
+    # La franja temporal permite volver a enviar el mismo aviso en el futuro,
+    # mientras la restriccion unica evita duplicados concurrentes.
+    franja = int(ahora.timestamp() // VENTANA_DEDUPLICACION.total_seconds())
+    contenido_clave = "|".join(
+        [
+            str(destinatario.id),
+            titulo.strip(),
+            cuerpo.strip(),
+            tipo,
+            str(incidente_id or ""),
+            str(franja),
+        ]
+    )
+    deduplicacion_clave = hashlib.sha256(contenido_clave.encode("utf-8")).hexdigest()
+
+    with transaction.atomic():
+        notificacion, creada = Notificacion.objects.get_or_create(
+            deduplicacion_clave=deduplicacion_clave,
+            defaults={
+                "destinatario": destinatario,
+                "titulo": titulo,
+                "cuerpo": cuerpo,
+                "tipo": tipo,
+                "incidente_relacionado": incidente_relacionado,
+            },
+        )
+
+    if not creada:
+        return notificacion
 
     enviada_push = _intentar_enviar_push(
         usuario=destinatario,
@@ -109,14 +156,10 @@ def _crear_registro_y_enviar_push(*, destinatario, titulo, cuerpo, tipo, inciden
         cuerpo=cuerpo,
         incidente=incidente_relacionado,
     )
-    return Notificacion.objects.create(
-        destinatario=destinatario,
-        titulo=titulo,
-        cuerpo=cuerpo,
-        tipo=tipo,
-        incidente_relacionado=incidente_relacionado,
-        enviada_push=enviada_push,
-    )
+    if enviada_push:
+        notificacion.enviada_push = True
+        notificacion.save(update_fields=["enviada_push"])
+    return notificacion
 
 
 def notificar_incidente_nuevo(incidente):

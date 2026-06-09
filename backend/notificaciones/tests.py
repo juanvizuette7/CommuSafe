@@ -194,6 +194,42 @@ class NotificacionServicesTests(APITestCase):
         mensaje = send_mock.call_args.args[0]
         self.assertEqual(mensaje.data["incidente_id"], str(self.incidente.id))
 
+    def test_notificacion_identica_reciente_no_se_crea_ni_envia_dos_veces(self):
+        with patch("notificaciones.services._intentar_enviar_push", return_value=True) as enviar_mock:
+            primera = _crear_registro_y_enviar_push(
+                destinatario=self.residente_1,
+                titulo="Comunicado oficial",
+                cuerpo="Mensaje administrativo para la comunidad.",
+                tipo=Notificacion.Tipo.AVISO_ADMIN,
+            )
+            segunda = _crear_registro_y_enviar_push(
+                destinatario=self.residente_1,
+                titulo="Comunicado oficial",
+                cuerpo="Mensaje administrativo para la comunidad.",
+                tipo=Notificacion.Tipo.AVISO_ADMIN,
+            )
+
+        self.assertEqual(primera.id, segunda.id)
+        self.assertEqual(Notificacion.objects.filter(destinatario=self.residente_1).count(), 1)
+        enviar_mock.assert_called_once()
+
+    def test_notificaciones_con_contenido_distinto_se_crean_independientes(self):
+        with patch("notificaciones.services._intentar_enviar_push", return_value=False):
+            _crear_registro_y_enviar_push(
+                destinatario=self.residente_1,
+                titulo="Primer aviso",
+                cuerpo="Contenido del primer aviso.",
+                tipo=Notificacion.Tipo.AVISO_ADMIN,
+            )
+            _crear_registro_y_enviar_push(
+                destinatario=self.residente_1,
+                titulo="Segundo aviso",
+                cuerpo="Contenido del segundo aviso.",
+                tipo=Notificacion.Tipo.AVISO_ADMIN,
+            )
+
+        self.assertEqual(Notificacion.objects.filter(destinatario=self.residente_1).count(), 2)
+
     def test_intentar_enviar_push_atrapa_error_del_proveedor(self):
         self.residente_1.fcm_token = "token-fcm-error"
         self.residente_1.save(update_fields=["fcm_token"])
