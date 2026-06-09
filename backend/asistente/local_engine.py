@@ -35,10 +35,12 @@ COMMON_TOKEN_CORRECTIONS = {
     "incidnte": "incidente",
     "komo": "como",
     "notificasion": "notificacion",
+    "notificasiones": "notificaciones",
     "parkiadero": "parqueadero",
     "report": "reporte",
     "segurida": "seguridad",
     "veiculo": "vehiculo",
+    "yegan": "llegan",
 }
 STOPWORDS = {
     "a",

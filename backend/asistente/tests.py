@@ -310,7 +310,10 @@ class ChatAsistenteFallbackTests(APITestCase):
             return SimpleNamespace(
                 content=[
                     SimpleNamespace(
-                        text="Respuesta IA sobre CommuSafe y Remansos del Norte para orientar el procedimiento."
+                        text=(
+                            "No encuentro ese procedimiento registrado en CommuSafe. "
+                            "Confirma la informacion con administracion."
+                        )
                     )
                 ]
             )
@@ -898,7 +901,10 @@ class ChatAsistenteIAModeTests(APITestCase):
                 create=lambda **kwargs: SimpleNamespace(
                     content=[
                         SimpleNamespace(
-                            text="Respuesta IA sobre CommuSafe y Remansos del Norte para orientar el procedimiento."
+                            text=(
+                                "No encuentro ese procedimiento registrado en CommuSafe. "
+                                "Confirma la informacion con administracion."
+                            )
                         )
                     ]
                 )

@@ -344,7 +344,7 @@ Para revisar concurrencia, aislamiento de cache y comportamiento sin IA externa:
 python manage.py probar_resiliencia_asistente --requests 80 --workers 8
 ```
 
-Resultado verificado el 2026-06-08: 80 solicitudes, 8 workers, 80 exitosas, 0 errores, 0 contaminaciones de cache, p95 de 0.817 ms y sin uso de IA externa. La evidencia completa esta en `docs/evidencias/asistente_resiliencia.md`.
+Resultado verificado el 2026-06-09: 240 solicitudes, 12 workers, 240 exitosas, 0 errores, 0 contaminaciones de cache, p95 de 1.788 ms, matriz funcional 11/11 y sin uso de IA externa. La evidencia completa esta en `docs/evidencias/asistente_resiliencia_aceptacion.json` y `docs/PRUEBAS_ASISTENTE_HIBRIDO.md`.
 
 Metricas reportadas:
 

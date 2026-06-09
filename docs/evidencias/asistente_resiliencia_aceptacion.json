@@ -1,0 +1,54 @@
+{
+  "estado": "ok",
+  "solicitudes": 240,
+  "workers": 12,
+  "exitosas": 240,
+  "errores": [],
+  "contaminaciones_cache": 0,
+  "duracion_total_ms": 72.124,
+  "throughput_aprox_req_s": 3327.59,
+  "latencia_ms": {
+    "min": 0.031,
+    "p50": 0.69,
+    "p95": 1.788,
+    "max": 38.551,
+    "promedio": 2.412,
+    "criterio_p95_max": 100.0
+  },
+  "acciones": {
+    "answer": 100,
+    "clarify": 100,
+    "fallback_allowed": 20,
+    "safe": 20
+  },
+  "roles": {
+    "RESIDENTE": 200,
+    "VIGILANTE": 20,
+    "ADMINISTRADOR": 20
+  },
+  "intenciones_top": {
+    "seguimiento_incidente": 40,
+    "convivencia_entorno": 40,
+    "reportar_incidente": 20,
+    "acceso_sesion": 20,
+    "convivencia_conflictos": 20,
+    "navegacion_app": 20,
+    "mascotas": 20,
+    "parqueaderos_vehiculos": 20
+  },
+  "ia_externa_usada": false,
+  "matriz_aceptacion": {
+    "total": 11,
+    "cumplen": 11,
+    "fallidas": []
+  },
+  "criterios_aceptacion": {
+    "todas_solicitudes_exitosas": true,
+    "sin_errores": true,
+    "sin_contaminacion_cache": true,
+    "latencia_p95_dentro_limite": true,
+    "matriz_funcional_completa": true,
+    "sin_ia_externa": true
+  },
+  "nota": "La prueba usa el motor local para medir aislamiento, cache y respuesta sin proveedores externos."
+}

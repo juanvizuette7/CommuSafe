@@ -88,6 +88,7 @@ El sistema no reemplaza la labor humana de vigilancia o administracion. Su objet
 - Servicio Flask auxiliar opcional para inferencia local por HTTP, evaluacion, reentrenamiento logico y seleccion de respuestas.
 - Logs tecnicos de modo, proveedor, intencion, confianza, latencia, tokens estimados y ahorro de tokens por resolver localmente.
 - Evaluacion automatizada del asistente con precision, recall, F1, cobertura local y matriz de confusion resumida.
+- Estrategia verificable de aceptación, seguridad, resiliencia, carga, latencia, consumo de tokens y persistencia del asistente.
 - Dataset profesional de comprension de intenciones con 720 ejemplos balanceados en entrenamiento, validacion y prueba.
 - Comparacion reproducible de modelos locales: baseline por palabras clave, TF-IDF por palabra, TF-IDF por caracteres, ensambles y motor hibrido de produccion.
 

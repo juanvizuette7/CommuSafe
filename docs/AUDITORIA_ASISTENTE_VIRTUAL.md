@@ -103,31 +103,32 @@ python manage.py probar_resiliencia_asistente --requests 80 --workers 8
 Resultados verificados:
 
 ```text
-asistente/tests.py: 55 passed, 5 subtests passed
-suite completa backend: 180 passed, 11 subtests passed
+suite asistente: 75 passed, 8 subtests passed
+suite de aceptacion: 13 passed, 3 subtests passed
+suite completa backend: 200 passed, 14 subtests passed
 manage.py check: sin problemas
 makemigrations --check --dry-run: sin cambios pendientes
 validar_base_conocimiento: ok
 generar_dataset_asistente: ok, 720 ejemplos, 0 errores
-probar_resiliencia_asistente: 80 solicitudes, 8 workers, 80 exitosas, 0 errores, 0 contaminaciones de cache
+probar_resiliencia_asistente: 240 solicitudes, 12 workers, 240 exitosas, 0 errores, 0 contaminaciones de cache
 ```
 
 Prueba de resiliencia concurrente:
 
 | Indicador | Resultado |
 |---|---:|
-| Solicitudes concurrentes simuladas | 80 |
-| Workers | 8 |
-| Solicitudes exitosas | 80 |
+| Solicitudes concurrentes simuladas | 240 |
+| Workers | 12 |
+| Solicitudes exitosas | 240 |
 | Errores | 0 |
 | Contaminaciones de cache detectadas | 0 |
-| Latencia p50 | 0.028 ms |
-| Latencia p95 | 0.817 ms |
-| Latencia maxima | 1.179 ms |
-| Throughput aproximado | 5414.22 req/s |
+| Latencia p50 | 0.690 ms |
+| Latencia p95 | 1.788 ms |
+| Latencia maxima | 38.551 ms |
+| Throughput aproximado | 3327.59 req/s |
 | IA externa usada | No |
 
-Evidencia: `docs/evidencias/asistente_resiliencia.md`
+Evidencia: `docs/evidencias/asistente_resiliencia_aceptacion.json` y `docs/PRUEBAS_ASISTENTE_HIBRIDO.md`
 
 Estado de base de conocimiento:
 

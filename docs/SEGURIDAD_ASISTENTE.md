@@ -40,7 +40,7 @@ python -m pytest asistente/tests.py -q
 Resultado:
 
 ```text
-55 passed, 5 subtests passed
+75 passed, 8 subtests passed
 ```
 
 Prueba de resiliencia:
@@ -52,7 +52,7 @@ python manage.py probar_resiliencia_asistente --requests 80 --workers 8
 Resultado real:
 
 ```text
-80 solicitudes, 8 workers, 80 exitosas, 0 errores, 0 contaminaciones de cache, p95 0.819 ms, sin uso de IA externa.
+240 solicitudes, 12 workers, 240 exitosas, 0 errores, 0 contaminaciones de cache, p95 1.788 ms, sin uso de IA externa.
 ```
 
 Casos cubiertos:

@@ -1,0 +1,1113 @@
+{
+  "dataset": {
+    "train": 480,
+    "validation": 120,
+    "test": 120
+  },
+  "dataset_profesional": {
+    "total": 720,
+    "splits": {
+      "train": 480,
+      "validation": 120,
+      "test": 120
+    },
+    "intenciones": 20,
+    "categorias": 12,
+    "estilos": {
+      "corta": 120,
+      "error_ortografico": 120,
+      "formal": 120,
+      "informal": 120,
+      "larga": 120,
+      "no_tecnico": 120
+    },
+    "estilos_por_split": {
+      "train": {
+        "corta": 80,
+        "error_ortografico": 80,
+        "formal": 80,
+        "informal": 80,
+        "larga": 80,
+        "no_tecnico": 80
+      },
+      "validation": {
+        "corta": 20,
+        "error_ortografico": 20,
+        "formal": 20,
+        "informal": 20,
+        "larga": 20,
+        "no_tecnico": 20
+      },
+      "test": {
+        "corta": 20,
+        "error_ortografico": 20,
+        "formal": 20,
+        "informal": 20,
+        "larga": 20,
+        "no_tecnico": 20
+      }
+    },
+    "categorias_detalle": {
+      "administracion": 72,
+      "asistente": 54,
+      "convivencia": 54,
+      "incidentes": 86,
+      "mantenimiento": 36,
+      "mascotas": 36,
+      "notificaciones": 72,
+      "parqueaderos": 36,
+      "seguridad": 72,
+      "uso_sistema": 148,
+      "visitantes": 36,
+      "zonas_comunes": 18
+    },
+    "faq_representadas": 108,
+    "faq_totales": 108,
+    "min_ejemplos_por_intencion": 36,
+    "max_ejemplos_por_intencion": 36,
+    "balanceado_por_intencion": true
+  },
+  "errores_dataset": [],
+  "train": {
+    "total": 480,
+    "correctas": 421,
+    "precision_micro": 0.8771,
+    "recall_micro": 0.8771,
+    "f1_micro": 0.8771,
+    "cobertura_local": 0.725,
+    "tasa_aclaracion": 0.175,
+    "tasa_respuesta_segura": 0.0958,
+    "tasa_uso_ia_estimado": 0.0042,
+    "latencia_promedio_ms": 0.37,
+    "confusiones_principales": [
+      {
+        "esperada": "seguimiento_incidente",
+        "predicha": "sin_intencion_confiable",
+        "casos": 13
+      },
+      {
+        "esperada": "mantenimiento_infraestructura",
+        "predicha": "sin_intencion_confiable",
+        "casos": 7
+      },
+      {
+        "esperada": "funcionamiento_asistente",
+        "predicha": "sin_intencion_confiable",
+        "casos": 6
+      },
+      {
+        "esperada": "acceso_sesion",
+        "predicha": "sin_intencion_confiable",
+        "casos": 5
+      },
+      {
+        "esperada": "convivencia_conflictos",
+        "predicha": "sin_intencion_confiable",
+        "casos": 5
+      },
+      {
+        "esperada": "clasificacion_incidente",
+        "predicha": "gestion_avisos",
+        "casos": 3
+      },
+      {
+        "esperada": "emergencias",
+        "predicha": "sin_intencion_confiable",
+        "casos": 3
+      },
+      {
+        "esperada": "clasificacion_incidente",
+        "predicha": "seguridad_control",
+        "casos": 2
+      },
+      {
+        "esperada": "convivencia_entorno",
+        "predicha": "sin_intencion_confiable",
+        "casos": 2
+      },
+      {
+        "esperada": "gestion_avisos",
+        "predicha": "sin_intencion_confiable",
+        "casos": 2
+      }
+    ],
+    "matriz_confusion_resumen": {
+      "acceso_sesion": {
+        "acceso_sesion": 19,
+        "sin_intencion_confiable": 5
+      },
+      "administracion_panel": {
+        "administracion_panel": 24
+      },
+      "clasificacion_incidente": {
+        "clasificacion_incidente": 16,
+        "gestion_avisos": 3,
+        "seguridad_control": 2,
+        "convivencia_conflictos": 1,
+        "emergencias": 1
+      },
+      "convivencia_conflictos": {
+        "convivencia_conflictos": 19,
+        "sin_intencion_confiable": 5
+      },
+      "convivencia_entorno": {
+        "convivencia_entorno": 22,
+        "sin_intencion_confiable": 2
+      },
+      "emergencias": {
+        "emergencias": 21,
+        "sin_intencion_confiable": 3
+      },
+      "funcionamiento_asistente": {
+        "funcionamiento_asistente": 18,
+        "sin_intencion_confiable": 6
+      },
+      "gestion_avisos": {
+        "gestion_avisos": 22,
+        "sin_intencion_confiable": 2
+      },
+      "gestion_notificaciones": {
+        "gestion_notificaciones": 22,
+        "navegacion_app": 2
+      },
+      "mantenimiento_infraestructura": {
+        "mantenimiento_infraestructura": 16,
+        "sin_intencion_confiable": 7,
+        "clasificacion_incidente": 1
+      },
+      "mascotas": {
+        "mascotas": 24
+      },
+      "navegacion_app": {
+        "navegacion_app": 24
+      },
+      "parqueaderos_vehiculos": {
+        "parqueaderos_vehiculos": 24
+      },
+      "perfil_preferencias": {
+        "perfil_preferencias": 23,
+        "sin_intencion_confiable": 1
+      },
+      "privacidad_conversaciones": {
+        "privacidad_conversaciones": 24
+      },
+      "reportar_incidente": {
+        "reportar_incidente": 24
+      },
+      "seguimiento_incidente": {
+        "sin_intencion_confiable": 13,
+        "seguimiento_incidente": 11
+      },
+      "seguridad_control": {
+        "seguridad_control": 23,
+        "sin_intencion_confiable": 1
+      },
+      "tramites_administrativos": {
+        "tramites_administrativos": 24
+      },
+      "visitantes_ingresos": {
+        "visitantes_ingresos": 23,
+        "seguridad_control": 1
+      }
+    }
+  },
+  "validation": {
+    "total": 120,
+    "correctas": 103,
+    "precision_micro": 0.8583,
+    "recall_micro": 0.8583,
+    "f1_micro": 0.8583,
+    "cobertura_local": 0.6917,
+    "tasa_aclaracion": 0.2,
+    "tasa_respuesta_segura": 0.0917,
+    "tasa_uso_ia_estimado": 0.0167,
+    "latencia_promedio_ms": 0.41,
+    "confusiones_principales": [
+      {
+        "esperada": "seguimiento_incidente",
+        "predicha": "sin_intencion_confiable",
+        "casos": 2
+      },
+      {
+        "esperada": "acceso_sesion",
+        "predicha": "sin_intencion_confiable",
+        "casos": 1
+      },
+      {
+        "esperada": "administracion_panel",
+        "predicha": "sin_intencion_confiable",
+        "casos": 1
+      },
+      {
+        "esperada": "clasificacion_incidente",
+        "predicha": "gestion_avisos",
+        "casos": 1
+      },
+      {
+        "esperada": "clasificacion_incidente",
+        "predicha": "sin_intencion_confiable",
+        "casos": 1
+      },
+      {
+        "esperada": "convivencia_conflictos",
+        "predicha": "clasificacion_incidente",
+        "casos": 1
+      },
+      {
+        "esperada": "convivencia_conflictos",
+        "predicha": "sin_intencion_confiable",
+        "casos": 1
+      },
+      {
+        "esperada": "convivencia_entorno",
+        "predicha": "sin_intencion_confiable",
+        "casos": 1
+      },
+      {
+        "esperada": "emergencias",
+        "predicha": "sin_intencion_confiable",
+        "casos": 1
+      },
+      {
+        "esperada": "gestion_avisos",
+        "predicha": "sin_intencion_confiable",
+        "casos": 1
+      }
+    ],
+    "matriz_confusion_resumen": {
+      "acceso_sesion": {
+        "acceso_sesion": 5,
+        "sin_intencion_confiable": 1
+      },
+      "administracion_panel": {
+        "administracion_panel": 5,
+        "sin_intencion_confiable": 1
+      },
+      "clasificacion_incidente": {
+        "clasificacion_incidente": 4,
+        "sin_intencion_confiable": 1,
+        "gestion_avisos": 1
+      },
+      "convivencia_conflictos": {
+        "convivencia_conflictos": 4,
+        "sin_intencion_confiable": 1,
+        "clasificacion_incidente": 1
+      },
+      "convivencia_entorno": {
+        "convivencia_entorno": 5,
+        "sin_intencion_confiable": 1
+      },
+      "emergencias": {
+        "emergencias": 5,
+        "sin_intencion_confiable": 1
+      },
+      "funcionamiento_asistente": {
+        "funcionamiento_asistente": 6
+      },
+      "gestion_avisos": {
+        "gestion_avisos": 5,
+        "sin_intencion_confiable": 1
+      },
+      "gestion_notificaciones": {
+        "gestion_notificaciones": 6
+      },
+      "mantenimiento_infraestructura": {
+        "mantenimiento_infraestructura": 5,
+        "sin_intencion_confiable": 1
+      },
+      "mascotas": {
+        "mascotas": 6
+      },
+      "navegacion_app": {
+        "navegacion_app": 6
+      },
+      "parqueaderos_vehiculos": {
+        "parqueaderos_vehiculos": 6
+      },
+      "perfil_preferencias": {
+        "perfil_preferencias": 4,
+        "tramites_administrativos": 1,
+        "reportar_incidente": 1
+      },
+      "privacidad_conversaciones": {
+        "privacidad_conversaciones": 6
+      },
+      "reportar_incidente": {
+        "reportar_incidente": 6
+      },
+      "seguimiento_incidente": {
+        "seguimiento_incidente": 4,
+        "sin_intencion_confiable": 2
+      },
+      "seguridad_control": {
+        "seguridad_control": 5,
+        "sin_intencion_confiable": 1
+      },
+      "tramites_administrativos": {
+        "tramites_administrativos": 5,
+        "seguimiento_incidente": 1
+      },
+      "visitantes_ingresos": {
+        "visitantes_ingresos": 6
+      }
+    }
+  },
+  "test": {
+    "total": 120,
+    "correctas": 108,
+    "precision_micro": 0.9,
+    "recall_micro": 0.9,
+    "f1_micro": 0.9,
+    "cobertura_local": 0.6667,
+    "tasa_aclaracion": 0.2667,
+    "tasa_respuesta_segura": 0.025,
+    "tasa_uso_ia_estimado": 0.0417,
+    "latencia_promedio_ms": 0.46,
+    "confusiones_principales": [
+      {
+        "esperada": "clasificacion_incidente",
+        "predicha": "gestion_avisos",
+        "casos": 2
+      },
+      {
+        "esperada": "gestion_avisos",
+        "predicha": "navegacion_app",
+        "casos": 2
+      },
+      {
+        "esperada": "funcionamiento_asistente",
+        "predicha": "sin_intencion_confiable",
+        "casos": 1
+      },
+      {
+        "esperada": "perfil_preferencias",
+        "predicha": "gestion_notificaciones",
+        "casos": 1
+      },
+      {
+        "esperada": "seguimiento_incidente",
+        "predicha": "sin_intencion_confiable",
+        "casos": 1
+      },
+      {
+        "esperada": "seguridad_control",
+        "predicha": "sin_intencion_confiable",
+        "casos": 1
+      }
+    ],
+    "matriz_confusion_resumen": {
+      "acceso_sesion": {
+        "acceso_sesion": 6
+      },
+      "administracion_panel": {
+        "administracion_panel": 6
+      },
+      "clasificacion_incidente": {
+        "clasificacion_incidente": 4,
+        "gestion_avisos": 2
+      },
+      "convivencia_conflictos": {
+        "convivencia_conflictos": 6
+      },
+      "convivencia_entorno": {
+        "convivencia_entorno": 6
+      },
+      "emergencias": {
+        "emergencias": 6
+      },
+      "funcionamiento_asistente": {
+        "funcionamiento_asistente": 5,
+        "sin_intencion_confiable": 1
+      },
+      "gestion_avisos": {
+        "gestion_avisos": 4,
+        "navegacion_app": 2
+      },
+      "gestion_notificaciones": {
+        "gestion_notificaciones": 6
+      },
+      "mantenimiento_infraestructura": {
+        "mantenimiento_infraestructura": 6
+      },
+      "mascotas": {
+        "mascotas": 6
+      },
+      "navegacion_app": {
+        "navegacion_app": 6
+      },
+      "parqueaderos_vehiculos": {
+        "parqueaderos_vehiculos": 6
+      },
+      "perfil_preferencias": {
+        "perfil_preferencias": 5,
+        "gestion_notificaciones": 1
+      },
+      "privacidad_conversaciones": {
+        "privacidad_conversaciones": 6
+      },
+      "reportar_incidente": {
+        "reportar_incidente": 6
+      },
+      "seguimiento_incidente": {
+        "seguimiento_incidente": 5,
+        "sin_intencion_confiable": 1
+      },
+      "seguridad_control": {
+        "seguridad_control": 5,
+        "sin_intencion_confiable": 1
+      },
+      "tramites_administrativos": {
+        "tramites_administrativos": 6
+      },
+      "visitantes_ingresos": {
+        "visitantes_ingresos": 6
+      }
+    }
+  },
+  "challenge": {
+    "total": 7,
+    "correctas": 4,
+    "precision_micro": 0.5714,
+    "recall_micro": 0.5714,
+    "f1_micro": 0.5714,
+    "cobertura_local": 0.0,
+    "tasa_aclaracion": 0.2857,
+    "tasa_respuesta_segura": 0.4286,
+    "tasa_uso_ia_estimado": 0.2857,
+    "latencia_promedio_ms": 0.0,
+    "confusiones_principales": [
+      {
+        "esperada": "seguimiento_incidente",
+        "predicha": "gestion_notificaciones",
+        "casos": 1
+      },
+      {
+        "esperada": "tramites_administrativos",
+        "predicha": "convivencia_conflictos",
+        "casos": 1
+      },
+      {
+        "esperada": "tramites_administrativos",
+        "predicha": "gestion_notificaciones",
+        "casos": 1
+      }
+    ],
+    "matriz_confusion_resumen": {
+      "seguimiento_incidente": {
+        "gestion_notificaciones": 1
+      },
+      "sin_intencion_confiable": {
+        "sin_intencion_confiable": 3
+      },
+      "tramites_administrativos": {
+        "convivencia_conflictos": 1,
+        "gestion_notificaciones": 1
+      },
+      "visitantes_ingresos": {
+        "visitantes_ingresos": 1
+      }
+    }
+  },
+  "calibracion_umbrales": {
+    "umbral_alto": 0.52,
+    "umbral_medio": 0.28,
+    "margen_ambiguedad": 0.04,
+    "utilidad": 94.9,
+    "exactitud": 0.8504,
+    "respuestas_locales": 82,
+    "aclaraciones": 27,
+    "candidatas_ia": 4,
+    "respuestas_seguras": 14,
+    "respuestas_directas_incorrectas": 0,
+    "configuracion_actual": {
+      "umbral_alto": 0.52,
+      "umbral_medio": 0.28,
+      "margen_ambiguedad": 0.04
+    }
+  },
+  "comparacion_modelos": {
+    "validation": {
+      "palabras_clave_baseline": {
+        "total": 120,
+        "correctas": 63,
+        "precision_micro": 0.525,
+        "recall_micro": 0.525,
+        "f1_micro": 0.525,
+        "matriz_confusion_resumen": {
+          "acceso_sesion": {
+            "sin_intencion_confiable": 4,
+            "acceso_sesion": 2
+          },
+          "administracion_panel": {
+            "sin_intencion_confiable": 3,
+            "administracion_panel": 3
+          },
+          "clasificacion_incidente": {
+            "sin_intencion_confiable": 2,
+            "gestion_avisos": 2,
+            "seguridad_control": 1
+          },
+          "convivencia_conflictos": {
+            "convivencia_conflictos": 3,
+            "sin_intencion_confiable": 3
+          },
+          "convivencia_entorno": {
+            "sin_intencion_confiable": 3,
+            "convivencia_entorno": 3
+          },
+          "emergencias": {
+            "emergencias": 3,
+            "sin_intencion_confiable": 3
+          },
+          "funcionamiento_asistente": {
+            "sin_intencion_confiable": 6
+          },
+          "gestion_avisos": {
+            "gestion_avisos": 4,
+            "sin_intencion_confiable": 2
+          },
+          "gestion_notificaciones": {
+            "sin_intencion_confiable": 3,
+            "gestion_notificaciones": 3
+          },
+          "mantenimiento_infraestructura": {
+            "mantenimiento_infraestructura": 5,
+            "sin_intencion_confiable": 1
+          },
+          "mascotas": {
+            "mascotas": 4,
+            "sin_intencion_confiable": 2
+          },
+          "navegacion_app": {
+            "navegacion_app": 5,
+            "sin_intencion_confiable": 1
+          },
+          "parqueaderos_vehiculos": {
+            "sin_intencion_confiable": 3,
+            "parqueaderos_vehiculos": 3
+          },
+          "perfil_preferencias": {
+            "perfil_preferencias": 3,
+            "sin_intencion_confiable": 2,
+            "tramites_administrativos": 1
+          },
+          "privacidad_conversaciones": {
+            "privacidad_conversaciones": 6
+          },
+          "reportar_incidente": {
+            "reportar_incidente": 4,
+            "sin_intencion_confiable": 2
+          },
+          "seguimiento_incidente": {
+            "sin_intencion_confiable": 6
+          },
+          "seguridad_control": {
+            "seguridad_control": 4,
+            "sin_intencion_confiable": 2
+          },
+          "tramites_administrativos": {
+            "sin_intencion_confiable": 3,
+            "tramites_administrativos": 2,
+            "seguimiento_incidente": 1
+          },
+          "visitantes_ingresos": {
+            "visitantes_ingresos": 5,
+            "sin_intencion_confiable": 1
+          }
+        }
+      },
+      "tfidf_semantico": {
+        "total": 120,
+        "correctas": 86,
+        "precision_micro": 0.7167,
+        "recall_micro": 0.7167,
+        "f1_micro": 0.7167,
+        "matriz_confusion_resumen": {
+          "acceso_sesion": {
+            "acceso_sesion": 3,
+            "sin_intencion_confiable": 2,
+            "seguridad_control": 1
+          },
+          "administracion_panel": {
+            "sin_intencion_confiable": 3,
+            "administracion_panel": 3
+          },
+          "clasificacion_incidente": {
+            "clasificacion_incidente": 4,
+            "sin_intencion_confiable": 2
+          },
+          "convivencia_conflictos": {
+            "convivencia_conflictos": 4,
+            "sin_intencion_confiable": 2
+          },
+          "convivencia_entorno": {
+            "convivencia_entorno": 4,
+            "sin_intencion_confiable": 2
+          },
+          "emergencias": {
+            "emergencias": 5,
+            "sin_intencion_confiable": 1
+          },
+          "funcionamiento_asistente": {
+            "sin_intencion_confiable": 4,
+            "funcionamiento_asistente": 2
+          },
+          "gestion_avisos": {
+            "gestion_avisos": 5,
+            "sin_intencion_confiable": 1
+          },
+          "gestion_notificaciones": {
+            "gestion_notificaciones": 4,
+            "sin_intencion_confiable": 2
+          },
+          "mantenimiento_infraestructura": {
+            "mantenimiento_infraestructura": 5,
+            "sin_intencion_confiable": 1
+          },
+          "mascotas": {
+            "mascotas": 5,
+            "sin_intencion_confiable": 1
+          },
+          "navegacion_app": {
+            "navegacion_app": 6
+          },
+          "parqueaderos_vehiculos": {
+            "parqueaderos_vehiculos": 5,
+            "sin_intencion_confiable": 1
+          },
+          "perfil_preferencias": {
+            "perfil_preferencias": 4,
+            "sin_intencion_confiable": 2
+          },
+          "privacidad_conversaciones": {
+            "privacidad_conversaciones": 6
+          },
+          "reportar_incidente": {
+            "reportar_incidente": 5,
+            "sin_intencion_confiable": 1
+          },
+          "seguimiento_incidente": {
+            "sin_intencion_confiable": 4,
+            "seguimiento_incidente": 2
+          },
+          "seguridad_control": {
+            "seguridad_control": 4,
+            "sin_intencion_confiable": 2
+          },
+          "tramites_administrativos": {
+            "tramites_administrativos": 4,
+            "sin_intencion_confiable": 2
+          },
+          "visitantes_ingresos": {
+            "visitantes_ingresos": 6
+          }
+        }
+      },
+      "hibrido_seleccionado": {
+        "total": 120,
+        "correctas": 104,
+        "precision_micro": 0.8667,
+        "recall_micro": 0.8667,
+        "f1_micro": 0.8667,
+        "matriz_confusion_resumen": {
+          "acceso_sesion": {
+            "acceso_sesion": 5,
+            "sin_intencion_confiable": 1
+          },
+          "administracion_panel": {
+            "administracion_panel": 5,
+            "sin_intencion_confiable": 1
+          },
+          "clasificacion_incidente": {
+            "clasificacion_incidente": 4,
+            "sin_intencion_confiable": 1,
+            "gestion_avisos": 1
+          },
+          "convivencia_conflictos": {
+            "convivencia_conflictos": 4,
+            "sin_intencion_confiable": 1,
+            "clasificacion_incidente": 1
+          },
+          "convivencia_entorno": {
+            "convivencia_entorno": 5,
+            "sin_intencion_confiable": 1
+          },
+          "emergencias": {
+            "emergencias": 5,
+            "sin_intencion_confiable": 1
+          },
+          "funcionamiento_asistente": {
+            "funcionamiento_asistente": 6
+          },
+          "gestion_avisos": {
+            "gestion_avisos": 5,
+            "sin_intencion_confiable": 1
+          },
+          "gestion_notificaciones": {
+            "gestion_notificaciones": 6
+          },
+          "mantenimiento_infraestructura": {
+            "mantenimiento_infraestructura": 5,
+            "sin_intencion_confiable": 1
+          },
+          "mascotas": {
+            "mascotas": 6
+          },
+          "navegacion_app": {
+            "navegacion_app": 6
+          },
+          "parqueaderos_vehiculos": {
+            "parqueaderos_vehiculos": 6
+          },
+          "perfil_preferencias": {
+            "perfil_preferencias": 4,
+            "tramites_administrativos": 1,
+            "reportar_incidente": 1
+          },
+          "privacidad_conversaciones": {
+            "privacidad_conversaciones": 6
+          },
+          "reportar_incidente": {
+            "reportar_incidente": 6
+          },
+          "seguimiento_incidente": {
+            "seguimiento_incidente": 4,
+            "sin_intencion_confiable": 2
+          },
+          "seguridad_control": {
+            "seguridad_control": 5,
+            "sin_intencion_confiable": 1
+          },
+          "tramites_administrativos": {
+            "tramites_administrativos": 5,
+            "seguimiento_incidente": 1
+          },
+          "visitantes_ingresos": {
+            "visitantes_ingresos": 6
+          }
+        }
+      },
+      "seleccion": "Se selecciona hibrido_seleccionado porque combina coincidencia exacta, palabras clave, similitud TF-IDF, filtro de dominio y umbrales de aclaracion."
+    },
+    "test": {
+      "palabras_clave_baseline": {
+        "total": 120,
+        "correctas": 71,
+        "precision_micro": 0.5917,
+        "recall_micro": 0.5917,
+        "f1_micro": 0.5917,
+        "matriz_confusion_resumen": {
+          "acceso_sesion": {
+            "acceso_sesion": 4,
+            "sin_intencion_confiable": 2
+          },
+          "administracion_panel": {
+            "sin_intencion_confiable": 3,
+            "administracion_panel": 3
+          },
+          "clasificacion_incidente": {
+            "gestion_avisos": 3,
+            "clasificacion_incidente": 2,
+            "seguridad_control": 1
+          },
+          "convivencia_conflictos": {
+            "sin_intencion_confiable": 5,
+            "convivencia_conflictos": 1
+          },
+          "convivencia_entorno": {
+            "sin_intencion_confiable": 3,
+            "convivencia_entorno": 3
+          },
+          "emergencias": {
+            "emergencias": 4,
+            "sin_intencion_confiable": 2
+          },
+          "funcionamiento_asistente": {
+            "sin_intencion_confiable": 4,
+            "funcionamiento_asistente": 2
+          },
+          "gestion_avisos": {
+            "navegacion_app": 5,
+            "gestion_avisos": 1
+          },
+          "gestion_notificaciones": {
+            "gestion_notificaciones": 5,
+            "sin_intencion_confiable": 1
+          },
+          "mantenimiento_infraestructura": {
+            "mantenimiento_infraestructura": 4,
+            "sin_intencion_confiable": 2
+          },
+          "mascotas": {
+            "mascotas": 6
+          },
+          "navegacion_app": {
+            "navegacion_app": 4,
+            "sin_intencion_confiable": 2
+          },
+          "parqueaderos_vehiculos": {
+            "parqueaderos_vehiculos": 5,
+            "sin_intencion_confiable": 1
+          },
+          "perfil_preferencias": {
+            "sin_intencion_confiable": 4,
+            "perfil_preferencias": 2
+          },
+          "privacidad_conversaciones": {
+            "privacidad_conversaciones": 6
+          },
+          "reportar_incidente": {
+            "reportar_incidente": 5,
+            "sin_intencion_confiable": 1
+          },
+          "seguimiento_incidente": {
+            "sin_intencion_confiable": 4,
+            "seguimiento_incidente": 2
+          },
+          "seguridad_control": {
+            "seguridad_control": 4,
+            "sin_intencion_confiable": 2
+          },
+          "tramites_administrativos": {
+            "tramites_administrativos": 4,
+            "sin_intencion_confiable": 2
+          },
+          "visitantes_ingresos": {
+            "visitantes_ingresos": 4,
+            "sin_intencion_confiable": 2
+          }
+        }
+      },
+      "tfidf_semantico": {
+        "total": 120,
+        "correctas": 95,
+        "precision_micro": 0.7917,
+        "recall_micro": 0.7917,
+        "f1_micro": 0.7917,
+        "matriz_confusion_resumen": {
+          "acceso_sesion": {
+            "acceso_sesion": 5,
+            "sin_intencion_confiable": 1
+          },
+          "administracion_panel": {
+            "administracion_panel": 4,
+            "sin_intencion_confiable": 1,
+            "gestion_avisos": 1
+          },
+          "clasificacion_incidente": {
+            "clasificacion_incidente": 6
+          },
+          "convivencia_conflictos": {
+            "sin_intencion_confiable": 3,
+            "convivencia_conflictos": 3
+          },
+          "convivencia_entorno": {
+            "convivencia_entorno": 4,
+            "sin_intencion_confiable": 2
+          },
+          "emergencias": {
+            "emergencias": 4,
+            "sin_intencion_confiable": 2
+          },
+          "funcionamiento_asistente": {
+            "sin_intencion_confiable": 3,
+            "funcionamiento_asistente": 3
+          },
+          "gestion_avisos": {
+            "gestion_avisos": 5,
+            "navegacion_app": 1
+          },
+          "gestion_notificaciones": {
+            "gestion_notificaciones": 6
+          },
+          "mantenimiento_infraestructura": {
+            "mantenimiento_infraestructura": 4,
+            "sin_intencion_confiable": 2
+          },
+          "mascotas": {
+            "mascotas": 6
+          },
+          "navegacion_app": {
+            "navegacion_app": 6
+          },
+          "parqueaderos_vehiculos": {
+            "parqueaderos_vehiculos": 5,
+            "sin_intencion_confiable": 1
+          },
+          "perfil_preferencias": {
+            "perfil_preferencias": 4,
+            "sin_intencion_confiable": 2
+          },
+          "privacidad_conversaciones": {
+            "privacidad_conversaciones": 6
+          },
+          "reportar_incidente": {
+            "reportar_incidente": 5,
+            "sin_intencion_confiable": 1
+          },
+          "seguimiento_incidente": {
+            "seguimiento_incidente": 4,
+            "sin_intencion_confiable": 2
+          },
+          "seguridad_control": {
+            "seguridad_control": 5,
+            "sin_intencion_confiable": 1
+          },
+          "tramites_administrativos": {
+            "tramites_administrativos": 5,
+            "sin_intencion_confiable": 1
+          },
+          "visitantes_ingresos": {
+            "visitantes_ingresos": 5,
+            "sin_intencion_confiable": 1
+          }
+        }
+      },
+      "hibrido_seleccionado": {
+        "total": 120,
+        "correctas": 112,
+        "precision_micro": 0.9333,
+        "recall_micro": 0.9333,
+        "f1_micro": 0.9333,
+        "matriz_confusion_resumen": {
+          "acceso_sesion": {
+            "acceso_sesion": 6
+          },
+          "administracion_panel": {
+            "administracion_panel": 6
+          },
+          "clasificacion_incidente": {
+            "clasificacion_incidente": 4,
+            "gestion_avisos": 2
+          },
+          "convivencia_conflictos": {
+            "convivencia_conflictos": 6
+          },
+          "convivencia_entorno": {
+            "convivencia_entorno": 6
+          },
+          "emergencias": {
+            "emergencias": 6
+          },
+          "funcionamiento_asistente": {
+            "funcionamiento_asistente": 5,
+            "sin_intencion_confiable": 1
+          },
+          "gestion_avisos": {
+            "gestion_avisos": 4,
+            "navegacion_app": 2
+          },
+          "gestion_notificaciones": {
+            "gestion_notificaciones": 6
+          },
+          "mantenimiento_infraestructura": {
+            "mantenimiento_infraestructura": 6
+          },
+          "mascotas": {
+            "mascotas": 6
+          },
+          "navegacion_app": {
+            "navegacion_app": 6
+          },
+          "parqueaderos_vehiculos": {
+            "parqueaderos_vehiculos": 6
+          },
+          "perfil_preferencias": {
+            "perfil_preferencias": 5,
+            "gestion_notificaciones": 1
+          },
+          "privacidad_conversaciones": {
+            "privacidad_conversaciones": 6
+          },
+          "reportar_incidente": {
+            "reportar_incidente": 6
+          },
+          "seguimiento_incidente": {
+            "seguimiento_incidente": 5,
+            "sin_intencion_confiable": 1
+          },
+          "seguridad_control": {
+            "seguridad_control": 5,
+            "sin_intencion_confiable": 1
+          },
+          "tramites_administrativos": {
+            "tramites_administrativos": 6
+          },
+          "visitantes_ingresos": {
+            "visitantes_ingresos": 6
+          }
+        }
+      },
+      "seleccion": "Se selecciona hibrido_seleccionado porque combina coincidencia exacta, palabras clave, similitud TF-IDF, filtro de dominio y umbrales de aclaracion."
+    },
+    "challenge": {
+      "palabras_clave_baseline": {
+        "total": 7,
+        "correctas": 4,
+        "precision_micro": 0.5714,
+        "recall_micro": 0.5714,
+        "f1_micro": 0.5714,
+        "matriz_confusion_resumen": {
+          "seguimiento_incidente": {
+            "sin_intencion_confiable": 1
+          },
+          "sin_intencion_confiable": {
+            "sin_intencion_confiable": 3
+          },
+          "tramites_administrativos": {
+            "sin_intencion_confiable": 2
+          },
+          "visitantes_ingresos": {
+            "visitantes_ingresos": 1
+          }
+        }
+      },
+      "tfidf_semantico": {
+        "total": 7,
+        "correctas": 4,
+        "precision_micro": 0.5714,
+        "recall_micro": 0.5714,
+        "f1_micro": 0.5714,
+        "matriz_confusion_resumen": {
+          "seguimiento_incidente": {
+            "sin_intencion_confiable": 1
+          },
+          "sin_intencion_confiable": {
+            "sin_intencion_confiable": 3
+          },
+          "tramites_administrativos": {
+            "convivencia_conflictos": 1,
+            "sin_intencion_confiable": 1
+          },
+          "visitantes_ingresos": {
+            "visitantes_ingresos": 1
+          }
+        }
+      },
+      "hibrido_seleccionado": {
+        "total": 7,
+        "correctas": 4,
+        "precision_micro": 0.5714,
+        "recall_micro": 0.5714,
+        "f1_micro": 0.5714,
+        "matriz_confusion_resumen": {
+          "seguimiento_incidente": {
+            "gestion_notificaciones": 1
+          },
+          "sin_intencion_confiable": {
+            "sin_intencion_confiable": 3
+          },
+          "tramites_administrativos": {
+            "convivencia_conflictos": 1,
+            "gestion_notificaciones": 1
+          },
+          "visitantes_ingresos": {
+            "visitantes_ingresos": 1
+          }
+        }
+      },
+      "seleccion": "Se selecciona hibrido_seleccionado porque combina coincidencia exacta, palabras clave, similitud TF-IDF, filtro de dominio y umbrales de aclaracion."
+    }
+  },
+  "nota": "Metricas calculadas sobre dataset profesional balanceado por intencion. El split challenge contiene preguntas fuera de dominio, ambiguas o que requieren validacion."
+}

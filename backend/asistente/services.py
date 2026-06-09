@@ -83,6 +83,12 @@ PROMPT_MANIPULATION_PATTERNS = {
     "dime la clave",
     "dame el token",
     "dame las contrasenas",
+    "datos privados de",
+    "informacion privada de",
+    "incidentes privados",
+    "muestrame las contrasenas",
+    "muestrame los datos",
+    "reportes privados",
     "haz como que eres admin",
     "ignora instrucciones",
     "ignora las instrucciones",
@@ -108,6 +114,14 @@ VALIDATION_HINT_TERMS = {
     "verificar",
     "verificalo",
     "no encuentro",
+}
+UNCERTAINTY_HINT_TERMS = {
+    "informacion no disponible",
+    "no esta disponible",
+    "no esta registrado",
+    "no esta registrada",
+    "no encuentro",
+    "requiere confirmacion",
 }
 MAX_UNTRUSTED_HISTORY_MESSAGES = 4
 MAX_UNTRUSTED_HISTORY_CHARS = 1500
@@ -730,10 +744,20 @@ def _validar_respuesta_generativa(texto):
         return False, "patron_generativo_no_permitido"
     if not any(term in normalizado for term in DOMAIN_RESPONSE_TERMS):
         return False, "sin_marcadores_del_dominio"
-    if re.search(r"\b(\$|cop|pesos?)\s*\d+", normalizado) and not any(
-        term in normalizado for term in ["administracion", "validar", "verificar", "no encuentro"]
-    ):
-        return False, "valor_monetario_no_verificado"
+    tiene_validacion = any(term in normalizado for term in VALIDATION_HINT_TERMS)
+    patrones_exactos = [
+        r"\b(?:\$|cop|pesos?)\s*\d+",
+        r"\b\d[\d.,]*\s*(?:cop|pesos?)\b",
+        r"\b(?:[01]?\d|2[0-3]):[0-5]\d\b",
+        r"\b(?:\+?57\s*)?3\d{9}\b",
+        r"\b\d{1,2}/\d{1,2}/\d{2,4}\b",
+    ]
+    if any(re.search(patron, normalizado) for patron in patrones_exactos):
+        return False, "dato_exacto_no_verificado"
+    if not tiene_validacion:
+        return False, "sin_indicacion_de_validacion_administrativa"
+    if not any(term in normalizado for term in UNCERTAINTY_HINT_TERMS):
+        return False, "sin_reconocimiento_de_informacion_no_verificada"
     return True, "respuesta_validada"
 
 
