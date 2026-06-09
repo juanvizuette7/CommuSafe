@@ -6,11 +6,11 @@
 ![Backend](https://img.shields.io/badge/backend-Django%204.2-1A1A2E)
 ![API](https://img.shields.io/badge/API-REST%20%2B%20JWT-0F3460)
 ![Mobile](https://img.shields.io/badge/mobile-Flutter%20Android-E94560)
-![Deploy](https://img.shields.io/badge/deploy-Render%20%2B%20PostgreSQL-16213E)
+![Deploy](https://img.shields.io/badge/deploy-Render%20%2B%20Neon-16213E)
 
 CommuSafe es un sistema hiperlocal para apoyar la gestion de seguridad, convivencia y organizacion operativa del conjunto residencial Remansos del Norte. El producto permite registrar incidentes, adjuntar evidencias fotograficas, hacer seguimiento por estados, notificar a los actores correspondientes, emitir avisos comunitarios y consultar informacion mediante un asistente virtual especializado.
 
-El sistema esta construido como una solucion cliente-servidor: un backend Django expone una API REST segura, un panel web administrativo permite gestionar la operacion desde navegador y una aplicacion movil Flutter Android facilita el uso diario por residentes, vigilantes y administracion. El despliegue de produccion se realiza en Render con PostgreSQL y HTTPS automatico.
+El sistema esta construido como una solucion cliente-servidor: un backend Django expone una API REST segura, un panel web administrativo permite gestionar la operacion desde navegador y una aplicacion movil Flutter Android facilita el uso diario por residentes, vigilantes y administracion. En produccion, el backend Django y el panel web se alojan en Render con HTTPS automatico, mientras la base de datos PostgreSQL se aloja de forma administrada en Neon.
 
 ## Que Es CommuSafe
 
@@ -398,7 +398,7 @@ CommuSafe/
 
 ## Produccion
 
-Backend publicado:
+Backend y panel web alojados en Render:
 
 ```text
 https://commusafe.onrender.com
@@ -408,6 +408,12 @@ Health check:
 
 ```text
 GET https://commusafe.onrender.com/health/
+```
+
+Base de datos de produccion:
+
+```text
+PostgreSQL administrado en Neon mediante DATABASE_URL privada
 ```
 
 Configuracion de produccion:
@@ -582,7 +588,7 @@ El proyecto se desarrollo bajo el Modelo de Desarrollo Incremental. El sistema n
 | 2. Incidentes | Modelos, API, evidencias, historial y reglas de prioridad |
 | 3. Panel web y notificaciones | Dashboard, gestion web, avisos, notificaciones y FCM |
 | 4. App movil e IA | Flutter Android, perfil, incidentes, alertas, asistente y emergencias |
-| 5. Calidad y despliegue | Pruebas, refinamiento visual, Render, PostgreSQL y documentacion |
+| 5. Calidad y despliegue | Pruebas, refinamiento visual, backend en Render, PostgreSQL en Neon y documentacion |
 
 Cada incremento paso por analisis, diseno, implementacion, pruebas e integracion con lo ya construido. Esto permite demostrar avance verificable, trazabilidad tecnica y coherencia con la metodologia seleccionada para el trabajo de grado.
 
@@ -634,7 +640,7 @@ La camara del celular solo se usa para adjuntar evidencias fotograficas a report
 | Backend | Django REST Framework |
 | App movil | Flutter Android |
 | Panel web | Django Templates, Tailwind CSS y Alpine.js |
-| Produccion | Render, PostgreSQL y HTTPS |
+| Produccion | Backend y panel web en Render; PostgreSQL en Neon; HTTPS |
 | Ano | 2026 |
 
 ## Cierre
