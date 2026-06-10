@@ -13,5 +13,7 @@
   "proveedor_activo": "gemini",
   "modelo": "gemini-2.5-flash-lite",
   "arquitectura": "hibrida_local_primero",
-  "nota": "Muestra operativa real y pequena. Complementa, pero no reemplaza, la evaluacion controlada."
+  "alcance": "historico_no_verificable",
+  "valida_para_metricas_operativas": false,
+  "nota": "Snapshot historico capturado antes de separar consultas autenticadas y ejecuciones tecnicas. No debe citarse como metrica operativa valida."
 }

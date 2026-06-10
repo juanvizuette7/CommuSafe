@@ -26,7 +26,7 @@ La salida esperada actualmente es:
 
 ```text
 System check identified no issues
-79 passed, 14 subtests passed
+80 passed, 16 subtests passed
 ```
 
 La cantidad puede aumentar si se agregan nuevas pruebas. Lo importante es que no existan fallos.
@@ -34,7 +34,7 @@ La cantidad puede aumentar si se agregan nuevas pruebas. Lo importante es que no
 La regresión completa verificada para esta preparación fue:
 
 ```text
-208 passed, 20 subtests passed
+209 passed, 22 subtests passed
 ```
 
 ## Prevalidación completa
@@ -192,7 +192,7 @@ Mensaje sugerido:
 
 > Estas métricas provienen de los logs técnicos del asistente. El ahorro es una estimación interna para comparar estrategias, no una factura real del proveedor.
 
-Para mostrar métricas desde la API, iniciar sesión como administrador o vigilante y consultar:
+Para mostrar métricas desde la API, iniciar sesión como administrador y consultar:
 
 ```text
 GET /api/asistente/health/
@@ -225,6 +225,7 @@ La evidencia consolidada vigente registra:
 |---|---:|
 | Precisión micro en prueba reservada | 90.00 % |
 | F1 macro en prueba reservada | 91.82 % |
+| Precisión micro en holdout final no ajustado | 55.00 % |
 | Cobertura local directa | 61.67 % |
 | Dependencia de Gemini evitada | 95.00 % |
 | Respuestas directas incorrectas observadas | 0 |
@@ -232,7 +233,7 @@ La evidencia consolidada vigente registra:
 | Errores concurrentes | 0 |
 | Contaminaciones de caché | 0 |
 
-Estos resultados corresponden a los conjuntos y condiciones documentadas. No deben presentarse como garantía universal ni como sustituto de pruebas futuras con más usuarios reales.
+El challenge de desarrollo fue usado para corregir el motor y no debe presentarse como evidencia independiente. El holdout final no fue usado para ajustes posteriores. Estos resultados no son una garantía universal ni sustituyen pruebas futuras con usuarios reales.
 
 ## Orden de archivos para mostrar
 

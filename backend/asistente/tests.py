@@ -19,7 +19,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .knowledge_base import KNOWLEDGE_BASE_SECTIONS, render_knowledge_base
-from .evaluation import build_challenge_dataset, build_dataset, calibrate_thresholds
+from .evaluation import build_audit_holdout_dataset, build_challenge_dataset, build_dataset, calibrate_thresholds
 from .local_engine import (
     AMBIGUITY_MARGIN,
     HIGH_CONFIDENCE_THRESHOLD,
@@ -43,7 +43,10 @@ from .services import (
     MAX_LLM_HISTORY_CHARS,
     MAX_LLM_HISTORY_MESSAGES,
     SYSTEM_PROMPT,
+    _api_llm_configurada,
     _compactar_historial_para_ia,
+    _extraer_texto_anthropic,
+    _normalizar_historial,
     construir_system_prompt,
     generar_respuesta_asistente,
     metricas_uso_asistente,
@@ -58,7 +61,6 @@ from .training_dataset import (
     validate_professional_dataset,
 )
 from .taxonomy import MAIN_INTENTS, validate_taxonomy
-from .views import _api_llm_configurada, _extraer_texto_anthropic, _normalizar_historial, _respuesta_fallback
 from .views import ChatAsistenteView, ChatHealthView, ConversacionAsistenteViewSet
 
 
@@ -87,7 +89,7 @@ class ChatAsistenteFallbackTests(APITestCase):
             rol=Usuario.Rol.RESIDENTE,
         )
 
-    def test_responde_con_fallback_para_horarios(self):
+    def test_horario_no_verificado_orienta_a_administracion(self):
         self.client.force_authenticate(self.usuario)
         response = self.client.post(
             reverse("asistente:chat"),
@@ -100,7 +102,10 @@ class ChatAsistenteFallbackTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIn(response.data["modo"], {"local", "semantica", "aclaracion", "segura"})
-        self.assertIn("6:00", normalizar_texto(response.data["respuesta"]))
+        respuesta = normalizar_texto(response.data["respuesta"])
+        self.assertNotIn("6:00", respuesta)
+        self.assertIn("administracion", respuesta)
+        self.assertTrue(response.data["requiere_validacion"])
 
     def test_limita_historial_a_ultimos_ocho_mensajes(self):
         self.client.force_authenticate(self.usuario)
@@ -187,6 +192,24 @@ class ChatAsistenteFallbackTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["arquitectura"], "hibrida_local_primero")
         self.assertGreaterEqual(response.data["motor_local"]["total_faq"], 100)
+
+    def test_health_vigilante_no_expone_diagnostico_interno(self):
+        vigilante = Usuario.objects.create_user(
+            email="vigilante-health@test.com",
+            password="Segura2026*",
+            nombre="Vigilante",
+            apellido="Health",
+            unidad_residencial="Porteria",
+            rol=Usuario.Rol.VIGILANTE,
+        )
+
+        self.client.force_authenticate(vigilante)
+        response = self.client.get(reverse("asistente:health"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["estado"], "operativo")
+        self.assertNotIn("motor_local", response.data)
+        self.assertNotIn("politica_ia", response.data)
 
     def test_endpoints_declaran_throttling_del_asistente(self):
         self.assertEqual(ChatAsistenteView.throttle_classes, [AsistenteChatThrottle])
@@ -402,10 +425,6 @@ class ChatAsistenteHelpersTests(APITestCase):
 
         self.assertEqual(texto, "Linea 1\nLinea 2")
 
-    def test_respuesta_fallback_default(self):
-        texto = _respuesta_fallback("consulta completamente desconocida")
-        self.assertIn("solo puedo apoyar", normalizar_texto(texto))
-
     def test_base_conocimiento_incluye_contexto_operativo(self):
         contenido = normalizar_texto(render_knowledge_base())
 
@@ -416,6 +435,8 @@ class ChatAsistenteHelpersTests(APITestCase):
         self.assertIn("parqueaderos", contenido)
         self.assertIn("mascotas", contenido)
         self.assertIn("conversaciones del asistente quedan guardadas", contenido)
+        self.assertNotIn("8:00 a. m.", contenido)
+        self.assertNotIn("10:00 p. m. a 6:00 a. m.", contenido)
 
     def test_prompt_no_usa_marcadores_de_datos_no_reales(self):
         contenido = normalizar_texto(SYSTEM_PROMPT)
@@ -494,6 +515,10 @@ class ChatAsistenteHelpersTests(APITestCase):
     def test_servicio_flask_restringe_acceso_remoto_sin_clave(self):
         client = flask_app.test_client()
 
+        health_remoto = client.get(
+            "/v1/health",
+            environ_base={"REMOTE_ADDR": "203.0.113.10"},
+        )
         remoto = client.post(
             "/infer",
             json={"mensaje": "Como reporto un incidente?", "rol": "RESIDENTE"},
@@ -505,6 +530,9 @@ class ChatAsistenteHelpersTests(APITestCase):
             environ_base={"REMOTE_ADDR": "127.0.0.1"},
         )
 
+        self.assertEqual(health_remoto.status_code, 200)
+        self.assertNotIn("motor", health_remoto.json)
+        self.assertNotIn("cache", health_remoto.json)
         self.assertEqual(remoto.status_code, 403)
         self.assertEqual(local.status_code, 200)
         self.assertEqual(local.json["resultado"]["action"], "answer")
@@ -755,6 +783,20 @@ class ChatAsistenteHelpersTests(APITestCase):
         self.assertEqual(no_verificada["mode"], "segura")
         self.assertTrue(no_verificada["requires_validation"])
 
+        for consulta in [
+            "Cual es el horario de administracion?",
+            "Cual es el horario de descanso?",
+        ]:
+            with self.subTest(consulta=consulta):
+                pendiente = resolve_local_answer(consulta, "RESIDENTE")
+                self.assertEqual(pendiente["action"], "answer")
+                self.assertEqual(pendiente["mode"], "segura")
+                self.assertTrue(pendiente["requires_validation"])
+
+        politica_ambigua = resolve_local_answer("Que reglas aplican para visitantes?", "RESIDENTE")
+        self.assertIn(politica_ambigua["action"], {"answer", "clarify"})
+        self.assertTrue(politica_ambigua["requires_validation"])
+
         ambigua = resolve_local_answer("Tengo una duda con un reporte y una alerta", "RESIDENTE")
         self.assertIn(ambigua["action"], {"clarify", "fallback_allowed"})
         self.assertNotEqual(ambigua["action"], "answer")
@@ -820,6 +862,20 @@ class AsistenteTrainingDatasetTests(APITestCase):
             )
             self.assertEqual(conteo_split["test"], len(REQUIRED_STYLES) * SPLIT_RATIOS["test"], intent)
 
+    def test_holdout_auditoria_no_repite_dataset_ni_challenge(self):
+        splits = build_dataset(seed=42)
+        challenge = build_challenge_dataset()
+        holdout = build_audit_holdout_dataset()
+        textos_previos = {
+            normalize_text(example.text)
+            for examples in splits.values()
+            for example in examples
+        } | {normalize_text(example.text) for example in challenge}
+
+        self.assertEqual(len(holdout), 20)
+        self.assertEqual(len({normalize_text(example.text) for example in holdout}), 20)
+        self.assertFalse({normalize_text(example.text) for example in holdout} & textos_previos)
+
     def test_dataset_no_repite_frases_entre_particiones(self):
         splits = build_professional_dataset(seed=42)
         textos_vistos: dict[str, str] = {}
@@ -860,7 +916,7 @@ class AsistenteTrainingDatasetTests(APITestCase):
             len(MAIN_INTENTS) * len(REQUIRED_STYLES) * SPLIT_RATIOS["test"],
         )
 
-    def test_comparacion_modelos_selecciona_por_generalizacion(self):
+    def test_comparacion_modelos_selecciona_por_puntaje_interno(self):
         payload = train_compare_select_models(seed=42)
         seleccionado = payload["modelo_seleccionado"]
         ranking_ids = [row["id"] for row in payload["ranking"]]
@@ -1024,16 +1080,30 @@ class ChatAsistenteIAModeTests(APITestCase):
             tokens_salida=10,
             metadata={},
         )
+        AsistenteRespuestaLog.objects.create(
+            usuario=None,
+            mensaje="ejecucion tecnica",
+            modo=AsistenteRespuestaLog.Modo.IA,
+            proveedor="gemini",
+            tokens_entrada=500,
+            tokens_salida=100,
+            metadata={},
+        )
 
         metricas = metricas_uso_asistente(24)
+        metricas_con_sistema = metricas_uso_asistente(24, incluir_sistema=True)
 
         self.assertEqual(metricas["consultas_totales"], 3)
+        self.assertEqual(metricas["alcance"], "usuarios_autenticados")
         self.assertEqual(metricas["resueltas_sin_gemini"], 2)
         self.assertEqual(metricas["requieren_aclaracion"], 1)
         self.assertEqual(metricas["usan_ia_externa"], 1)
         self.assertEqual(metricas["usan_gemini"], 1)
         self.assertEqual(metricas["tokens_ia_estimados"], 60)
         self.assertEqual(metricas["tokens_ahorrados_estimados"], 180)
+        self.assertEqual(metricas_con_sistema["consultas_totales"], 4)
+        self.assertEqual(metricas_con_sistema["usan_gemini"], 2)
+        self.assertEqual(metricas_con_sistema["tokens_ia_estimados"], 660)
 
 
 @override_settings(LLM_API_KEY="", GEMINI_API_KEY="", LLM_PROVIDER="gemini")

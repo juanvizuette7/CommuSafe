@@ -108,6 +108,14 @@ def create_app() -> Flask:
     @app.get("/health")
     @app.get("/v1/health")
     def health():
+        if not _request_has_diagnostic_access():
+            return jsonify(
+                {
+                    "status": "ok",
+                    "servicio": "commusafe-nlp",
+                    "version_api": "v1",
+                }
+            )
         return jsonify(
             {
                 "status": "ok",
@@ -286,6 +294,14 @@ def _security_status() -> dict[str, Any]:
         "acceso_remoto_permitido": has_key,
         "politica": "clave_requerida_para_remoto" if has_key else "solo_localhost",
     }
+
+
+def _request_has_diagnostic_access() -> bool:
+    if request.remote_addr in LOCAL_REMOTE_ADDRS:
+        return True
+    expected_key = os.environ.get("COMMUSAFE_NLP_SERVICE_KEY", "").strip()
+    received = request.headers.get("X-CommuSafe-NLP-Key", "")
+    return bool(expected_key and hmac.compare_digest(received, expected_key))
 
 
 def _cache_stats() -> dict[str, Any]:

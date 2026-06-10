@@ -3,10 +3,10 @@
     "train": 480,
     "validation": 120,
     "test": 120,
-    "challenge": 7,
+    "challenge": 24,
     "intenciones": 20
   },
-  "criterio_seleccion": "El modelo se selecciona por puntaje de generalizacion ponderado (validation, test y challenge), penalizando sobreajuste y respuestas directas incorrectas. La precision de entrenamiento no decide la seleccion.",
+  "criterio_seleccion": "El modelo se selecciona por un puntaje interno ponderado de validation, test controlado y challenge de desarrollo, penalizando sobreajuste y respuestas directas incorrectas. Este puntaje sirve para comparar candidatos, pero no reemplaza el holdout final independiente.",
   "ranking": [
     {
       "id": "hibrido_produccion_kb",
@@ -17,11 +17,11 @@
         "medium_threshold": 0.28,
         "ambiguity_margin": 0.04
       },
-      "puntaje_generalizacion": 0.8053,
-      "sobreajuste_train_test": -0.0229,
+      "puntaje_generalizacion": 0.9021,
+      "sobreajuste_train_test": -0.0125,
       "validation_f1": 0.8583,
       "test_f1": 0.9,
-      "challenge_f1": 0.5714,
+      "challenge_f1": 0.9583,
       "directas_incorrectas_test": 0
     },
     {
@@ -33,11 +33,11 @@
         "medium_threshold": 0.18,
         "ambiguity_margin": 0.1
       },
-      "puntaje_generalizacion": 0.6566,
-      "sobreajuste_train_test": -0.0354,
-      "validation_f1": 0.65,
-      "test_f1": 0.7083,
-      "challenge_f1": 0.5714,
+      "puntaje_generalizacion": 0.6138,
+      "sobreajuste_train_test": -0.0334,
+      "validation_f1": 0.6583,
+      "test_f1": 0.7167,
+      "challenge_f1": 0.375,
       "directas_incorrectas_test": 0
     },
     {
@@ -49,43 +49,11 @@
         "medium_threshold": 0.18,
         "ambiguity_margin": 0.1
       },
-      "puntaje_generalizacion": 0.6553,
-      "sobreajuste_train_test": -0.0333,
-      "validation_f1": 0.6583,
-      "test_f1": 0.7,
-      "challenge_f1": 0.5714,
-      "directas_incorrectas_test": 0
-    },
-    {
-      "id": "ensamble_word_char_50",
-      "nombre": "Ensamble TF-IDF palabra/caracter 0.50/0.50",
-      "descripcion": "Combina clasificacion por palabras y n-gramas de caracteres para generalizar mejor ante preguntas nuevas y errores ortograficos.",
-      "configuracion": {
-        "high_threshold": 0.45,
-        "medium_threshold": 0.18,
-        "ambiguity_margin": 0.08
-      },
-      "puntaje_generalizacion": 0.6516,
-      "sobreajuste_train_test": -0.0209,
-      "validation_f1": 0.6583,
-      "test_f1": 0.6917,
-      "challenge_f1": 0.5714,
-      "directas_incorrectas_test": 0
-    },
-    {
-      "id": "tfidf_centroides_palabra",
-      "nombre": "TF-IDF centroides por palabra",
-      "descripcion": "Clasificador supervisado ligero por similitud a centroides de intencion.",
-      "configuracion": {
-        "high_threshold": 0.45,
-        "medium_threshold": 0.18,
-        "ambiguity_margin": 0.08
-      },
-      "puntaje_generalizacion": 0.6394,
-      "sobreajuste_train_test": 0.0062,
-      "validation_f1": 0.6583,
-      "test_f1": 0.6667,
-      "challenge_f1": 0.5714,
+      "puntaje_generalizacion": 0.6125,
+      "sobreajuste_train_test": -0.0312,
+      "validation_f1": 0.6667,
+      "test_f1": 0.7083,
+      "challenge_f1": 0.375,
       "directas_incorrectas_test": 0
     },
     {
@@ -97,11 +65,43 @@
         "medium_threshold": 0.18,
         "ambiguity_margin": 0.08
       },
-      "puntaje_generalizacion": 0.6196,
-      "sobreajuste_train_test": -0.025,
-      "validation_f1": 0.6583,
+      "puntaje_generalizacion": 0.6125,
+      "sobreajuste_train_test": -0.0229,
+      "validation_f1": 0.6667,
+      "test_f1": 0.7083,
+      "challenge_f1": 0.375,
+      "directas_incorrectas_test": 0
+    },
+    {
+      "id": "ensamble_word_char_50",
+      "nombre": "Ensamble TF-IDF palabra/caracter 0.50/0.50",
+      "descripcion": "Combina clasificacion por palabras y n-gramas de caracteres para generalizar mejor ante preguntas nuevas y errores ortograficos.",
+      "configuracion": {
+        "high_threshold": 0.45,
+        "medium_threshold": 0.18,
+        "ambiguity_margin": 0.08
+      },
+      "puntaje_generalizacion": 0.6088,
+      "sobreajuste_train_test": -0.0187,
+      "validation_f1": 0.6667,
       "test_f1": 0.7,
-      "challenge_f1": 0.4286,
+      "challenge_f1": 0.375,
+      "directas_incorrectas_test": 0
+    },
+    {
+      "id": "tfidf_centroides_palabra",
+      "nombre": "TF-IDF centroides por palabra",
+      "descripcion": "Clasificador supervisado ligero por similitud a centroides de intencion.",
+      "configuracion": {
+        "high_threshold": 0.45,
+        "medium_threshold": 0.18,
+        "ambiguity_margin": 0.08
+      },
+      "puntaje_generalizacion": 0.6067,
+      "sobreajuste_train_test": 0.0083,
+      "validation_f1": 0.6667,
+      "test_f1": 0.675,
+      "challenge_f1": 0.4167,
       "directas_incorrectas_test": 0
     },
     {
@@ -113,11 +113,11 @@
         "medium_threshold": 0.18,
         "ambiguity_margin": 0.08
       },
-      "puntaje_generalizacion": 0.6154,
-      "sobreajuste_train_test": -0.0083,
-      "validation_f1": 0.6,
-      "test_f1": 0.65,
-      "challenge_f1": 0.5714,
+      "puntaje_generalizacion": 0.5829,
+      "sobreajuste_train_test": -0.0104,
+      "validation_f1": 0.6083,
+      "test_f1": 0.6583,
+      "challenge_f1": 0.4167,
       "directas_incorrectas_test": 0
     }
   ],
@@ -130,11 +130,11 @@
       "medium_threshold": 0.28,
       "ambiguity_margin": 0.04
     },
-    "puntaje_generalizacion": 0.8053,
-    "sobreajuste_train_test": -0.0229,
+    "puntaje_generalizacion": 0.9021,
+    "sobreajuste_train_test": -0.0125,
     "validation_f1": 0.8583,
     "test_f1": 0.9,
-    "challenge_f1": 0.5714,
+    "challenge_f1": 0.9583,
     "directas_incorrectas_test": 0
   },
   "modelos": {
@@ -147,42 +147,42 @@
         "medium_threshold": 0.18,
         "ambiguity_margin": 0.08
       },
-      "puntaje_generalizacion": 0.6154,
-      "sobreajuste_train_test": -0.0083,
-      "validation_f1": 0.6,
-      "test_f1": 0.65,
-      "challenge_f1": 0.5714,
+      "puntaje_generalizacion": 0.5829,
+      "sobreajuste_train_test": -0.0104,
+      "validation_f1": 0.6083,
+      "test_f1": 0.6583,
+      "challenge_f1": 0.4167,
       "directas_incorrectas_test": 0,
       "metricas": {
         "train": {
           "total": 480,
-          "correctas": 308,
-          "precision_micro": 0.6417,
-          "recall_micro": 0.6417,
-          "f1_micro": 0.6417,
-          "cobertura_local": 0.4062,
-          "tasa_aclaracion": 0.3208,
-          "tasa_respuesta_segura": 0.2188,
-          "tasa_uso_ia_estimado": 0.0542,
+          "correctas": 311,
+          "precision_micro": 0.6479,
+          "recall_micro": 0.6479,
+          "f1_micro": 0.6479,
+          "cobertura_local": 0.4125,
+          "tasa_aclaracion": 0.3271,
+          "tasa_respuesta_segura": 0.1917,
+          "tasa_uso_ia_estimado": 0.0688,
           "respuestas_directas_incorrectas": 9,
-          "latencia_promedio_ms": 0.0766,
+          "latencia_promedio_ms": 0.1617,
           "matriz_confusion": {
             "acceso_sesion": {
               "sin_intencion_confiable": 8,
               "acceso_sesion": 16
             },
             "administracion_panel": {
-              "administracion_panel": 19,
+              "administracion_panel": 20,
               "clasificacion_incidente": 2,
               "convivencia_conflictos": 1,
-              "sin_intencion_confiable": 2
+              "sin_intencion_confiable": 1
             },
             "clasificacion_incidente": {
               "convivencia_conflictos": 3,
               "clasificacion_incidente": 15,
               "mantenimiento_infraestructura": 1,
               "emergencias": 3,
-              "sin_intencion_confiable": 1,
+              "funcionamiento_asistente": 1,
               "seguridad_control": 1
             },
             "convivencia_conflictos": {
@@ -198,7 +198,8 @@
             },
             "emergencias": {
               "emergencias": 19,
-              "sin_intencion_confiable": 5
+              "sin_intencion_confiable": 4,
+              "funcionamiento_asistente": 1
             },
             "funcionamiento_asistente": {
               "sin_intencion_confiable": 11,
@@ -212,20 +213,20 @@
               "acceso_sesion": 1
             },
             "gestion_notificaciones": {
-              "sin_intencion_confiable": 5,
-              "gestion_notificaciones": 17,
+              "gestion_notificaciones": 18,
+              "sin_intencion_confiable": 4,
               "reportar_incidente": 1,
               "convivencia_conflictos": 1
             },
             "mantenimiento_infraestructura": {
-              "mantenimiento_infraestructura": 11,
-              "sin_intencion_confiable": 11,
+              "mantenimiento_infraestructura": 15,
+              "sin_intencion_confiable": 7,
               "parqueaderos_vehiculos": 1,
               "funcionamiento_asistente": 1
             },
             "mascotas": {
-              "mascotas": 21,
-              "sin_intencion_confiable": 3
+              "mascotas": 22,
+              "sin_intencion_confiable": 2
             },
             "navegacion_app": {
               "gestion_avisos": 2,
@@ -255,15 +256,16 @@
               "convivencia_conflictos": 2
             },
             "seguimiento_incidente": {
-              "sin_intencion_confiable": 16,
+              "sin_intencion_confiable": 15,
               "reportar_incidente": 2,
               "administracion_panel": 1,
-              "seguimiento_incidente": 4,
+              "seguimiento_incidente": 5,
               "convivencia_conflictos": 1
             },
             "seguridad_control": {
-              "seguridad_control": 14,
-              "sin_intencion_confiable": 6,
+              "seguridad_control": 15,
+              "sin_intencion_confiable": 4,
+              "mantenimiento_infraestructura": 1,
               "parqueaderos_vehiculos": 2,
               "funcionamiento_asistente": 1,
               "convivencia_entorno": 1
@@ -273,8 +275,8 @@
               "funcionamiento_asistente": 1
             },
             "visitantes_ingresos": {
-              "visitantes_ingresos": 20,
-              "sin_intencion_confiable": 4
+              "visitantes_ingresos": 21,
+              "sin_intencion_confiable": 3
             }
           },
           "errores": [
@@ -341,12 +343,12 @@
             {
               "texto": "casos borrados",
               "esperada": "administracion_panel",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "administracion_panel",
+              "accion": "fallback_allowed",
+              "confianza": 0.0974,
+              "segunda": "seguimiento_incidente",
+              "confianza_segunda": 0.0246,
+              "metodo": "keyword_baseline_entrenado"
             },
             {
               "texto": "estado de cartera",
@@ -582,16 +584,16 @@
         },
         "validation": {
           "total": 120,
-          "correctas": 72,
-          "precision_micro": 0.6,
-          "recall_micro": 0.6,
-          "f1_micro": 0.6,
-          "cobertura_local": 0.325,
+          "correctas": 73,
+          "precision_micro": 0.6083,
+          "recall_micro": 0.6083,
+          "f1_micro": 0.6083,
+          "cobertura_local": 0.3333,
           "tasa_aclaracion": 0.3833,
-          "tasa_respuesta_segura": 0.25,
-          "tasa_uso_ia_estimado": 0.0417,
+          "tasa_respuesta_segura": 0.2167,
+          "tasa_uso_ia_estimado": 0.0667,
           "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.0683,
+          "latencia_promedio_ms": 0.1464,
           "matriz_confusion": {
             "acceso_sesion": {
               "acceso_sesion": 3,
@@ -636,13 +638,11 @@
             },
             "mantenimiento_infraestructura": {
               "convivencia_entorno": 1,
-              "mantenimiento_infraestructura": 3,
-              "sin_intencion_confiable": 1,
+              "mantenimiento_infraestructura": 4,
               "funcionamiento_asistente": 1
             },
             "mascotas": {
-              "mascotas": 5,
-              "sin_intencion_confiable": 1
+              "mascotas": 6
             },
             "navegacion_app": {
               "gestion_avisos": 1,
@@ -652,7 +652,7 @@
             },
             "parqueaderos_vehiculos": {
               "parqueaderos_vehiculos": 5,
-              "sin_intencion_confiable": 1
+              "seguridad_control": 1
             },
             "perfil_preferencias": {
               "perfil_preferencias": 4,
@@ -667,8 +667,9 @@
               "privacidad_conversaciones": 1
             },
             "seguimiento_incidente": {
-              "sin_intencion_confiable": 4,
-              "reportar_incidente": 2
+              "sin_intencion_confiable": 3,
+              "reportar_incidente": 2,
+              "seguimiento_incidente": 1
             },
             "seguridad_control": {
               "seguridad_control": 4,
@@ -888,12 +889,12 @@
             {
               "texto": "eliminar caso",
               "esperada": "seguimiento_incidente",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "seguimiento_incidente",
+              "accion": "fallback_allowed",
+              "confianza": 0.0697,
+              "segunda": "administracion_panel",
+              "confianza_segunda": 0.0344,
+              "metodo": "keyword_baseline_entrenado"
             },
             {
               "texto": "zona comun o privado",
@@ -904,16 +905,6 @@
               "segunda": "mantenimiento_infraestructura",
               "confianza_segunda": 0.1353,
               "metodo": "keyword_baseline_entrenado"
-            },
-            {
-              "texto": "Ey, tengo duda con puerta, como reporto una puerta con falla?",
-              "esperada": "mantenimiento_infraestructura",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
             },
             {
               "texto": "No entiendo lo de privado y comun, que hago?",
@@ -928,12 +919,12 @@
             {
               "texto": "perro agresivo",
               "esperada": "mascotas",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
+              "predicha": "mascotas",
+              "accion": "fallback_allowed",
+              "confianza": 0.0219,
+              "segunda": "administracion_panel",
               "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "metodo": "keyword_baseline_entrenado"
             },
             {
               "texto": "panel abrir notificacion",
@@ -978,27 +969,37 @@
             {
               "texto": "carro en mi lugar",
               "esperada": "parqueaderos_vehiculos",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
+              "predicha": "seguridad_control",
+              "accion": "fallback_allowed",
+              "confianza": 0.0318,
+              "segunda": "administracion_panel",
               "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "metodo": "keyword_baseline_entrenado"
+            },
+            {
+              "texto": "huele a gas",
+              "esperada": "emergencias",
+              "predicha": "emergencias",
+              "accion": "fallback_allowed",
+              "confianza": 0.1655,
+              "segunda": "clasificacion_incidente",
+              "confianza_segunda": 0.1021,
+              "metodo": "keyword_baseline_entrenado"
             }
           ]
         },
         "test": {
           "total": 120,
-          "correctas": 78,
-          "precision_micro": 0.65,
-          "recall_micro": 0.65,
-          "f1_micro": 0.65,
-          "cobertura_local": 0.35,
+          "correctas": 79,
+          "precision_micro": 0.6583,
+          "recall_micro": 0.6583,
+          "f1_micro": 0.6583,
+          "cobertura_local": 0.3583,
           "tasa_aclaracion": 0.425,
-          "tasa_respuesta_segura": 0.1667,
-          "tasa_uso_ia_estimado": 0.0583,
+          "tasa_respuesta_segura": 0.15,
+          "tasa_uso_ia_estimado": 0.0667,
           "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.0707,
+          "latencia_promedio_ms": 0.1968,
           "matriz_confusion": {
             "acceso_sesion": {
               "acceso_sesion": 5,
@@ -1043,8 +1044,8 @@
               "funcionamiento_asistente": 1
             },
             "mantenimiento_infraestructura": {
-              "mantenimiento_infraestructura": 4,
-              "sin_intencion_confiable": 2
+              "mantenimiento_infraestructura": 5,
+              "sin_intencion_confiable": 1
             },
             "mascotas": {
               "mascotas": 6
@@ -1055,7 +1056,7 @@
             },
             "parqueaderos_vehiculos": {
               "parqueaderos_vehiculos": 5,
-              "sin_intencion_confiable": 1
+              "seguridad_control": 1
             },
             "perfil_preferencias": {
               "perfil_preferencias": 4,
@@ -1272,16 +1273,6 @@
               "metodo": "fuera_de_dominio"
             },
             {
-              "texto": "Como reporto una puerta con falla?",
-              "esperada": "mantenimiento_infraestructura",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
-            },
-            {
               "texto": "sin iluminacion",
               "esperada": "mantenimiento_infraestructura",
               "predicha": "sin_intencion_confiable",
@@ -1344,12 +1335,12 @@
             {
               "texto": "carro bloqueando",
               "esperada": "parqueaderos_vehiculos",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
+              "predicha": "seguridad_control",
+              "accion": "fallback_allowed",
+              "confianza": 0.0318,
+              "segunda": "administracion_panel",
               "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "metodo": "keyword_baseline_entrenado"
             },
             {
               "texto": "enfrentar persona",
@@ -1390,34 +1381,73 @@
               "segunda": "",
               "confianza_segunda": 0.0,
               "metodo": "fuera_de_dominio"
+            },
+            {
+              "texto": "Como reporto cerraduras danadas o forzadas?",
+              "esperada": "seguridad_control",
+              "predicha": "mantenimiento_infraestructura",
+              "accion": "clarify",
+              "confianza": 0.2304,
+              "segunda": "seguridad_control",
+              "confianza_segunda": 0.2039,
+              "metodo": "keyword_baseline_entrenado"
             }
           ]
         },
         "challenge": {
-          "total": 7,
-          "correctas": 4,
-          "precision_micro": 0.5714,
-          "recall_micro": 0.5714,
-          "f1_micro": 0.5714,
-          "cobertura_local": 0.0,
-          "tasa_aclaracion": 0.2857,
-          "tasa_respuesta_segura": 0.4286,
-          "tasa_uso_ia_estimado": 0.2857,
+          "total": 24,
+          "correctas": 10,
+          "precision_micro": 0.4167,
+          "recall_micro": 0.4167,
+          "f1_micro": 0.4167,
+          "cobertura_local": 0.0417,
+          "tasa_aclaracion": 0.25,
+          "tasa_respuesta_segura": 0.2917,
+          "tasa_uso_ia_estimado": 0.4167,
           "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.0652,
+          "latencia_promedio_ms": 0.1416,
           "matriz_confusion": {
+            "acceso_sesion": {
+              "administracion_panel": 1
+            },
+            "convivencia_conflictos": {
+              "convivencia_conflictos": 1
+            },
+            "gestion_notificaciones": {
+              "seguimiento_incidente": 1
+            },
+            "mantenimiento_infraestructura": {
+              "mantenimiento_infraestructura": 2
+            },
+            "mascotas": {
+              "mascotas": 1,
+              "convivencia_conflictos": 1
+            },
+            "parqueaderos_vehiculos": {
+              "seguridad_control": 1
+            },
+            "reportar_incidente": {
+              "administracion_panel": 1
+            },
             "seguimiento_incidente": {
-              "reportar_incidente": 1
+              "reportar_incidente": 1,
+              "convivencia_entorno": 1
+            },
+            "seguridad_control": {
+              "emergencias": 1
             },
             "sin_intencion_confiable": {
-              "sin_intencion_confiable": 3
+              "sin_intencion_confiable": 6
             },
             "tramites_administrativos": {
               "convivencia_conflictos": 1,
-              "administracion_panel": 1
+              "administracion_panel": 1,
+              "gestion_avisos": 1,
+              "tramites_administrativos": 1
             },
             "visitantes_ingresos": {
-              "visitantes_ingresos": 1
+              "visitantes_ingresos": 1,
+              "sin_intencion_confiable": 1
             }
           },
           "errores": [
@@ -1429,6 +1459,96 @@
               "confianza": 0.2769,
               "segunda": "convivencia_conflictos",
               "confianza_segunda": 0.2236,
+              "metodo": "keyword_baseline_entrenado"
+            },
+            {
+              "texto": "mande un caso hace dias y sigo sin saber que paso",
+              "esperada": "seguimiento_incidente",
+              "predicha": "convivencia_entorno",
+              "accion": "fallback_allowed",
+              "confianza": 0.0725,
+              "segunda": "seguimiento_incidente",
+              "confianza_segunda": 0.0697,
+              "metodo": "keyword_baseline_entrenado"
+            },
+            {
+              "texto": "se metio alguien que nadie reconoce por la entrada",
+              "esperada": "seguridad_control",
+              "predicha": "emergencias",
+              "accion": "fallback_allowed",
+              "confianza": 0.0349,
+              "segunda": "gestion_avisos",
+              "confianza_segunda": 0.0203,
+              "metodo": "keyword_baseline_entrenado"
+            },
+            {
+              "texto": "la luz del corredor lleva varias noches sin prender",
+              "esperada": "mantenimiento_infraestructura",
+              "predicha": "mantenimiento_infraestructura",
+              "accion": "fallback_allowed",
+              "confianza": 0.0313,
+              "segunda": "clasificacion_incidente",
+              "confianza_segunda": 0.0241,
+              "metodo": "keyword_baseline_entrenado"
+            },
+            {
+              "texto": "el perro de un vecino anda suelto y asusta a los ninos",
+              "esperada": "mascotas",
+              "predicha": "convivencia_conflictos",
+              "accion": "fallback_allowed",
+              "confianza": 0.1268,
+              "segunda": "clasificacion_incidente",
+              "confianza_segunda": 0.0273,
+              "metodo": "keyword_baseline_entrenado"
+            },
+            {
+              "texto": "quiero avisar que volvieron a dejar un carro tapando la salida",
+              "esperada": "parqueaderos_vehiculos",
+              "predicha": "seguridad_control",
+              "accion": "fallback_allowed",
+              "confianza": 0.017,
+              "segunda": "administracion_panel",
+              "confianza_segunda": 0.0,
+              "metodo": "keyword_baseline_entrenado"
+            },
+            {
+              "texto": "me aparecio una campana con un numero y no se que significa",
+              "esperada": "gestion_notificaciones",
+              "predicha": "seguimiento_incidente",
+              "accion": "clarify",
+              "confianza": 0.2644,
+              "segunda": "gestion_notificaciones",
+              "confianza_segunda": 0.1741,
+              "metodo": "keyword_baseline_entrenado"
+            },
+            {
+              "texto": "como le hago para que autoricen a la persona que viene a arreglar algo",
+              "esperada": "visitantes_ingresos",
+              "predicha": "sin_intencion_confiable",
+              "accion": "safe",
+              "confianza": 0.0,
+              "segunda": "",
+              "confianza_segunda": 0.0,
+              "metodo": "fuera_de_dominio"
+            },
+            {
+              "texto": "no recuerdo con cual usuario debo entrar",
+              "esperada": "acceso_sesion",
+              "predicha": "administracion_panel",
+              "accion": "clarify",
+              "confianza": 0.2177,
+              "segunda": "acceso_sesion",
+              "confianza_segunda": 0.1899,
+              "metodo": "keyword_baseline_entrenado"
+            },
+            {
+              "texto": "quiero dejar constancia de algo urgente que acaba de pasar",
+              "esperada": "reportar_incidente",
+              "predicha": "administracion_panel",
+              "accion": "fallback_allowed",
+              "confianza": 0.0,
+              "segunda": "tramites_administrativos",
+              "confianza_segunda": 0.0,
               "metodo": "keyword_baseline_entrenado"
             },
             {
@@ -1450,6 +1570,26 @@
               "segunda": "tramites_administrativos",
               "confianza_segunda": 0.0306,
               "metodo": "keyword_baseline_entrenado"
+            },
+            {
+              "texto": "a que hora exacta abre manana la oficina",
+              "esperada": "tramites_administrativos",
+              "predicha": "gestion_avisos",
+              "accion": "fallback_allowed",
+              "confianza": 0.0407,
+              "segunda": "tramites_administrativos",
+              "confianza_segunda": 0.0237,
+              "metodo": "keyword_baseline_entrenado"
+            },
+            {
+              "texto": "dime cuanto debo pagar este mes",
+              "esperada": "tramites_administrativos",
+              "predicha": "tramites_administrativos",
+              "accion": "fallback_allowed",
+              "confianza": 0.0712,
+              "segunda": "seguridad_control",
+              "confianza_segunda": 0.0603,
+              "metodo": "keyword_baseline_entrenado"
             }
           ]
         }
@@ -1464,42 +1604,41 @@
         "medium_threshold": 0.18,
         "ambiguity_margin": 0.08
       },
-      "puntaje_generalizacion": 0.6394,
-      "sobreajuste_train_test": 0.0062,
-      "validation_f1": 0.6583,
-      "test_f1": 0.6667,
-      "challenge_f1": 0.5714,
+      "puntaje_generalizacion": 0.6067,
+      "sobreajuste_train_test": 0.0083,
+      "validation_f1": 0.6667,
+      "test_f1": 0.675,
+      "challenge_f1": 0.4167,
       "directas_incorrectas_test": 0,
       "metricas": {
         "train": {
           "total": 480,
-          "correctas": 323,
-          "precision_micro": 0.6729,
-          "recall_micro": 0.6729,
-          "f1_micro": 0.6729,
-          "cobertura_local": 0.3688,
-          "tasa_aclaracion": 0.3479,
-          "tasa_respuesta_segura": 0.2188,
-          "tasa_uso_ia_estimado": 0.0646,
+          "correctas": 328,
+          "precision_micro": 0.6833,
+          "recall_micro": 0.6833,
+          "f1_micro": 0.6833,
+          "cobertura_local": 0.375,
+          "tasa_aclaracion": 0.3542,
+          "tasa_respuesta_segura": 0.1917,
+          "tasa_uso_ia_estimado": 0.0792,
           "respuestas_directas_incorrectas": 4,
-          "latencia_promedio_ms": 0.0727,
+          "latencia_promedio_ms": 0.1136,
           "matriz_confusion": {
             "acceso_sesion": {
               "sin_intencion_confiable": 8,
               "acceso_sesion": 16
             },
             "administracion_panel": {
-              "administracion_panel": 20,
+              "administracion_panel": 21,
               "clasificacion_incidente": 1,
               "convivencia_conflictos": 1,
-              "sin_intencion_confiable": 2
+              "sin_intencion_confiable": 1
             },
             "clasificacion_incidente": {
               "convivencia_conflictos": 3,
-              "clasificacion_incidente": 16,
+              "clasificacion_incidente": 17,
               "mantenimiento_infraestructura": 1,
               "emergencias": 2,
-              "sin_intencion_confiable": 1,
               "seguridad_control": 1
             },
             "convivencia_conflictos": {
@@ -1513,8 +1652,8 @@
               "sin_intencion_confiable": 5
             },
             "emergencias": {
-              "emergencias": 19,
-              "sin_intencion_confiable": 5
+              "emergencias": 20,
+              "sin_intencion_confiable": 4
             },
             "funcionamiento_asistente": {
               "sin_intencion_confiable": 11,
@@ -1527,19 +1666,19 @@
               "acceso_sesion": 1
             },
             "gestion_notificaciones": {
-              "sin_intencion_confiable": 5,
-              "gestion_notificaciones": 17,
+              "gestion_notificaciones": 18,
+              "sin_intencion_confiable": 4,
               "reportar_incidente": 1,
               "convivencia_conflictos": 1
             },
             "mantenimiento_infraestructura": {
-              "mantenimiento_infraestructura": 12,
-              "sin_intencion_confiable": 11,
+              "mantenimiento_infraestructura": 16,
+              "sin_intencion_confiable": 7,
               "visitantes_ingresos": 1
             },
             "mascotas": {
-              "mascotas": 21,
-              "sin_intencion_confiable": 3
+              "mascotas": 22,
+              "sin_intencion_confiable": 2
             },
             "navegacion_app": {
               "gestion_avisos": 2,
@@ -1567,14 +1706,15 @@
               "convivencia_conflictos": 1
             },
             "seguimiento_incidente": {
-              "sin_intencion_confiable": 16,
-              "seguimiento_incidente": 6,
+              "sin_intencion_confiable": 15,
+              "seguimiento_incidente": 7,
               "reportar_incidente": 1,
               "convivencia_conflictos": 1
             },
             "seguridad_control": {
-              "seguridad_control": 16,
-              "sin_intencion_confiable": 6,
+              "seguridad_control": 17,
+              "sin_intencion_confiable": 4,
+              "mantenimiento_infraestructura": 1,
               "parqueaderos_vehiculos": 1,
               "convivencia_entorno": 1
             },
@@ -1582,8 +1722,8 @@
               "tramites_administrativos": 24
             },
             "visitantes_ingresos": {
-              "visitantes_ingresos": 20,
-              "sin_intencion_confiable": 4
+              "visitantes_ingresos": 21,
+              "sin_intencion_confiable": 3
             }
           },
           "errores": [
@@ -1640,12 +1780,12 @@
             {
               "texto": "casos borrados",
               "esperada": "administracion_panel",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "administracion_panel",
+              "accion": "fallback_allowed",
+              "confianza": 0.1293,
+              "segunda": "seguimiento_incidente",
+              "confianza_segunda": 0.0313,
+              "metodo": "tfidf_centroides_palabra"
             },
             {
               "texto": "estado de cartera",
@@ -1891,16 +2031,16 @@
         },
         "validation": {
           "total": 120,
-          "correctas": 79,
-          "precision_micro": 0.6583,
-          "recall_micro": 0.6583,
-          "f1_micro": 0.6583,
-          "cobertura_local": 0.3167,
+          "correctas": 80,
+          "precision_micro": 0.6667,
+          "recall_micro": 0.6667,
+          "f1_micro": 0.6667,
+          "cobertura_local": 0.325,
           "tasa_aclaracion": 0.3917,
-          "tasa_respuesta_segura": 0.25,
-          "tasa_uso_ia_estimado": 0.0417,
+          "tasa_respuesta_segura": 0.2167,
+          "tasa_uso_ia_estimado": 0.0667,
           "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.0652,
+          "latencia_promedio_ms": 0.1048,
           "matriz_confusion": {
             "acceso_sesion": {
               "acceso_sesion": 3,
@@ -1943,12 +2083,10 @@
             },
             "mantenimiento_infraestructura": {
               "convivencia_entorno": 1,
-              "mantenimiento_infraestructura": 4,
-              "sin_intencion_confiable": 1
+              "mantenimiento_infraestructura": 5
             },
             "mascotas": {
-              "mascotas": 5,
-              "sin_intencion_confiable": 1
+              "mascotas": 6
             },
             "navegacion_app": {
               "gestion_avisos": 1,
@@ -1956,7 +2094,7 @@
             },
             "parqueaderos_vehiculos": {
               "parqueaderos_vehiculos": 5,
-              "sin_intencion_confiable": 1
+              "seguridad_control": 1
             },
             "perfil_preferencias": {
               "perfil_preferencias": 4,
@@ -1971,8 +2109,8 @@
               "privacidad_conversaciones": 1
             },
             "seguimiento_incidente": {
-              "sin_intencion_confiable": 4,
-              "seguimiento_incidente": 1,
+              "sin_intencion_confiable": 3,
+              "seguimiento_incidente": 2,
               "reportar_incidente": 1
             },
             "seguridad_control": {
@@ -2162,12 +2300,12 @@
             {
               "texto": "eliminar caso",
               "esperada": "seguimiento_incidente",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "seguimiento_incidente",
+              "accion": "fallback_allowed",
+              "confianza": 0.096,
+              "segunda": "administracion_panel",
+              "confianza_segunda": 0.0421,
+              "metodo": "tfidf_centroides_palabra"
             },
             {
               "texto": "zona comun o privado",
@@ -2180,24 +2318,14 @@
               "metodo": "tfidf_centroides_palabra"
             },
             {
-              "texto": "Ey, tengo duda con puerta, como reporto una puerta con falla?",
-              "esperada": "mantenimiento_infraestructura",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
-            },
-            {
               "texto": "perro agresivo",
               "esperada": "mascotas",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
+              "predicha": "mascotas",
+              "accion": "fallback_allowed",
+              "confianza": 0.046,
+              "segunda": "administracion_panel",
               "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "metodo": "tfidf_centroides_palabra"
             },
             {
               "texto": "panel abrir notificacion",
@@ -2242,12 +2370,12 @@
             {
               "texto": "carro en mi lugar",
               "esperada": "parqueaderos_vehiculos",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
+              "predicha": "seguridad_control",
+              "accion": "fallback_allowed",
+              "confianza": 0.062,
+              "segunda": "administracion_panel",
               "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "metodo": "tfidf_centroides_palabra"
             },
             {
               "texto": "No entiendo lo de accidente y herida, que hago?",
@@ -2288,21 +2416,31 @@
               "segunda": "privacidad_conversaciones",
               "confianza_segunda": 0.1241,
               "metodo": "tfidf_centroides_palabra"
+            },
+            {
+              "texto": "q hago si olvide mi contrasena",
+              "esperada": "acceso_sesion",
+              "predicha": "sin_intencion_confiable",
+              "accion": "safe",
+              "confianza": 0.0,
+              "segunda": "",
+              "confianza_segunda": 0.0,
+              "metodo": "fuera_de_dominio"
             }
           ]
         },
         "test": {
           "total": 120,
-          "correctas": 80,
-          "precision_micro": 0.6667,
-          "recall_micro": 0.6667,
-          "f1_micro": 0.6667,
-          "cobertura_local": 0.35,
+          "correctas": 81,
+          "precision_micro": 0.675,
+          "recall_micro": 0.675,
+          "f1_micro": 0.675,
+          "cobertura_local": 0.3583,
           "tasa_aclaracion": 0.3917,
-          "tasa_respuesta_segura": 0.1667,
-          "tasa_uso_ia_estimado": 0.0917,
+          "tasa_respuesta_segura": 0.15,
+          "tasa_uso_ia_estimado": 0.1,
           "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.0855,
+          "latencia_promedio_ms": 0.102,
           "matriz_confusion": {
             "acceso_sesion": {
               "acceso_sesion": 5,
@@ -2344,8 +2482,8 @@
               "gestion_notificaciones": 6
             },
             "mantenimiento_infraestructura": {
-              "mantenimiento_infraestructura": 4,
-              "sin_intencion_confiable": 2
+              "mantenimiento_infraestructura": 5,
+              "sin_intencion_confiable": 1
             },
             "mascotas": {
               "mascotas": 6
@@ -2356,7 +2494,7 @@
             },
             "parqueaderos_vehiculos": {
               "parqueaderos_vehiculos": 5,
-              "sin_intencion_confiable": 1
+              "seguridad_control": 1
             },
             "perfil_preferencias": {
               "perfil_preferencias": 4,
@@ -2571,16 +2709,6 @@
               "metodo": "fuera_de_dominio"
             },
             {
-              "texto": "Como reporto una puerta con falla?",
-              "esperada": "mantenimiento_infraestructura",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
-            },
-            {
               "texto": "sin iluminacion",
               "esperada": "mantenimiento_infraestructura",
               "predicha": "sin_intencion_confiable",
@@ -2653,12 +2781,12 @@
             {
               "texto": "carro bloqueando",
               "esperada": "parqueaderos_vehiculos",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
+              "predicha": "seguridad_control",
+              "accion": "fallback_allowed",
+              "confianza": 0.062,
+              "segunda": "administracion_panel",
               "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "metodo": "tfidf_centroides_palabra"
             },
             {
               "texto": "enfrentar persona",
@@ -2689,34 +2817,73 @@
               "segunda": "",
               "confianza_segunda": 0.0,
               "metodo": "fuera_de_dominio"
+            },
+            {
+              "texto": "perdi el acceso en uso sistema",
+              "esperada": "acceso_sesion",
+              "predicha": "privacidad_conversaciones",
+              "accion": "fallback_allowed",
+              "confianza": 0.1091,
+              "segunda": "acceso_sesion",
+              "confianza_segunda": 0.0698,
+              "metodo": "tfidf_centroides_palabra"
             }
           ]
         },
         "challenge": {
-          "total": 7,
-          "correctas": 4,
-          "precision_micro": 0.5714,
-          "recall_micro": 0.5714,
-          "f1_micro": 0.5714,
+          "total": 24,
+          "correctas": 10,
+          "precision_micro": 0.4167,
+          "recall_micro": 0.4167,
+          "f1_micro": 0.4167,
           "cobertura_local": 0.0,
-          "tasa_aclaracion": 0.2857,
-          "tasa_respuesta_segura": 0.4286,
-          "tasa_uso_ia_estimado": 0.2857,
+          "tasa_aclaracion": 0.3333,
+          "tasa_respuesta_segura": 0.2917,
+          "tasa_uso_ia_estimado": 0.375,
           "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.06,
+          "latencia_promedio_ms": 0.1055,
           "matriz_confusion": {
+            "acceso_sesion": {
+              "administracion_panel": 1
+            },
+            "convivencia_conflictos": {
+              "convivencia_conflictos": 1
+            },
+            "gestion_notificaciones": {
+              "seguimiento_incidente": 1
+            },
+            "mantenimiento_infraestructura": {
+              "mantenimiento_infraestructura": 2
+            },
+            "mascotas": {
+              "mascotas": 1,
+              "convivencia_conflictos": 1
+            },
+            "parqueaderos_vehiculos": {
+              "seguridad_control": 1
+            },
+            "reportar_incidente": {
+              "administracion_panel": 1
+            },
             "seguimiento_incidente": {
-              "reportar_incidente": 1
+              "reportar_incidente": 1,
+              "parqueaderos_vehiculos": 1
+            },
+            "seguridad_control": {
+              "emergencias": 1
             },
             "sin_intencion_confiable": {
-              "sin_intencion_confiable": 3
+              "sin_intencion_confiable": 6
             },
             "tramites_administrativos": {
               "convivencia_conflictos": 1,
-              "administracion_panel": 1
+              "administracion_panel": 1,
+              "gestion_avisos": 1,
+              "tramites_administrativos": 1
             },
             "visitantes_ingresos": {
-              "visitantes_ingresos": 1
+              "visitantes_ingresos": 1,
+              "sin_intencion_confiable": 1
             }
           },
           "errores": [
@@ -2728,6 +2895,96 @@
               "confianza": 0.2149,
               "segunda": "convivencia_conflictos",
               "confianza_segunda": 0.1729,
+              "metodo": "tfidf_centroides_palabra"
+            },
+            {
+              "texto": "mande un caso hace dias y sigo sin saber que paso",
+              "esperada": "seguimiento_incidente",
+              "predicha": "parqueaderos_vehiculos",
+              "accion": "fallback_allowed",
+              "confianza": 0.0736,
+              "segunda": "convivencia_entorno",
+              "confianza_segunda": 0.0674,
+              "metodo": "tfidf_centroides_palabra"
+            },
+            {
+              "texto": "se metio alguien que nadie reconoce por la entrada",
+              "esperada": "seguridad_control",
+              "predicha": "emergencias",
+              "accion": "fallback_allowed",
+              "confianza": 0.0634,
+              "segunda": "visitantes_ingresos",
+              "confianza_segunda": 0.0394,
+              "metodo": "tfidf_centroides_palabra"
+            },
+            {
+              "texto": "la luz del corredor lleva varias noches sin prender",
+              "esperada": "mantenimiento_infraestructura",
+              "predicha": "mantenimiento_infraestructura",
+              "accion": "fallback_allowed",
+              "confianza": 0.098,
+              "segunda": "clasificacion_incidente",
+              "confianza_segunda": 0.0834,
+              "metodo": "tfidf_centroides_palabra"
+            },
+            {
+              "texto": "el perro de un vecino anda suelto y asusta a los ninos",
+              "esperada": "mascotas",
+              "predicha": "convivencia_conflictos",
+              "accion": "clarify",
+              "confianza": 0.1923,
+              "segunda": "clasificacion_incidente",
+              "confianza_segunda": 0.0492,
+              "metodo": "tfidf_centroides_palabra"
+            },
+            {
+              "texto": "quiero avisar que volvieron a dejar un carro tapando la salida",
+              "esperada": "parqueaderos_vehiculos",
+              "predicha": "seguridad_control",
+              "accion": "fallback_allowed",
+              "confianza": 0.0587,
+              "segunda": "administracion_panel",
+              "confianza_segunda": 0.0,
+              "metodo": "tfidf_centroides_palabra"
+            },
+            {
+              "texto": "me aparecio una campana con un numero y no se que significa",
+              "esperada": "gestion_notificaciones",
+              "predicha": "seguimiento_incidente",
+              "accion": "clarify",
+              "confianza": 0.2415,
+              "segunda": "gestion_notificaciones",
+              "confianza_segunda": 0.2064,
+              "metodo": "tfidf_centroides_palabra"
+            },
+            {
+              "texto": "como le hago para que autoricen a la persona que viene a arreglar algo",
+              "esperada": "visitantes_ingresos",
+              "predicha": "sin_intencion_confiable",
+              "accion": "safe",
+              "confianza": 0.0,
+              "segunda": "",
+              "confianza_segunda": 0.0,
+              "metodo": "fuera_de_dominio"
+            },
+            {
+              "texto": "no recuerdo con cual usuario debo entrar",
+              "esperada": "acceso_sesion",
+              "predicha": "administracion_panel",
+              "accion": "clarify",
+              "confianza": 0.1961,
+              "segunda": "seguridad_control",
+              "confianza_segunda": 0.1408,
+              "metodo": "tfidf_centroides_palabra"
+            },
+            {
+              "texto": "quiero dejar constancia de algo urgente que acaba de pasar",
+              "esperada": "reportar_incidente",
+              "predicha": "administracion_panel",
+              "accion": "fallback_allowed",
+              "confianza": 0.0,
+              "segunda": "tramites_administrativos",
+              "confianza_segunda": 0.0,
               "metodo": "tfidf_centroides_palabra"
             },
             {
@@ -2749,6 +3006,26 @@
               "segunda": "tramites_administrativos",
               "confianza_segunda": 0.0446,
               "metodo": "tfidf_centroides_palabra"
+            },
+            {
+              "texto": "a que hora exacta abre manana la oficina",
+              "esperada": "tramites_administrativos",
+              "predicha": "gestion_avisos",
+              "accion": "fallback_allowed",
+              "confianza": 0.0767,
+              "segunda": "tramites_administrativos",
+              "confianza_segunda": 0.0485,
+              "metodo": "tfidf_centroides_palabra"
+            },
+            {
+              "texto": "dime cuanto debo pagar este mes",
+              "esperada": "tramites_administrativos",
+              "predicha": "tramites_administrativos",
+              "accion": "fallback_allowed",
+              "confianza": 0.1093,
+              "segunda": "seguridad_control",
+              "confianza_segunda": 0.0746,
+              "metodo": "tfidf_centroides_palabra"
             }
           ]
         }
@@ -2763,43 +3040,42 @@
         "medium_threshold": 0.18,
         "ambiguity_margin": 0.1
       },
-      "puntaje_generalizacion": 0.6553,
-      "sobreajuste_train_test": -0.0333,
-      "validation_f1": 0.6583,
-      "test_f1": 0.7,
-      "challenge_f1": 0.5714,
+      "puntaje_generalizacion": 0.6125,
+      "sobreajuste_train_test": -0.0312,
+      "validation_f1": 0.6667,
+      "test_f1": 0.7083,
+      "challenge_f1": 0.375,
       "directas_incorrectas_test": 0,
       "metricas": {
         "train": {
           "total": 480,
-          "correctas": 320,
-          "precision_micro": 0.6667,
-          "recall_micro": 0.6667,
-          "f1_micro": 0.6667,
-          "cobertura_local": 0.3604,
-          "tasa_aclaracion": 0.3542,
-          "tasa_respuesta_segura": 0.2188,
-          "tasa_uso_ia_estimado": 0.0667,
+          "correctas": 325,
+          "precision_micro": 0.6771,
+          "recall_micro": 0.6771,
+          "f1_micro": 0.6771,
+          "cobertura_local": 0.3646,
+          "tasa_aclaracion": 0.3604,
+          "tasa_respuesta_segura": 0.1917,
+          "tasa_uso_ia_estimado": 0.0833,
           "respuestas_directas_incorrectas": 2,
-          "latencia_promedio_ms": 0.5038,
+          "latencia_promedio_ms": 0.6644,
           "matriz_confusion": {
             "acceso_sesion": {
               "sin_intencion_confiable": 8,
               "acceso_sesion": 16
             },
             "administracion_panel": {
-              "administracion_panel": 19,
+              "administracion_panel": 20,
               "tramites_administrativos": 1,
               "reportar_incidente": 1,
               "convivencia_conflictos": 1,
-              "sin_intencion_confiable": 2
+              "sin_intencion_confiable": 1
             },
             "clasificacion_incidente": {
               "convivencia_conflictos": 3,
-              "clasificacion_incidente": 15,
+              "clasificacion_incidente": 16,
               "mantenimiento_infraestructura": 2,
-              "emergencias": 3,
-              "sin_intencion_confiable": 1
+              "emergencias": 3
             },
             "convivencia_conflictos": {
               "convivencia_conflictos": 14,
@@ -2812,10 +3088,10 @@
               "sin_intencion_confiable": 5
             },
             "emergencias": {
-              "emergencias": 17,
+              "emergencias": 18,
               "mantenimiento_infraestructura": 1,
               "reportar_incidente": 1,
-              "sin_intencion_confiable": 5
+              "sin_intencion_confiable": 4
             },
             "funcionamiento_asistente": {
               "sin_intencion_confiable": 11,
@@ -2827,17 +3103,17 @@
               "gestion_notificaciones": 2
             },
             "gestion_notificaciones": {
-              "sin_intencion_confiable": 5,
-              "gestion_notificaciones": 17,
+              "gestion_notificaciones": 18,
+              "sin_intencion_confiable": 4,
               "reportar_incidente": 2
             },
             "mantenimiento_infraestructura": {
-              "mantenimiento_infraestructura": 13,
-              "sin_intencion_confiable": 11
+              "mantenimiento_infraestructura": 17,
+              "sin_intencion_confiable": 7
             },
             "mascotas": {
-              "mascotas": 21,
-              "sin_intencion_confiable": 3
+              "mascotas": 22,
+              "sin_intencion_confiable": 2
             },
             "navegacion_app": {
               "gestion_avisos": 2,
@@ -2863,22 +3139,22 @@
               "reportar_incidente": 21
             },
             "seguimiento_incidente": {
-              "sin_intencion_confiable": 16,
-              "seguimiento_incidente": 6,
+              "sin_intencion_confiable": 15,
+              "seguimiento_incidente": 7,
               "reportar_incidente": 2
             },
             "seguridad_control": {
-              "seguridad_control": 16,
-              "sin_intencion_confiable": 6,
-              "mantenimiento_infraestructura": 1,
+              "seguridad_control": 17,
+              "sin_intencion_confiable": 4,
+              "mantenimiento_infraestructura": 2,
               "clasificacion_incidente": 1
             },
             "tramites_administrativos": {
               "tramites_administrativos": 24
             },
             "visitantes_ingresos": {
-              "visitantes_ingresos": 20,
-              "sin_intencion_confiable": 4
+              "visitantes_ingresos": 21,
+              "sin_intencion_confiable": 3
             }
           },
           "errores": [
@@ -2935,12 +3211,12 @@
             {
               "texto": "casos borrados",
               "esperada": "administracion_panel",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "administracion_panel",
+              "accion": "fallback_allowed",
+              "confianza": 0.1352,
+              "segunda": "seguimiento_incidente",
+              "confianza_segunda": 0.0974,
+              "metodo": "tfidf_centroides_caracter"
             },
             {
               "texto": "valor cuota",
@@ -3186,16 +3462,16 @@
         },
         "validation": {
           "total": 120,
-          "correctas": 79,
-          "precision_micro": 0.6583,
-          "recall_micro": 0.6583,
-          "f1_micro": 0.6583,
-          "cobertura_local": 0.3333,
+          "correctas": 80,
+          "precision_micro": 0.6667,
+          "recall_micro": 0.6667,
+          "f1_micro": 0.6667,
+          "cobertura_local": 0.3417,
           "tasa_aclaracion": 0.375,
-          "tasa_respuesta_segura": 0.25,
-          "tasa_uso_ia_estimado": 0.0417,
+          "tasa_respuesta_segura": 0.2167,
+          "tasa_uso_ia_estimado": 0.0667,
           "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.5533,
+          "latencia_promedio_ms": 0.8501,
           "matriz_confusion": {
             "acceso_sesion": {
               "acceso_sesion": 3,
@@ -3239,12 +3515,10 @@
             },
             "mantenimiento_infraestructura": {
               "convivencia_entorno": 1,
-              "mantenimiento_infraestructura": 4,
-              "sin_intencion_confiable": 1
+              "mantenimiento_infraestructura": 5
             },
             "mascotas": {
-              "mascotas": 5,
-              "sin_intencion_confiable": 1
+              "mascotas": 6
             },
             "navegacion_app": {
               "gestion_avisos": 1,
@@ -3252,7 +3526,7 @@
             },
             "parqueaderos_vehiculos": {
               "parqueaderos_vehiculos": 5,
-              "sin_intencion_confiable": 1
+              "mantenimiento_infraestructura": 1
             },
             "perfil_preferencias": {
               "perfil_preferencias": 5,
@@ -3265,9 +3539,10 @@
               "reportar_incidente": 6
             },
             "seguimiento_incidente": {
-              "sin_intencion_confiable": 4,
+              "sin_intencion_confiable": 3,
               "seguimiento_incidente": 1,
-              "reportar_incidente": 1
+              "reportar_incidente": 1,
+              "administracion_panel": 1
             },
             "seguridad_control": {
               "seguridad_control": 4,
@@ -3456,12 +3731,12 @@
             {
               "texto": "eliminar caso",
               "esperada": "seguimiento_incidente",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "administracion_panel",
+              "accion": "fallback_allowed",
+              "confianza": 0.167,
+              "segunda": "seguimiento_incidente",
+              "confianza_segunda": 0.0745,
+              "metodo": "tfidf_centroides_caracter"
             },
             {
               "texto": "zona comun o privado",
@@ -3474,24 +3749,14 @@
               "metodo": "tfidf_centroides_caracter"
             },
             {
-              "texto": "Ey, tengo duda con puerta, como reporto una puerta con falla?",
-              "esperada": "mantenimiento_infraestructura",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
-            },
-            {
               "texto": "perro agresivo",
               "esperada": "mascotas",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "mascotas",
+              "accion": "fallback_allowed",
+              "confianza": 0.1788,
+              "segunda": "seguridad_control",
+              "confianza_segunda": 0.0518,
+              "metodo": "tfidf_centroides_caracter"
             },
             {
               "texto": "panel abrir notificacion",
@@ -3536,12 +3801,12 @@
             {
               "texto": "carro en mi lugar",
               "esperada": "parqueaderos_vehiculos",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "mantenimiento_infraestructura",
+              "accion": "fallback_allowed",
+              "confianza": 0.0556,
+              "segunda": "acceso_sesion",
+              "confianza_segunda": 0.0536,
+              "metodo": "tfidf_centroides_caracter"
             },
             {
               "texto": "huele a gas",
@@ -3582,21 +3847,31 @@
               "segunda": "",
               "confianza_segunda": 0.0,
               "metodo": "fuera_de_dominio"
+            },
+            {
+              "texto": "no puedo entrar a la cuenta en uso sistema",
+              "esperada": "acceso_sesion",
+              "predicha": "acceso_sesion",
+              "accion": "fallback_allowed",
+              "confianza": 0.1644,
+              "segunda": "funcionamiento_asistente",
+              "confianza_segunda": 0.1442,
+              "metodo": "tfidf_centroides_caracter"
             }
           ]
         },
         "test": {
           "total": 120,
-          "correctas": 84,
-          "precision_micro": 0.7,
-          "recall_micro": 0.7,
-          "f1_micro": 0.7,
-          "cobertura_local": 0.3333,
+          "correctas": 85,
+          "precision_micro": 0.7083,
+          "recall_micro": 0.7083,
+          "f1_micro": 0.7083,
+          "cobertura_local": 0.3417,
           "tasa_aclaracion": 0.4583,
-          "tasa_respuesta_segura": 0.1667,
-          "tasa_uso_ia_estimado": 0.0417,
+          "tasa_respuesta_segura": 0.15,
+          "tasa_uso_ia_estimado": 0.05,
           "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.5393,
+          "latencia_promedio_ms": 0.5775,
           "matriz_confusion": {
             "acceso_sesion": {
               "acceso_sesion": 5,
@@ -3639,8 +3914,8 @@
               "emergencias": 1
             },
             "mantenimiento_infraestructura": {
-              "mantenimiento_infraestructura": 4,
-              "sin_intencion_confiable": 2
+              "mantenimiento_infraestructura": 5,
+              "sin_intencion_confiable": 1
             },
             "mascotas": {
               "mascotas": 6
@@ -3650,8 +3925,7 @@
               "gestion_notificaciones": 1
             },
             "parqueaderos_vehiculos": {
-              "parqueaderos_vehiculos": 5,
-              "sin_intencion_confiable": 1
+              "parqueaderos_vehiculos": 6
             },
             "perfil_preferencias": {
               "perfil_preferencias": 4,
@@ -3865,16 +4139,6 @@
               "metodo": "fuera_de_dominio"
             },
             {
-              "texto": "Como reporto una puerta con falla?",
-              "esperada": "mantenimiento_infraestructura",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
-            },
-            {
               "texto": "sin iluminacion",
               "esperada": "mantenimiento_infraestructura",
               "predicha": "sin_intencion_confiable",
@@ -3917,12 +4181,12 @@
             {
               "texto": "carro bloqueando",
               "esperada": "parqueaderos_vehiculos",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "parqueaderos_vehiculos",
+              "accion": "fallback_allowed",
+              "confianza": 0.1559,
+              "segunda": "seguridad_control",
+              "confianza_segunda": 0.0368,
+              "metodo": "tfidf_centroides_caracter"
             },
             {
               "texto": "enfrentar persona",
@@ -3983,34 +4247,71 @@
               "segunda": "navegacion_app",
               "confianza_segunda": 0.4071,
               "metodo": "tfidf_centroides_caracter"
+            },
+            {
+              "texto": "poner foto en uso sistema",
+              "esperada": "perfil_preferencias",
+              "predicha": "privacidad_conversaciones",
+              "accion": "fallback_allowed",
+              "confianza": 0.1588,
+              "segunda": "funcionamiento_asistente",
+              "confianza_segunda": 0.1399,
+              "metodo": "tfidf_centroides_caracter"
             }
           ]
         },
         "challenge": {
-          "total": 7,
-          "correctas": 4,
-          "precision_micro": 0.5714,
-          "recall_micro": 0.5714,
-          "f1_micro": 0.5714,
+          "total": 24,
+          "correctas": 9,
+          "precision_micro": 0.375,
+          "recall_micro": 0.375,
+          "f1_micro": 0.375,
           "cobertura_local": 0.0,
-          "tasa_aclaracion": 0.4286,
-          "tasa_respuesta_segura": 0.4286,
-          "tasa_uso_ia_estimado": 0.1429,
+          "tasa_aclaracion": 0.3333,
+          "tasa_respuesta_segura": 0.2917,
+          "tasa_uso_ia_estimado": 0.375,
           "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.4056,
+          "latencia_promedio_ms": 0.6466,
           "matriz_confusion": {
+            "acceso_sesion": {
+              "administracion_panel": 1
+            },
+            "convivencia_conflictos": {
+              "emergencias": 1
+            },
+            "gestion_notificaciones": {
+              "seguimiento_incidente": 1
+            },
+            "mantenimiento_infraestructura": {
+              "mantenimiento_infraestructura": 2
+            },
+            "mascotas": {
+              "mascotas": 1,
+              "convivencia_conflictos": 1
+            },
+            "parqueaderos_vehiculos": {
+              "gestion_avisos": 1
+            },
+            "reportar_incidente": {
+              "emergencias": 1
+            },
             "seguimiento_incidente": {
-              "reportar_incidente": 1
+              "reportar_incidente": 1,
+              "seguimiento_incidente": 1
+            },
+            "seguridad_control": {
+              "gestion_avisos": 1
             },
             "sin_intencion_confiable": {
-              "sin_intencion_confiable": 3
+              "sin_intencion_confiable": 6
             },
             "tramites_administrativos": {
               "convivencia_entorno": 1,
-              "tramites_administrativos": 1
+              "tramites_administrativos": 3
             },
             "visitantes_ingresos": {
-              "parqueaderos_vehiculos": 1
+              "parqueaderos_vehiculos": 1,
+              "sin_intencion_confiable": 1
             }
           },
           "errores": [
@@ -4035,6 +4336,106 @@
               "metodo": "tfidf_centroides_caracter"
             },
             {
+              "texto": "mande un caso hace dias y sigo sin saber que paso",
+              "esperada": "seguimiento_incidente",
+              "predicha": "seguimiento_incidente",
+              "accion": "fallback_allowed",
+              "confianza": 0.0996,
+              "segunda": "convivencia_entorno",
+              "confianza_segunda": 0.0934,
+              "metodo": "tfidf_centroides_caracter"
+            },
+            {
+              "texto": "se metio alguien que nadie reconoce por la entrada",
+              "esperada": "seguridad_control",
+              "predicha": "gestion_avisos",
+              "accion": "fallback_allowed",
+              "confianza": 0.0956,
+              "segunda": "seguimiento_incidente",
+              "confianza_segunda": 0.0867,
+              "metodo": "tfidf_centroides_caracter"
+            },
+            {
+              "texto": "la luz del corredor lleva varias noches sin prender",
+              "esperada": "mantenimiento_infraestructura",
+              "predicha": "mantenimiento_infraestructura",
+              "accion": "fallback_allowed",
+              "confianza": 0.0709,
+              "segunda": "mascotas",
+              "confianza_segunda": 0.0651,
+              "metodo": "tfidf_centroides_caracter"
+            },
+            {
+              "texto": "el perro de un vecino anda suelto y asusta a los ninos",
+              "esperada": "mascotas",
+              "predicha": "convivencia_conflictos",
+              "accion": "fallback_allowed",
+              "confianza": 0.1472,
+              "segunda": "seguimiento_incidente",
+              "confianza_segunda": 0.1085,
+              "metodo": "tfidf_centroides_caracter"
+            },
+            {
+              "texto": "quiero avisar que volvieron a dejar un carro tapando la salida",
+              "esperada": "parqueaderos_vehiculos",
+              "predicha": "gestion_avisos",
+              "accion": "fallback_allowed",
+              "confianza": 0.1058,
+              "segunda": "acceso_sesion",
+              "confianza_segunda": 0.1037,
+              "metodo": "tfidf_centroides_caracter"
+            },
+            {
+              "texto": "me aparecio una campana con un numero y no se que significa",
+              "esperada": "gestion_notificaciones",
+              "predicha": "seguimiento_incidente",
+              "accion": "clarify",
+              "confianza": 0.2604,
+              "segunda": "gestion_notificaciones",
+              "confianza_segunda": 0.2378,
+              "metodo": "tfidf_centroides_caracter"
+            },
+            {
+              "texto": "necesito contar que hubo una pelea entre vecinos",
+              "esperada": "convivencia_conflictos",
+              "predicha": "emergencias",
+              "accion": "clarify",
+              "confianza": 0.1914,
+              "segunda": "convivencia_conflictos",
+              "confianza_segunda": 0.1756,
+              "metodo": "tfidf_centroides_caracter"
+            },
+            {
+              "texto": "como le hago para que autoricen a la persona que viene a arreglar algo",
+              "esperada": "visitantes_ingresos",
+              "predicha": "sin_intencion_confiable",
+              "accion": "safe",
+              "confianza": 0.0,
+              "segunda": "",
+              "confianza_segunda": 0.0,
+              "metodo": "fuera_de_dominio"
+            },
+            {
+              "texto": "no recuerdo con cual usuario debo entrar",
+              "esperada": "acceso_sesion",
+              "predicha": "administracion_panel",
+              "accion": "clarify",
+              "confianza": 0.1958,
+              "segunda": "tramites_administrativos",
+              "confianza_segunda": 0.1522,
+              "metodo": "tfidf_centroides_caracter"
+            },
+            {
+              "texto": "quiero dejar constancia de algo urgente que acaba de pasar",
+              "esperada": "reportar_incidente",
+              "predicha": "emergencias",
+              "accion": "fallback_allowed",
+              "confianza": 0.1705,
+              "segunda": "funcionamiento_asistente",
+              "confianza_segunda": 0.1386,
+              "metodo": "tfidf_centroides_caracter"
+            },
+            {
               "texto": "cuanto vale exactamente la multa por ruido",
               "esperada": "tramites_administrativos",
               "predicha": "convivencia_entorno",
@@ -4042,6 +4443,26 @@
               "confianza": 0.101,
               "segunda": "reportar_incidente",
               "confianza_segunda": 0.0954,
+              "metodo": "tfidf_centroides_caracter"
+            },
+            {
+              "texto": "a que hora exacta abre manana la oficina",
+              "esperada": "tramites_administrativos",
+              "predicha": "tramites_administrativos",
+              "accion": "fallback_allowed",
+              "confianza": 0.0886,
+              "segunda": "acceso_sesion",
+              "confianza_segunda": 0.0854,
+              "metodo": "tfidf_centroides_caracter"
+            },
+            {
+              "texto": "dime cuanto debo pagar este mes",
+              "esperada": "tramites_administrativos",
+              "predicha": "tramites_administrativos",
+              "accion": "fallback_allowed",
+              "confianza": 0.1257,
+              "segunda": "reportar_incidente",
+              "confianza_segunda": 0.0703,
               "metodo": "tfidf_centroides_caracter"
             }
           ]
@@ -4057,42 +4478,41 @@
         "medium_threshold": 0.18,
         "ambiguity_margin": 0.1
       },
-      "puntaje_generalizacion": 0.6566,
-      "sobreajuste_train_test": -0.0354,
-      "validation_f1": 0.65,
-      "test_f1": 0.7083,
-      "challenge_f1": 0.5714,
+      "puntaje_generalizacion": 0.6138,
+      "sobreajuste_train_test": -0.0334,
+      "validation_f1": 0.6583,
+      "test_f1": 0.7167,
+      "challenge_f1": 0.375,
       "directas_incorrectas_test": 0,
       "metricas": {
         "train": {
           "total": 480,
-          "correctas": 323,
-          "precision_micro": 0.6729,
-          "recall_micro": 0.6729,
-          "f1_micro": 0.6729,
-          "cobertura_local": 0.3604,
-          "tasa_aclaracion": 0.3479,
-          "tasa_respuesta_segura": 0.2188,
-          "tasa_uso_ia_estimado": 0.0729,
+          "correctas": 328,
+          "precision_micro": 0.6833,
+          "recall_micro": 0.6833,
+          "f1_micro": 0.6833,
+          "cobertura_local": 0.3646,
+          "tasa_aclaracion": 0.3563,
+          "tasa_respuesta_segura": 0.1917,
+          "tasa_uso_ia_estimado": 0.0875,
           "respuestas_directas_incorrectas": 2,
-          "latencia_promedio_ms": 0.6096,
+          "latencia_promedio_ms": 1.0044,
           "matriz_confusion": {
             "acceso_sesion": {
               "sin_intencion_confiable": 8,
               "acceso_sesion": 16
             },
             "administracion_panel": {
-              "administracion_panel": 20,
+              "administracion_panel": 21,
               "tramites_administrativos": 1,
               "convivencia_conflictos": 1,
-              "sin_intencion_confiable": 2
+              "sin_intencion_confiable": 1
             },
             "clasificacion_incidente": {
               "convivencia_conflictos": 3,
-              "clasificacion_incidente": 17,
+              "clasificacion_incidente": 18,
               "mantenimiento_infraestructura": 1,
-              "emergencias": 2,
-              "sin_intencion_confiable": 1
+              "emergencias": 2
             },
             "convivencia_conflictos": {
               "convivencia_conflictos": 14,
@@ -4105,9 +4525,9 @@
               "sin_intencion_confiable": 5
             },
             "emergencias": {
-              "emergencias": 18,
+              "emergencias": 19,
               "mantenimiento_infraestructura": 1,
-              "sin_intencion_confiable": 5
+              "sin_intencion_confiable": 4
             },
             "funcionamiento_asistente": {
               "sin_intencion_confiable": 11,
@@ -4119,18 +4539,18 @@
               "gestion_notificaciones": 1
             },
             "gestion_notificaciones": {
-              "sin_intencion_confiable": 5,
-              "gestion_notificaciones": 17,
+              "gestion_notificaciones": 18,
+              "sin_intencion_confiable": 4,
               "reportar_incidente": 1,
               "convivencia_conflictos": 1
             },
             "mantenimiento_infraestructura": {
-              "mantenimiento_infraestructura": 13,
-              "sin_intencion_confiable": 11
+              "mantenimiento_infraestructura": 17,
+              "sin_intencion_confiable": 7
             },
             "mascotas": {
-              "mascotas": 21,
-              "sin_intencion_confiable": 3
+              "mascotas": 22,
+              "sin_intencion_confiable": 2
             },
             "navegacion_app": {
               "gestion_avisos": 2,
@@ -4156,21 +4576,22 @@
               "reportar_incidente": 21
             },
             "seguimiento_incidente": {
-              "sin_intencion_confiable": 16,
-              "seguimiento_incidente": 7,
+              "sin_intencion_confiable": 15,
+              "seguimiento_incidente": 8,
               "reportar_incidente": 1
             },
             "seguridad_control": {
-              "seguridad_control": 17,
-              "sin_intencion_confiable": 6,
+              "seguridad_control": 18,
+              "sin_intencion_confiable": 4,
+              "mantenimiento_infraestructura": 1,
               "parqueaderos_vehiculos": 1
             },
             "tramites_administrativos": {
               "tramites_administrativos": 24
             },
             "visitantes_ingresos": {
-              "visitantes_ingresos": 20,
-              "sin_intencion_confiable": 4
+              "visitantes_ingresos": 21,
+              "sin_intencion_confiable": 3
             }
           },
           "errores": [
@@ -4217,12 +4638,12 @@
             {
               "texto": "casos borrados",
               "esperada": "administracion_panel",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "administracion_panel",
+              "accion": "fallback_allowed",
+              "confianza": 0.1331,
+              "segunda": "seguimiento_incidente",
+              "confianza_segunda": 0.0743,
+              "metodo": "ensamble_word_char_35"
             },
             {
               "texto": "valor cuota",
@@ -4478,16 +4899,16 @@
         },
         "validation": {
           "total": 120,
-          "correctas": 78,
-          "precision_micro": 0.65,
-          "recall_micro": 0.65,
-          "f1_micro": 0.65,
-          "cobertura_local": 0.35,
+          "correctas": 79,
+          "precision_micro": 0.6583,
+          "recall_micro": 0.6583,
+          "f1_micro": 0.6583,
+          "cobertura_local": 0.3583,
           "tasa_aclaracion": 0.35,
-          "tasa_respuesta_segura": 0.25,
-          "tasa_uso_ia_estimado": 0.05,
+          "tasa_respuesta_segura": 0.2167,
+          "tasa_uso_ia_estimado": 0.075,
           "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.6191,
+          "latencia_promedio_ms": 0.6653,
           "matriz_confusion": {
             "acceso_sesion": {
               "acceso_sesion": 3,
@@ -4531,12 +4952,10 @@
             },
             "mantenimiento_infraestructura": {
               "convivencia_entorno": 1,
-              "mantenimiento_infraestructura": 4,
-              "sin_intencion_confiable": 1
+              "mantenimiento_infraestructura": 5
             },
             "mascotas": {
-              "mascotas": 5,
-              "sin_intencion_confiable": 1
+              "mascotas": 6
             },
             "navegacion_app": {
               "gestion_avisos": 1,
@@ -4544,7 +4963,7 @@
             },
             "parqueaderos_vehiculos": {
               "parqueaderos_vehiculos": 5,
-              "sin_intencion_confiable": 1
+              "seguridad_control": 1
             },
             "perfil_preferencias": {
               "perfil_preferencias": 5,
@@ -4557,9 +4976,10 @@
               "reportar_incidente": 6
             },
             "seguimiento_incidente": {
-              "sin_intencion_confiable": 4,
+              "sin_intencion_confiable": 3,
               "seguimiento_incidente": 1,
-              "reportar_incidente": 1
+              "reportar_incidente": 1,
+              "administracion_panel": 1
             },
             "seguridad_control": {
               "seguridad_control": 4,
@@ -4748,12 +5168,12 @@
             {
               "texto": "eliminar caso",
               "esperada": "seguimiento_incidente",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "administracion_panel",
+              "accion": "fallback_allowed",
+              "confianza": 0.1233,
+              "segunda": "seguimiento_incidente",
+              "confianza_segunda": 0.082,
+              "metodo": "ensamble_word_char_35"
             },
             {
               "texto": "zona comun o privado",
@@ -4766,24 +5186,14 @@
               "metodo": "ensamble_word_char_35"
             },
             {
-              "texto": "Ey, tengo duda con puerta, como reporto una puerta con falla?",
-              "esperada": "mantenimiento_infraestructura",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
-            },
-            {
               "texto": "perro agresivo",
               "esperada": "mascotas",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "mascotas",
+              "accion": "fallback_allowed",
+              "confianza": 0.1324,
+              "segunda": "seguridad_control",
+              "confianza_segunda": 0.0337,
+              "metodo": "ensamble_word_char_35"
             },
             {
               "texto": "panel abrir notificacion",
@@ -4828,12 +5238,12 @@
             {
               "texto": "carro en mi lugar",
               "esperada": "parqueaderos_vehiculos",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "seguridad_control",
+              "accion": "fallback_allowed",
+              "confianza": 0.0511,
+              "segunda": "mantenimiento_infraestructura",
+              "confianza_segunda": 0.0362,
+              "metodo": "ensamble_word_char_35"
             },
             {
               "texto": "huele a gas",
@@ -4874,21 +5284,31 @@
               "segunda": "",
               "confianza_segunda": 0.0,
               "metodo": "fuera_de_dominio"
+            },
+            {
+              "texto": "no puedo entrar a la cuenta en uso sistema",
+              "esperada": "acceso_sesion",
+              "predicha": "acceso_sesion",
+              "accion": "fallback_allowed",
+              "confianza": 0.161,
+              "segunda": "privacidad_conversaciones",
+              "confianza_segunda": 0.1358,
+              "metodo": "ensamble_word_char_35"
             }
           ]
         },
         "test": {
           "total": 120,
-          "correctas": 85,
-          "precision_micro": 0.7083,
-          "recall_micro": 0.7083,
-          "f1_micro": 0.7083,
-          "cobertura_local": 0.3417,
+          "correctas": 86,
+          "precision_micro": 0.7167,
+          "recall_micro": 0.7167,
+          "f1_micro": 0.7167,
+          "cobertura_local": 0.35,
           "tasa_aclaracion": 0.4333,
-          "tasa_respuesta_segura": 0.1667,
-          "tasa_uso_ia_estimado": 0.0583,
+          "tasa_respuesta_segura": 0.15,
+          "tasa_uso_ia_estimado": 0.0667,
           "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.639,
+          "latencia_promedio_ms": 0.7169,
           "matriz_confusion": {
             "acceso_sesion": {
               "acceso_sesion": 5,
@@ -4930,8 +5350,8 @@
               "gestion_notificaciones": 6
             },
             "mantenimiento_infraestructura": {
-              "mantenimiento_infraestructura": 4,
-              "sin_intencion_confiable": 2
+              "mantenimiento_infraestructura": 5,
+              "sin_intencion_confiable": 1
             },
             "mascotas": {
               "mascotas": 6
@@ -4941,8 +5361,7 @@
               "gestion_notificaciones": 1
             },
             "parqueaderos_vehiculos": {
-              "parqueaderos_vehiculos": 5,
-              "sin_intencion_confiable": 1
+              "parqueaderos_vehiculos": 6
             },
             "perfil_preferencias": {
               "perfil_preferencias": 4,
@@ -5146,16 +5565,6 @@
               "metodo": "fuera_de_dominio"
             },
             {
-              "texto": "Como reporto una puerta con falla?",
-              "esperada": "mantenimiento_infraestructura",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
-            },
-            {
               "texto": "sin iluminacion",
               "esperada": "mantenimiento_infraestructura",
               "predicha": "sin_intencion_confiable",
@@ -5198,12 +5607,12 @@
             {
               "texto": "carro bloqueando",
               "esperada": "parqueaderos_vehiculos",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "parqueaderos_vehiculos",
+              "accion": "fallback_allowed",
+              "confianza": 0.1013,
+              "segunda": "seguridad_control",
+              "confianza_segunda": 0.0456,
+              "metodo": "ensamble_word_char_35"
             },
             {
               "texto": "enfrentar persona",
@@ -5274,34 +5683,72 @@
               "segunda": "perfil_preferencias",
               "confianza_segunda": 0.1266,
               "metodo": "ensamble_word_char_35"
+            },
+            {
+              "texto": "configurar idioma",
+              "esperada": "perfil_preferencias",
+              "predicha": "sin_intencion_confiable",
+              "accion": "safe",
+              "confianza": 0.0,
+              "segunda": "",
+              "confianza_segunda": 0.0,
+              "metodo": "fuera_de_dominio"
             }
           ]
         },
         "challenge": {
-          "total": 7,
-          "correctas": 4,
-          "precision_micro": 0.5714,
-          "recall_micro": 0.5714,
-          "f1_micro": 0.5714,
+          "total": 24,
+          "correctas": 9,
+          "precision_micro": 0.375,
+          "recall_micro": 0.375,
+          "f1_micro": 0.375,
           "cobertura_local": 0.0,
-          "tasa_aclaracion": 0.4286,
-          "tasa_respuesta_segura": 0.4286,
-          "tasa_uso_ia_estimado": 0.1429,
+          "tasa_aclaracion": 0.2917,
+          "tasa_respuesta_segura": 0.2917,
+          "tasa_uso_ia_estimado": 0.4167,
           "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.4557,
+          "latencia_promedio_ms": 0.6351,
           "matriz_confusion": {
+            "acceso_sesion": {
+              "administracion_panel": 1
+            },
+            "convivencia_conflictos": {
+              "convivencia_conflictos": 1
+            },
+            "gestion_notificaciones": {
+              "seguimiento_incidente": 1
+            },
+            "mantenimiento_infraestructura": {
+              "mantenimiento_infraestructura": 2
+            },
+            "mascotas": {
+              "mascotas": 1,
+              "convivencia_conflictos": 1
+            },
+            "parqueaderos_vehiculos": {
+              "seguridad_control": 1
+            },
+            "reportar_incidente": {
+              "emergencias": 1
+            },
             "seguimiento_incidente": {
-              "reportar_incidente": 1
+              "reportar_incidente": 1,
+              "seguimiento_incidente": 1
+            },
+            "seguridad_control": {
+              "emergencias": 1
             },
             "sin_intencion_confiable": {
-              "sin_intencion_confiable": 3
+              "sin_intencion_confiable": 6
             },
             "tramites_administrativos": {
               "convivencia_conflictos": 1,
-              "tramites_administrativos": 1
+              "tramites_administrativos": 2,
+              "gestion_avisos": 1
             },
             "visitantes_ingresos": {
-              "parqueaderos_vehiculos": 1
+              "parqueaderos_vehiculos": 1,
+              "sin_intencion_confiable": 1
             }
           },
           "errores": [
@@ -5326,6 +5773,106 @@
               "metodo": "ensamble_word_char_35"
             },
             {
+              "texto": "mande un caso hace dias y sigo sin saber que paso",
+              "esperada": "seguimiento_incidente",
+              "predicha": "seguimiento_incidente",
+              "accion": "fallback_allowed",
+              "confianza": 0.0866,
+              "segunda": "convivencia_entorno",
+              "confianza_segunda": 0.0843,
+              "metodo": "ensamble_word_char_35"
+            },
+            {
+              "texto": "se metio alguien que nadie reconoce por la entrada",
+              "esperada": "seguridad_control",
+              "predicha": "emergencias",
+              "accion": "fallback_allowed",
+              "confianza": 0.0761,
+              "segunda": "gestion_avisos",
+              "confianza_segunda": 0.0739,
+              "metodo": "ensamble_word_char_35"
+            },
+            {
+              "texto": "la luz del corredor lleva varias noches sin prender",
+              "esperada": "mantenimiento_infraestructura",
+              "predicha": "mantenimiento_infraestructura",
+              "accion": "fallback_allowed",
+              "confianza": 0.0804,
+              "segunda": "clasificacion_incidente",
+              "confianza_segunda": 0.064,
+              "metodo": "ensamble_word_char_35"
+            },
+            {
+              "texto": "el perro de un vecino anda suelto y asusta a los ninos",
+              "esperada": "mascotas",
+              "predicha": "convivencia_conflictos",
+              "accion": "fallback_allowed",
+              "confianza": 0.163,
+              "segunda": "seguimiento_incidente",
+              "confianza_segunda": 0.0705,
+              "metodo": "ensamble_word_char_35"
+            },
+            {
+              "texto": "quiero avisar que volvieron a dejar un carro tapando la salida",
+              "esperada": "parqueaderos_vehiculos",
+              "predicha": "seguridad_control",
+              "accion": "fallback_allowed",
+              "confianza": 0.0751,
+              "segunda": "gestion_avisos",
+              "confianza_segunda": 0.0688,
+              "metodo": "ensamble_word_char_35"
+            },
+            {
+              "texto": "me aparecio una campana con un numero y no se que significa",
+              "esperada": "gestion_notificaciones",
+              "predicha": "seguimiento_incidente",
+              "accion": "clarify",
+              "confianza": 0.2538,
+              "segunda": "gestion_notificaciones",
+              "confianza_segunda": 0.2268,
+              "metodo": "ensamble_word_char_35"
+            },
+            {
+              "texto": "necesito contar que hubo una pelea entre vecinos",
+              "esperada": "convivencia_conflictos",
+              "predicha": "convivencia_conflictos",
+              "accion": "fallback_allowed",
+              "confianza": 0.1784,
+              "segunda": "emergencias",
+              "confianza_segunda": 0.156,
+              "metodo": "ensamble_word_char_35"
+            },
+            {
+              "texto": "como le hago para que autoricen a la persona que viene a arreglar algo",
+              "esperada": "visitantes_ingresos",
+              "predicha": "sin_intencion_confiable",
+              "accion": "safe",
+              "confianza": 0.0,
+              "segunda": "",
+              "confianza_segunda": 0.0,
+              "metodo": "fuera_de_dominio"
+            },
+            {
+              "texto": "no recuerdo con cual usuario debo entrar",
+              "esperada": "acceso_sesion",
+              "predicha": "administracion_panel",
+              "accion": "clarify",
+              "confianza": 0.1959,
+              "segunda": "gestion_avisos",
+              "confianza_segunda": 0.139,
+              "metodo": "ensamble_word_char_35"
+            },
+            {
+              "texto": "quiero dejar constancia de algo urgente que acaba de pasar",
+              "esperada": "reportar_incidente",
+              "predicha": "emergencias",
+              "accion": "fallback_allowed",
+              "confianza": 0.1108,
+              "segunda": "funcionamiento_asistente",
+              "confianza_segunda": 0.0901,
+              "metodo": "ensamble_word_char_35"
+            },
+            {
               "texto": "cuanto vale exactamente la multa por ruido",
               "esperada": "tramites_administrativos",
               "predicha": "convivencia_conflictos",
@@ -5333,6 +5880,26 @@
               "confianza": 0.104,
               "segunda": "convivencia_entorno",
               "confianza_segunda": 0.0977,
+              "metodo": "ensamble_word_char_35"
+            },
+            {
+              "texto": "a que hora exacta abre manana la oficina",
+              "esperada": "tramites_administrativos",
+              "predicha": "gestion_avisos",
+              "accion": "fallback_allowed",
+              "confianza": 0.077,
+              "segunda": "tramites_administrativos",
+              "confianza_segunda": 0.0746,
+              "metodo": "ensamble_word_char_35"
+            },
+            {
+              "texto": "dime cuanto debo pagar este mes",
+              "esperada": "tramites_administrativos",
+              "predicha": "tramites_administrativos",
+              "accion": "fallback_allowed",
+              "confianza": 0.12,
+              "segunda": "seguridad_control",
+              "confianza_segunda": 0.0694,
               "metodo": "ensamble_word_char_35"
             }
           ]
@@ -5348,41 +5915,40 @@
         "medium_threshold": 0.18,
         "ambiguity_margin": 0.08
       },
-      "puntaje_generalizacion": 0.6516,
-      "sobreajuste_train_test": -0.0209,
-      "validation_f1": 0.6583,
-      "test_f1": 0.6917,
-      "challenge_f1": 0.5714,
+      "puntaje_generalizacion": 0.6088,
+      "sobreajuste_train_test": -0.0187,
+      "validation_f1": 0.6667,
+      "test_f1": 0.7,
+      "challenge_f1": 0.375,
       "directas_incorrectas_test": 0,
       "metricas": {
         "train": {
           "total": 480,
-          "correctas": 322,
-          "precision_micro": 0.6708,
-          "recall_micro": 0.6708,
-          "f1_micro": 0.6708,
-          "cobertura_local": 0.3688,
-          "tasa_aclaracion": 0.3396,
-          "tasa_respuesta_segura": 0.2188,
-          "tasa_uso_ia_estimado": 0.0729,
+          "correctas": 327,
+          "precision_micro": 0.6813,
+          "recall_micro": 0.6813,
+          "f1_micro": 0.6813,
+          "cobertura_local": 0.3729,
+          "tasa_aclaracion": 0.3479,
+          "tasa_respuesta_segura": 0.1917,
+          "tasa_uso_ia_estimado": 0.0875,
           "respuestas_directas_incorrectas": 2,
-          "latencia_promedio_ms": 0.6432,
+          "latencia_promedio_ms": 0.7567,
           "matriz_confusion": {
             "acceso_sesion": {
               "sin_intencion_confiable": 8,
               "acceso_sesion": 16
             },
             "administracion_panel": {
-              "administracion_panel": 21,
+              "administracion_panel": 22,
               "convivencia_conflictos": 1,
-              "sin_intencion_confiable": 2
+              "sin_intencion_confiable": 1
             },
             "clasificacion_incidente": {
               "convivencia_conflictos": 3,
-              "clasificacion_incidente": 17,
+              "clasificacion_incidente": 18,
               "mantenimiento_infraestructura": 1,
-              "emergencias": 2,
-              "sin_intencion_confiable": 1
+              "emergencias": 2
             },
             "convivencia_conflictos": {
               "convivencia_conflictos": 14,
@@ -5395,9 +5961,9 @@
               "sin_intencion_confiable": 5
             },
             "emergencias": {
-              "emergencias": 18,
+              "emergencias": 19,
               "mantenimiento_infraestructura": 1,
-              "sin_intencion_confiable": 5
+              "sin_intencion_confiable": 4
             },
             "funcionamiento_asistente": {
               "sin_intencion_confiable": 11,
@@ -5410,18 +5976,18 @@
               "acceso_sesion": 1
             },
             "gestion_notificaciones": {
-              "sin_intencion_confiable": 5,
-              "gestion_notificaciones": 17,
+              "gestion_notificaciones": 18,
+              "sin_intencion_confiable": 4,
               "reportar_incidente": 1,
               "convivencia_conflictos": 1
             },
             "mantenimiento_infraestructura": {
-              "mantenimiento_infraestructura": 13,
-              "sin_intencion_confiable": 11
+              "mantenimiento_infraestructura": 17,
+              "sin_intencion_confiable": 7
             },
             "mascotas": {
-              "mascotas": 21,
-              "sin_intencion_confiable": 3
+              "mascotas": 22,
+              "sin_intencion_confiable": 2
             },
             "navegacion_app": {
               "gestion_avisos": 2,
@@ -5447,13 +6013,14 @@
               "reportar_incidente": 21
             },
             "seguimiento_incidente": {
-              "sin_intencion_confiable": 16,
-              "seguimiento_incidente": 7,
+              "sin_intencion_confiable": 15,
+              "seguimiento_incidente": 8,
               "reportar_incidente": 1
             },
             "seguridad_control": {
-              "seguridad_control": 16,
-              "sin_intencion_confiable": 6,
+              "seguridad_control": 17,
+              "sin_intencion_confiable": 4,
+              "mantenimiento_infraestructura": 1,
               "parqueaderos_vehiculos": 1,
               "convivencia_entorno": 1
             },
@@ -5461,8 +6028,8 @@
               "tramites_administrativos": 24
             },
             "visitantes_ingresos": {
-              "visitantes_ingresos": 20,
-              "sin_intencion_confiable": 4
+              "visitantes_ingresos": 21,
+              "sin_intencion_confiable": 3
             }
           },
           "errores": [
@@ -5509,12 +6076,12 @@
             {
               "texto": "casos borrados",
               "esperada": "administracion_panel",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "administracion_panel",
+              "accion": "fallback_allowed",
+              "confianza": 0.1322,
+              "segunda": "seguimiento_incidente",
+              "confianza_segunda": 0.0643,
+              "metodo": "ensamble_word_char_50"
             },
             {
               "texto": "estado de cartera",
@@ -5770,16 +6337,16 @@
         },
         "validation": {
           "total": 120,
-          "correctas": 79,
-          "precision_micro": 0.6583,
-          "recall_micro": 0.6583,
-          "f1_micro": 0.6583,
-          "cobertura_local": 0.3417,
+          "correctas": 80,
+          "precision_micro": 0.6667,
+          "recall_micro": 0.6667,
+          "f1_micro": 0.6667,
+          "cobertura_local": 0.35,
           "tasa_aclaracion": 0.3667,
-          "tasa_respuesta_segura": 0.25,
-          "tasa_uso_ia_estimado": 0.0417,
+          "tasa_respuesta_segura": 0.2167,
+          "tasa_uso_ia_estimado": 0.0667,
           "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.6134,
+          "latencia_promedio_ms": 0.7824,
           "matriz_confusion": {
             "acceso_sesion": {
               "acceso_sesion": 3,
@@ -5823,12 +6390,10 @@
             },
             "mantenimiento_infraestructura": {
               "convivencia_entorno": 1,
-              "mantenimiento_infraestructura": 4,
-              "sin_intencion_confiable": 1
+              "mantenimiento_infraestructura": 5
             },
             "mascotas": {
-              "mascotas": 5,
-              "sin_intencion_confiable": 1
+              "mascotas": 6
             },
             "navegacion_app": {
               "gestion_avisos": 1,
@@ -5836,7 +6401,7 @@
             },
             "parqueaderos_vehiculos": {
               "parqueaderos_vehiculos": 5,
-              "sin_intencion_confiable": 1
+              "seguridad_control": 1
             },
             "perfil_preferencias": {
               "perfil_preferencias": 5,
@@ -5849,9 +6414,10 @@
               "reportar_incidente": 6
             },
             "seguimiento_incidente": {
-              "sin_intencion_confiable": 4,
+              "sin_intencion_confiable": 3,
               "seguimiento_incidente": 1,
-              "reportar_incidente": 1
+              "reportar_incidente": 1,
+              "administracion_panel": 1
             },
             "seguridad_control": {
               "seguridad_control": 4,
@@ -6040,12 +6606,12 @@
             {
               "texto": "eliminar caso",
               "esperada": "seguimiento_incidente",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "administracion_panel",
+              "accion": "fallback_allowed",
+              "confianza": 0.1046,
+              "segunda": "seguimiento_incidente",
+              "confianza_segunda": 0.0852,
+              "metodo": "ensamble_word_char_50"
             },
             {
               "texto": "zona comun o privado",
@@ -6058,24 +6624,14 @@
               "metodo": "ensamble_word_char_50"
             },
             {
-              "texto": "Ey, tengo duda con puerta, como reporto una puerta con falla?",
-              "esperada": "mantenimiento_infraestructura",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
-            },
-            {
               "texto": "perro agresivo",
               "esperada": "mascotas",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "mascotas",
+              "accion": "fallback_allowed",
+              "confianza": 0.1124,
+              "segunda": "seguridad_control",
+              "confianza_segunda": 0.0259,
+              "metodo": "ensamble_word_char_50"
             },
             {
               "texto": "panel abrir notificacion",
@@ -6120,12 +6676,12 @@
             {
               "texto": "carro en mi lugar",
               "esperada": "parqueaderos_vehiculos",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "seguridad_control",
+              "accion": "fallback_allowed",
+              "confianza": 0.0536,
+              "segunda": "mantenimiento_infraestructura",
+              "confianza_segunda": 0.0278,
+              "metodo": "ensamble_word_char_50"
             },
             {
               "texto": "No entiendo lo de accidente y herida, que hago?",
@@ -6166,21 +6722,31 @@
               "segunda": "privacidad_conversaciones",
               "confianza_segunda": 0.1331,
               "metodo": "ensamble_word_char_50"
+            },
+            {
+              "texto": "q hago si olvide mi contrasena",
+              "esperada": "acceso_sesion",
+              "predicha": "sin_intencion_confiable",
+              "accion": "safe",
+              "confianza": 0.0,
+              "segunda": "",
+              "confianza_segunda": 0.0,
+              "metodo": "fuera_de_dominio"
             }
           ]
         },
         "test": {
           "total": 120,
-          "correctas": 83,
-          "precision_micro": 0.6917,
-          "recall_micro": 0.6917,
-          "f1_micro": 0.6917,
-          "cobertura_local": 0.3583,
+          "correctas": 84,
+          "precision_micro": 0.7,
+          "recall_micro": 0.7,
+          "f1_micro": 0.7,
+          "cobertura_local": 0.3667,
           "tasa_aclaracion": 0.4,
-          "tasa_respuesta_segura": 0.1667,
-          "tasa_uso_ia_estimado": 0.075,
+          "tasa_respuesta_segura": 0.15,
+          "tasa_uso_ia_estimado": 0.0833,
           "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.6243,
+          "latencia_promedio_ms": 0.8756,
           "matriz_confusion": {
             "acceso_sesion": {
               "acceso_sesion": 5,
@@ -6223,8 +6789,8 @@
               "gestion_notificaciones": 6
             },
             "mantenimiento_infraestructura": {
-              "mantenimiento_infraestructura": 4,
-              "sin_intencion_confiable": 2
+              "mantenimiento_infraestructura": 5,
+              "sin_intencion_confiable": 1
             },
             "mascotas": {
               "mascotas": 6
@@ -6234,8 +6800,7 @@
               "gestion_notificaciones": 1
             },
             "parqueaderos_vehiculos": {
-              "parqueaderos_vehiculos": 5,
-              "sin_intencion_confiable": 1
+              "parqueaderos_vehiculos": 6
             },
             "perfil_preferencias": {
               "perfil_preferencias": 4,
@@ -6439,16 +7004,6 @@
               "metodo": "fuera_de_dominio"
             },
             {
-              "texto": "Como reporto una puerta con falla?",
-              "esperada": "mantenimiento_infraestructura",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
-            },
-            {
               "texto": "sin iluminacion",
               "esperada": "mantenimiento_infraestructura",
               "predicha": "sin_intencion_confiable",
@@ -6501,12 +7056,12 @@
             {
               "texto": "carro bloqueando",
               "esperada": "parqueaderos_vehiculos",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "parqueaderos_vehiculos",
+              "accion": "fallback_allowed",
+              "confianza": 0.0779,
+              "segunda": "seguridad_control",
+              "confianza_segunda": 0.0494,
+              "metodo": "ensamble_word_char_50"
             },
             {
               "texto": "enfrentar persona",
@@ -6567,34 +7122,72 @@
               "segunda": "navegacion_app",
               "confianza_segunda": 0.3343,
               "metodo": "ensamble_word_char_50"
+            },
+            {
+              "texto": "poner foto en uso sistema",
+              "esperada": "perfil_preferencias",
+              "predicha": "privacidad_conversaciones",
+              "accion": "fallback_allowed",
+              "confianza": 0.1391,
+              "segunda": "perfil_preferencias",
+              "confianza_segunda": 0.132,
+              "metodo": "ensamble_word_char_50"
             }
           ]
         },
         "challenge": {
-          "total": 7,
-          "correctas": 4,
-          "precision_micro": 0.5714,
-          "recall_micro": 0.5714,
-          "f1_micro": 0.5714,
+          "total": 24,
+          "correctas": 9,
+          "precision_micro": 0.375,
+          "recall_micro": 0.375,
+          "f1_micro": 0.375,
           "cobertura_local": 0.0,
-          "tasa_aclaracion": 0.4286,
-          "tasa_respuesta_segura": 0.4286,
-          "tasa_uso_ia_estimado": 0.1429,
+          "tasa_aclaracion": 0.2917,
+          "tasa_respuesta_segura": 0.2917,
+          "tasa_uso_ia_estimado": 0.4167,
           "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.5981,
+          "latencia_promedio_ms": 0.7527,
           "matriz_confusion": {
+            "acceso_sesion": {
+              "administracion_panel": 1
+            },
+            "convivencia_conflictos": {
+              "convivencia_conflictos": 1
+            },
+            "gestion_notificaciones": {
+              "seguimiento_incidente": 1
+            },
+            "mantenimiento_infraestructura": {
+              "mantenimiento_infraestructura": 2
+            },
+            "mascotas": {
+              "mascotas": 1,
+              "convivencia_conflictos": 1
+            },
+            "parqueaderos_vehiculos": {
+              "seguridad_control": 1
+            },
+            "reportar_incidente": {
+              "emergencias": 1
+            },
             "seguimiento_incidente": {
-              "reportar_incidente": 1
+              "reportar_incidente": 1,
+              "seguimiento_incidente": 1
+            },
+            "seguridad_control": {
+              "emergencias": 1
             },
             "sin_intencion_confiable": {
-              "sin_intencion_confiable": 3
+              "sin_intencion_confiable": 6
             },
             "tramites_administrativos": {
               "convivencia_conflictos": 1,
-              "tramites_administrativos": 1
+              "tramites_administrativos": 2,
+              "gestion_avisos": 1
             },
             "visitantes_ingresos": {
-              "parqueaderos_vehiculos": 1
+              "parqueaderos_vehiculos": 1,
+              "sin_intencion_confiable": 1
             }
           },
           "errores": [
@@ -6619,6 +7212,106 @@
               "metodo": "ensamble_word_char_50"
             },
             {
+              "texto": "mande un caso hace dias y sigo sin saber que paso",
+              "esperada": "seguimiento_incidente",
+              "predicha": "seguimiento_incidente",
+              "accion": "fallback_allowed",
+              "confianza": 0.081,
+              "segunda": "convivencia_entorno",
+              "confianza_segunda": 0.0804,
+              "metodo": "ensamble_word_char_50"
+            },
+            {
+              "texto": "se metio alguien que nadie reconoce por la entrada",
+              "esperada": "seguridad_control",
+              "predicha": "emergencias",
+              "accion": "fallback_allowed",
+              "confianza": 0.0732,
+              "segunda": "gestion_avisos",
+              "confianza_segunda": 0.0645,
+              "metodo": "ensamble_word_char_50"
+            },
+            {
+              "texto": "la luz del corredor lleva varias noches sin prender",
+              "esperada": "mantenimiento_infraestructura",
+              "predicha": "mantenimiento_infraestructura",
+              "accion": "fallback_allowed",
+              "confianza": 0.0845,
+              "segunda": "clasificacion_incidente",
+              "confianza_segunda": 0.0685,
+              "metodo": "ensamble_word_char_50"
+            },
+            {
+              "texto": "el perro de un vecino anda suelto y asusta a los ninos",
+              "esperada": "mascotas",
+              "predicha": "convivencia_conflictos",
+              "accion": "fallback_allowed",
+              "confianza": 0.1697,
+              "segunda": "seguimiento_incidente",
+              "confianza_segunda": 0.0543,
+              "metodo": "ensamble_word_char_50"
+            },
+            {
+              "texto": "quiero avisar que volvieron a dejar un carro tapando la salida",
+              "esperada": "parqueaderos_vehiculos",
+              "predicha": "seguridad_control",
+              "accion": "fallback_allowed",
+              "confianza": 0.0713,
+              "segunda": "gestion_avisos",
+              "confianza_segunda": 0.0529,
+              "metodo": "ensamble_word_char_50"
+            },
+            {
+              "texto": "me aparecio una campana con un numero y no se que significa",
+              "esperada": "gestion_notificaciones",
+              "predicha": "seguimiento_incidente",
+              "accion": "clarify",
+              "confianza": 0.251,
+              "segunda": "gestion_notificaciones",
+              "confianza_segunda": 0.2221,
+              "metodo": "ensamble_word_char_50"
+            },
+            {
+              "texto": "necesito contar que hubo una pelea entre vecinos",
+              "esperada": "convivencia_conflictos",
+              "predicha": "convivencia_conflictos",
+              "accion": "fallback_allowed",
+              "confianza": 0.1796,
+              "segunda": "emergencias",
+              "confianza_segunda": 0.1408,
+              "metodo": "ensamble_word_char_50"
+            },
+            {
+              "texto": "como le hago para que autoricen a la persona que viene a arreglar algo",
+              "esperada": "visitantes_ingresos",
+              "predicha": "sin_intencion_confiable",
+              "accion": "safe",
+              "confianza": 0.0,
+              "segunda": "",
+              "confianza_segunda": 0.0,
+              "metodo": "fuera_de_dominio"
+            },
+            {
+              "texto": "no recuerdo con cual usuario debo entrar",
+              "esperada": "acceso_sesion",
+              "predicha": "administracion_panel",
+              "accion": "clarify",
+              "confianza": 0.1959,
+              "segunda": "gestion_avisos",
+              "confianza_segunda": 0.1352,
+              "metodo": "ensamble_word_char_50"
+            },
+            {
+              "texto": "quiero dejar constancia de algo urgente que acaba de pasar",
+              "esperada": "reportar_incidente",
+              "predicha": "emergencias",
+              "accion": "fallback_allowed",
+              "confianza": 0.0852,
+              "segunda": "funcionamiento_asistente",
+              "confianza_segunda": 0.0693,
+              "metodo": "ensamble_word_char_50"
+            },
+            {
               "texto": "cuanto vale exactamente la multa por ruido",
               "esperada": "tramites_administrativos",
               "predicha": "convivencia_conflictos",
@@ -6626,6 +7319,26 @@
               "confianza": 0.108,
               "segunda": "convivencia_entorno",
               "confianza_segunda": 0.0963,
+              "metodo": "ensamble_word_char_50"
+            },
+            {
+              "texto": "a que hora exacta abre manana la oficina",
+              "esperada": "tramites_administrativos",
+              "predicha": "gestion_avisos",
+              "accion": "fallback_allowed",
+              "confianza": 0.077,
+              "segunda": "tramites_administrativos",
+              "confianza_segunda": 0.0685,
+              "metodo": "ensamble_word_char_50"
+            },
+            {
+              "texto": "dime cuanto debo pagar este mes",
+              "esperada": "tramites_administrativos",
+              "predicha": "tramites_administrativos",
+              "accion": "fallback_allowed",
+              "confianza": 0.1175,
+              "segunda": "seguridad_control",
+              "confianza_segunda": 0.0706,
               "metodo": "ensamble_word_char_50"
             }
           ]
@@ -6641,42 +7354,41 @@
         "medium_threshold": 0.18,
         "ambiguity_margin": 0.08
       },
-      "puntaje_generalizacion": 0.6196,
-      "sobreajuste_train_test": -0.025,
-      "validation_f1": 0.6583,
-      "test_f1": 0.7,
-      "challenge_f1": 0.4286,
+      "puntaje_generalizacion": 0.6125,
+      "sobreajuste_train_test": -0.0229,
+      "validation_f1": 0.6667,
+      "test_f1": 0.7083,
+      "challenge_f1": 0.375,
       "directas_incorrectas_test": 0,
       "metricas": {
         "train": {
           "total": 480,
-          "correctas": 324,
-          "precision_micro": 0.675,
-          "recall_micro": 0.675,
-          "f1_micro": 0.675,
-          "cobertura_local": 0.3688,
-          "tasa_aclaracion": 0.3479,
-          "tasa_respuesta_segura": 0.2188,
-          "tasa_uso_ia_estimado": 0.0646,
+          "correctas": 329,
+          "precision_micro": 0.6854,
+          "recall_micro": 0.6854,
+          "f1_micro": 0.6854,
+          "cobertura_local": 0.375,
+          "tasa_aclaracion": 0.3542,
+          "tasa_respuesta_segura": 0.1917,
+          "tasa_uso_ia_estimado": 0.0792,
           "respuestas_directas_incorrectas": 3,
-          "latencia_promedio_ms": 0.6076,
+          "latencia_promedio_ms": 0.9261,
           "matriz_confusion": {
             "acceso_sesion": {
               "sin_intencion_confiable": 8,
               "acceso_sesion": 16
             },
             "administracion_panel": {
-              "administracion_panel": 20,
+              "administracion_panel": 21,
               "clasificacion_incidente": 1,
               "convivencia_conflictos": 1,
-              "sin_intencion_confiable": 2
+              "sin_intencion_confiable": 1
             },
             "clasificacion_incidente": {
               "convivencia_conflictos": 3,
-              "clasificacion_incidente": 17,
+              "clasificacion_incidente": 18,
               "mantenimiento_infraestructura": 1,
-              "emergencias": 2,
-              "sin_intencion_confiable": 1
+              "emergencias": 2
             },
             "convivencia_conflictos": {
               "convivencia_conflictos": 14,
@@ -6689,8 +7401,8 @@
               "sin_intencion_confiable": 5
             },
             "emergencias": {
-              "emergencias": 19,
-              "sin_intencion_confiable": 5
+              "emergencias": 20,
+              "sin_intencion_confiable": 4
             },
             "funcionamiento_asistente": {
               "sin_intencion_confiable": 11,
@@ -6703,19 +7415,19 @@
               "acceso_sesion": 1
             },
             "gestion_notificaciones": {
-              "sin_intencion_confiable": 5,
-              "gestion_notificaciones": 17,
+              "gestion_notificaciones": 18,
+              "sin_intencion_confiable": 4,
               "reportar_incidente": 1,
               "convivencia_conflictos": 1
             },
             "mantenimiento_infraestructura": {
-              "mantenimiento_infraestructura": 12,
-              "sin_intencion_confiable": 11,
+              "mantenimiento_infraestructura": 16,
+              "sin_intencion_confiable": 7,
               "visitantes_ingresos": 1
             },
             "mascotas": {
-              "mascotas": 21,
-              "sin_intencion_confiable": 3
+              "mascotas": 22,
+              "sin_intencion_confiable": 2
             },
             "navegacion_app": {
               "gestion_avisos": 2,
@@ -6741,13 +7453,14 @@
               "reportar_incidente": 21
             },
             "seguimiento_incidente": {
-              "sin_intencion_confiable": 16,
-              "seguimiento_incidente": 7,
+              "sin_intencion_confiable": 15,
+              "seguimiento_incidente": 8,
               "reportar_incidente": 1
             },
             "seguridad_control": {
-              "seguridad_control": 16,
-              "sin_intencion_confiable": 6,
+              "seguridad_control": 17,
+              "sin_intencion_confiable": 4,
+              "mantenimiento_infraestructura": 1,
               "parqueaderos_vehiculos": 1,
               "convivencia_entorno": 1
             },
@@ -6755,8 +7468,8 @@
               "tramites_administrativos": 24
             },
             "visitantes_ingresos": {
-              "visitantes_ingresos": 20,
-              "sin_intencion_confiable": 4
+              "visitantes_ingresos": 21,
+              "sin_intencion_confiable": 3
             }
           },
           "errores": [
@@ -6813,12 +7526,12 @@
             {
               "texto": "casos borrados",
               "esperada": "administracion_panel",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "administracion_panel",
+              "accion": "fallback_allowed",
+              "confianza": 0.1313,
+              "segunda": "seguimiento_incidente",
+              "confianza_segunda": 0.0544,
+              "metodo": "ensamble_word_char_65"
             },
             {
               "texto": "estado de cartera",
@@ -7064,16 +7777,16 @@
         },
         "validation": {
           "total": 120,
-          "correctas": 79,
-          "precision_micro": 0.6583,
-          "recall_micro": 0.6583,
-          "f1_micro": 0.6583,
-          "cobertura_local": 0.3333,
+          "correctas": 80,
+          "precision_micro": 0.6667,
+          "recall_micro": 0.6667,
+          "f1_micro": 0.6667,
+          "cobertura_local": 0.3417,
           "tasa_aclaracion": 0.375,
-          "tasa_respuesta_segura": 0.25,
-          "tasa_uso_ia_estimado": 0.0417,
+          "tasa_respuesta_segura": 0.2167,
+          "tasa_uso_ia_estimado": 0.0667,
           "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.6256,
+          "latencia_promedio_ms": 1.1071,
           "matriz_confusion": {
             "acceso_sesion": {
               "acceso_sesion": 3,
@@ -7117,12 +7830,10 @@
             },
             "mantenimiento_infraestructura": {
               "convivencia_entorno": 1,
-              "mantenimiento_infraestructura": 4,
-              "sin_intencion_confiable": 1
+              "mantenimiento_infraestructura": 5
             },
             "mascotas": {
-              "mascotas": 5,
-              "sin_intencion_confiable": 1
+              "mascotas": 6
             },
             "navegacion_app": {
               "gestion_avisos": 1,
@@ -7130,7 +7841,7 @@
             },
             "parqueaderos_vehiculos": {
               "parqueaderos_vehiculos": 5,
-              "sin_intencion_confiable": 1
+              "seguridad_control": 1
             },
             "perfil_preferencias": {
               "perfil_preferencias": 4,
@@ -7144,8 +7855,8 @@
               "reportar_incidente": 6
             },
             "seguimiento_incidente": {
-              "sin_intencion_confiable": 4,
-              "seguimiento_incidente": 1,
+              "sin_intencion_confiable": 3,
+              "seguimiento_incidente": 2,
               "reportar_incidente": 1
             },
             "seguridad_control": {
@@ -7335,12 +8046,12 @@
             {
               "texto": "eliminar caso",
               "esperada": "seguimiento_incidente",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "seguimiento_incidente",
+              "accion": "fallback_allowed",
+              "confianza": 0.0885,
+              "segunda": "administracion_panel",
+              "confianza_segunda": 0.0858,
+              "metodo": "ensamble_word_char_65"
             },
             {
               "texto": "zona comun o privado",
@@ -7353,24 +8064,14 @@
               "metodo": "ensamble_word_char_65"
             },
             {
-              "texto": "Ey, tengo duda con puerta, como reporto una puerta con falla?",
-              "esperada": "mantenimiento_infraestructura",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
-            },
-            {
               "texto": "perro agresivo",
               "esperada": "mascotas",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "mascotas",
+              "accion": "fallback_allowed",
+              "confianza": 0.0925,
+              "segunda": "seguridad_control",
+              "confianza_segunda": 0.0181,
+              "metodo": "ensamble_word_char_65"
             },
             {
               "texto": "panel abrir notificacion",
@@ -7415,12 +8116,12 @@
             {
               "texto": "carro en mi lugar",
               "esperada": "parqueaderos_vehiculos",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "seguridad_control",
+              "accion": "fallback_allowed",
+              "confianza": 0.0562,
+              "segunda": "mantenimiento_infraestructura",
+              "confianza_segunda": 0.0195,
+              "metodo": "ensamble_word_char_65"
             },
             {
               "texto": "No entiendo lo de accidente y herida, que hago?",
@@ -7461,21 +8162,31 @@
               "segunda": "privacidad_conversaciones",
               "confianza_segunda": 0.1304,
               "metodo": "ensamble_word_char_65"
+            },
+            {
+              "texto": "q hago si olvide mi contrasena",
+              "esperada": "acceso_sesion",
+              "predicha": "sin_intencion_confiable",
+              "accion": "safe",
+              "confianza": 0.0,
+              "segunda": "",
+              "confianza_segunda": 0.0,
+              "metodo": "fuera_de_dominio"
             }
           ]
         },
         "test": {
           "total": 120,
-          "correctas": 84,
-          "precision_micro": 0.7,
-          "recall_micro": 0.7,
-          "f1_micro": 0.7,
-          "cobertura_local": 0.3333,
+          "correctas": 85,
+          "precision_micro": 0.7083,
+          "recall_micro": 0.7083,
+          "f1_micro": 0.7083,
+          "cobertura_local": 0.3417,
           "tasa_aclaracion": 0.4417,
-          "tasa_respuesta_segura": 0.1667,
-          "tasa_uso_ia_estimado": 0.0583,
+          "tasa_respuesta_segura": 0.15,
+          "tasa_uso_ia_estimado": 0.0667,
           "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.6573,
+          "latencia_promedio_ms": 0.9782,
           "matriz_confusion": {
             "acceso_sesion": {
               "acceso_sesion": 5,
@@ -7518,8 +8229,8 @@
               "gestion_notificaciones": 6
             },
             "mantenimiento_infraestructura": {
-              "mantenimiento_infraestructura": 4,
-              "sin_intencion_confiable": 2
+              "mantenimiento_infraestructura": 5,
+              "sin_intencion_confiable": 1
             },
             "mascotas": {
               "mascotas": 6
@@ -7529,8 +8240,7 @@
               "gestion_notificaciones": 1
             },
             "parqueaderos_vehiculos": {
-              "parqueaderos_vehiculos": 5,
-              "sin_intencion_confiable": 1
+              "parqueaderos_vehiculos": 6
             },
             "perfil_preferencias": {
               "perfil_preferencias": 5,
@@ -7733,16 +8443,6 @@
               "metodo": "fuera_de_dominio"
             },
             {
-              "texto": "Como reporto una puerta con falla?",
-              "esperada": "mantenimiento_infraestructura",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
-            },
-            {
               "texto": "sin iluminacion",
               "esperada": "mantenimiento_infraestructura",
               "predicha": "sin_intencion_confiable",
@@ -7795,12 +8495,12 @@
             {
               "texto": "carro bloqueando",
               "esperada": "parqueaderos_vehiculos",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "predicha": "parqueaderos_vehiculos",
+              "accion": "fallback_allowed",
+              "confianza": 0.0546,
+              "segunda": "seguridad_control",
+              "confianza_segunda": 0.0532,
+              "metodo": "ensamble_word_char_65"
             },
             {
               "texto": "enfrentar persona",
@@ -7861,34 +8561,72 @@
               "segunda": "reportar_incidente",
               "confianza_segunda": 0.1362,
               "metodo": "ensamble_word_char_65"
+            },
+            {
+              "texto": "configurar idioma",
+              "esperada": "perfil_preferencias",
+              "predicha": "sin_intencion_confiable",
+              "accion": "safe",
+              "confianza": 0.0,
+              "segunda": "",
+              "confianza_segunda": 0.0,
+              "metodo": "fuera_de_dominio"
             }
           ]
         },
         "challenge": {
-          "total": 7,
-          "correctas": 3,
-          "precision_micro": 0.4286,
-          "recall_micro": 0.4286,
-          "f1_micro": 0.4286,
+          "total": 24,
+          "correctas": 9,
+          "precision_micro": 0.375,
+          "recall_micro": 0.375,
+          "f1_micro": 0.375,
           "cobertura_local": 0.0,
-          "tasa_aclaracion": 0.2857,
-          "tasa_respuesta_segura": 0.4286,
-          "tasa_uso_ia_estimado": 0.2857,
+          "tasa_aclaracion": 0.2917,
+          "tasa_respuesta_segura": 0.2917,
+          "tasa_uso_ia_estimado": 0.4167,
           "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.5574,
+          "latencia_promedio_ms": 0.782,
           "matriz_confusion": {
+            "acceso_sesion": {
+              "administracion_panel": 1
+            },
+            "convivencia_conflictos": {
+              "convivencia_conflictos": 1
+            },
+            "gestion_notificaciones": {
+              "seguimiento_incidente": 1
+            },
+            "mantenimiento_infraestructura": {
+              "mantenimiento_infraestructura": 2
+            },
+            "mascotas": {
+              "mascotas": 1,
+              "convivencia_conflictos": 1
+            },
+            "parqueaderos_vehiculos": {
+              "seguridad_control": 1
+            },
+            "reportar_incidente": {
+              "emergencias": 1
+            },
             "seguimiento_incidente": {
-              "reportar_incidente": 1
+              "reportar_incidente": 1,
+              "convivencia_entorno": 1
+            },
+            "seguridad_control": {
+              "emergencias": 1
             },
             "sin_intencion_confiable": {
-              "sin_intencion_confiable": 3
+              "sin_intencion_confiable": 6
             },
             "tramites_administrativos": {
               "convivencia_conflictos": 1,
-              "tramites_administrativos": 1
+              "tramites_administrativos": 2,
+              "gestion_avisos": 1
             },
             "visitantes_ingresos": {
-              "parqueaderos_vehiculos": 1
+              "parqueaderos_vehiculos": 1,
+              "sin_intencion_confiable": 1
             }
           },
           "errores": [
@@ -7913,6 +8651,96 @@
               "metodo": "ensamble_word_char_65"
             },
             {
+              "texto": "mande un caso hace dias y sigo sin saber que paso",
+              "esperada": "seguimiento_incidente",
+              "predicha": "convivencia_entorno",
+              "accion": "fallback_allowed",
+              "confianza": 0.0765,
+              "segunda": "seguimiento_incidente",
+              "confianza_segunda": 0.0755,
+              "metodo": "ensamble_word_char_65"
+            },
+            {
+              "texto": "se metio alguien que nadie reconoce por la entrada",
+              "esperada": "seguridad_control",
+              "predicha": "emergencias",
+              "accion": "fallback_allowed",
+              "confianza": 0.0702,
+              "segunda": "gestion_avisos",
+              "confianza_segunda": 0.0552,
+              "metodo": "ensamble_word_char_65"
+            },
+            {
+              "texto": "la luz del corredor lleva varias noches sin prender",
+              "esperada": "mantenimiento_infraestructura",
+              "predicha": "mantenimiento_infraestructura",
+              "accion": "fallback_allowed",
+              "confianza": 0.0885,
+              "segunda": "clasificacion_incidente",
+              "confianza_segunda": 0.073,
+              "metodo": "ensamble_word_char_65"
+            },
+            {
+              "texto": "el perro de un vecino anda suelto y asusta a los ninos",
+              "esperada": "mascotas",
+              "predicha": "convivencia_conflictos",
+              "accion": "fallback_allowed",
+              "confianza": 0.1765,
+              "segunda": "clasificacion_incidente",
+              "confianza_segunda": 0.0504,
+              "metodo": "ensamble_word_char_65"
+            },
+            {
+              "texto": "quiero avisar que volvieron a dejar un carro tapando la salida",
+              "esperada": "parqueaderos_vehiculos",
+              "predicha": "seguridad_control",
+              "accion": "fallback_allowed",
+              "confianza": 0.0676,
+              "segunda": "gestion_avisos",
+              "confianza_segunda": 0.037,
+              "metodo": "ensamble_word_char_65"
+            },
+            {
+              "texto": "me aparecio una campana con un numero y no se que significa",
+              "esperada": "gestion_notificaciones",
+              "predicha": "seguimiento_incidente",
+              "accion": "clarify",
+              "confianza": 0.2481,
+              "segunda": "gestion_notificaciones",
+              "confianza_segunda": 0.2174,
+              "metodo": "ensamble_word_char_65"
+            },
+            {
+              "texto": "como le hago para que autoricen a la persona que viene a arreglar algo",
+              "esperada": "visitantes_ingresos",
+              "predicha": "sin_intencion_confiable",
+              "accion": "safe",
+              "confianza": 0.0,
+              "segunda": "",
+              "confianza_segunda": 0.0,
+              "metodo": "fuera_de_dominio"
+            },
+            {
+              "texto": "no recuerdo con cual usuario debo entrar",
+              "esperada": "acceso_sesion",
+              "predicha": "administracion_panel",
+              "accion": "clarify",
+              "confianza": 0.196,
+              "segunda": "gestion_avisos",
+              "confianza_segunda": 0.1315,
+              "metodo": "ensamble_word_char_65"
+            },
+            {
+              "texto": "quiero dejar constancia de algo urgente que acaba de pasar",
+              "esperada": "reportar_incidente",
+              "predicha": "emergencias",
+              "accion": "fallback_allowed",
+              "confianza": 0.0597,
+              "segunda": "funcionamiento_asistente",
+              "confianza_segunda": 0.0485,
+              "metodo": "ensamble_word_char_65"
+            },
+            {
               "texto": "cuanto vale exactamente la multa por ruido",
               "esperada": "tramites_administrativos",
               "predicha": "convivencia_conflictos",
@@ -7931,6 +8759,26 @@
               "segunda": "administracion_panel",
               "confianza_segunda": 0.1103,
               "metodo": "ensamble_word_char_65"
+            },
+            {
+              "texto": "a que hora exacta abre manana la oficina",
+              "esperada": "tramites_administrativos",
+              "predicha": "gestion_avisos",
+              "accion": "fallback_allowed",
+              "confianza": 0.0769,
+              "segunda": "tramites_administrativos",
+              "confianza_segunda": 0.0625,
+              "metodo": "ensamble_word_char_65"
+            },
+            {
+              "texto": "dime cuanto debo pagar este mes",
+              "esperada": "tramites_administrativos",
+              "predicha": "tramites_administrativos",
+              "accion": "fallback_allowed",
+              "confianza": 0.115,
+              "segunda": "seguridad_control",
+              "confianza_segunda": 0.0718,
+              "metodo": "ensamble_word_char_65"
             }
           ]
         }
@@ -7945,25 +8793,25 @@
         "medium_threshold": 0.28,
         "ambiguity_margin": 0.04
       },
-      "puntaje_generalizacion": 0.8053,
-      "sobreajuste_train_test": -0.0229,
+      "puntaje_generalizacion": 0.9021,
+      "sobreajuste_train_test": -0.0125,
       "validation_f1": 0.8583,
       "test_f1": 0.9,
-      "challenge_f1": 0.5714,
+      "challenge_f1": 0.9583,
       "directas_incorrectas_test": 0,
       "metricas": {
         "train": {
           "total": 480,
-          "correctas": 421,
-          "precision_micro": 0.8771,
-          "recall_micro": 0.8771,
-          "f1_micro": 0.8771,
-          "cobertura_local": 0.725,
-          "tasa_aclaracion": 0.175,
-          "tasa_respuesta_segura": 0.0958,
+          "correctas": 426,
+          "precision_micro": 0.8875,
+          "recall_micro": 0.8875,
+          "f1_micro": 0.8875,
+          "cobertura_local": 0.7312,
+          "tasa_aclaracion": 0.1792,
+          "tasa_respuesta_segura": 0.0854,
           "tasa_uso_ia_estimado": 0.0042,
           "respuestas_directas_incorrectas": 1,
-          "latencia_promedio_ms": 0.5969,
+          "latencia_promedio_ms": 0.7734,
           "matriz_confusion": {
             "acceso_sesion": {
               "sin_intencion_confiable": 5,
@@ -7973,12 +8821,11 @@
               "administracion_panel": 24
             },
             "clasificacion_incidente": {
-              "clasificacion_incidente": 16,
+              "clasificacion_incidente": 17,
               "gestion_avisos": 3,
               "seguridad_control": 2,
               "convivencia_conflictos": 1,
-              "emergencias": 1,
-              "sin_intencion_confiable": 1
+              "emergencias": 1
             },
             "convivencia_conflictos": {
               "convivencia_conflictos": 19,
@@ -7989,8 +8836,8 @@
               "sin_intencion_confiable": 2
             },
             "emergencias": {
-              "emergencias": 21,
-              "sin_intencion_confiable": 3
+              "emergencias": 22,
+              "sin_intencion_confiable": 2
             },
             "funcionamiento_asistente": {
               "sin_intencion_confiable": 6,
@@ -8005,8 +8852,8 @@
               "navegacion_app": 2
             },
             "mantenimiento_infraestructura": {
-              "mantenimiento_infraestructura": 16,
-              "sin_intencion_confiable": 7,
+              "mantenimiento_infraestructura": 19,
+              "sin_intencion_confiable": 4,
               "clasificacion_incidente": 1
             },
             "mascotas": {
@@ -8236,16 +9083,6 @@
               "metodo": "aclaracion_por_confianza_media"
             },
             {
-              "texto": "No entiendo lo de infraestructura y luz, que hago?",
-              "esperada": "clasificacion_incidente",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
-            },
-            {
               "texto": "No entiendo lo de seguridad y persona, que hago?",
               "esperada": "clasificacion_incidente",
               "predicha": "seguridad_control",
@@ -8344,6 +9181,16 @@
               "segunda": "",
               "confianza_segunda": 0.0,
               "metodo": "fuera_de_dominio"
+            },
+            {
+              "texto": "Ey, tengo duda con cerrado, que significa cerrado?",
+              "esperada": "seguimiento_incidente",
+              "predicha": "sin_intencion_confiable",
+              "accion": "safe",
+              "confianza": 0.0,
+              "segunda": "",
+              "confianza_segunda": 0.0,
+              "metodo": "fuera_de_dominio"
             }
           ]
         },
@@ -8353,12 +9200,12 @@
           "precision_micro": 0.8583,
           "recall_micro": 0.8583,
           "f1_micro": 0.8583,
-          "cobertura_local": 0.6917,
+          "cobertura_local": 0.7,
           "tasa_aclaracion": 0.2,
-          "tasa_respuesta_segura": 0.0917,
+          "tasa_respuesta_segura": 0.0833,
           "tasa_uso_ia_estimado": 0.0167,
-          "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.7279,
+          "respuestas_directas_incorrectas": 1,
+          "latencia_promedio_ms": 0.8339,
           "matriz_confusion": {
             "acceso_sesion": {
               "acceso_sesion": 5,
@@ -8370,8 +9217,9 @@
             },
             "clasificacion_incidente": {
               "sin_intencion_confiable": 1,
-              "clasificacion_incidente": 4,
-              "gestion_avisos": 1
+              "clasificacion_incidente": 3,
+              "gestion_avisos": 1,
+              "mantenimiento_infraestructura": 1
             },
             "convivencia_conflictos": {
               "convivencia_conflictos": 4,
@@ -8397,8 +9245,7 @@
               "gestion_notificaciones": 6
             },
             "mantenimiento_infraestructura": {
-              "mantenimiento_infraestructura": 5,
-              "sin_intencion_confiable": 1
+              "mantenimiento_infraestructura": 6
             },
             "mascotas": {
               "mascotas": 6
@@ -8508,18 +9355,18 @@
               "metodo": "aclaracion_por_confianza_media"
             },
             {
-              "texto": "cerrado final cierre",
-              "esperada": "seguimiento_incidente",
-              "predicha": "sin_intencion_confiable",
-              "accion": "safe",
-              "confianza": 0.0,
+              "texto": "Tengo una situacion relacionada con infraestructura luz puerta; necesito saber que incidentes van como infraestructura dentro de CommuSafe.",
+              "esperada": "clasificacion_incidente",
+              "predicha": "mantenimiento_infraestructura",
+              "accion": "answer",
+              "confianza": 0.96,
               "segunda": "",
               "confianza_segunda": 0.0,
-              "metodo": "fuera_de_dominio"
+              "metodo": "regla_negocio"
             },
             {
-              "texto": "Ey, tengo duda con puerta, como reporto una puerta con falla?",
-              "esperada": "mantenimiento_infraestructura",
+              "texto": "cerrado final cierre",
+              "esperada": "seguimiento_incidente",
               "predicha": "sin_intencion_confiable",
               "accion": "safe",
               "confianza": 0.0,
@@ -8620,7 +9467,7 @@
           "tasa_respuesta_segura": 0.025,
           "tasa_uso_ia_estimado": 0.0417,
           "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.8894,
+          "latencia_promedio_ms": 1.4388,
           "matriz_confusion": {
             "acceso_sesion": {
               "acceso_sesion": 6
@@ -8813,30 +9660,54 @@
           ]
         },
         "challenge": {
-          "total": 7,
-          "correctas": 4,
-          "precision_micro": 0.5714,
-          "recall_micro": 0.5714,
-          "f1_micro": 0.5714,
-          "cobertura_local": 0.0,
-          "tasa_aclaracion": 0.2857,
-          "tasa_respuesta_segura": 0.4286,
-          "tasa_uso_ia_estimado": 0.2857,
+          "total": 24,
+          "correctas": 23,
+          "precision_micro": 0.9583,
+          "recall_micro": 0.9583,
+          "f1_micro": 0.9583,
+          "cobertura_local": 0.625,
+          "tasa_aclaracion": 0.0833,
+          "tasa_respuesta_segura": 0.25,
+          "tasa_uso_ia_estimado": 0.0417,
           "respuestas_directas_incorrectas": 0,
-          "latencia_promedio_ms": 0.5009,
+          "latencia_promedio_ms": 0.2191,
           "matriz_confusion": {
-            "seguimiento_incidente": {
+            "acceso_sesion": {
+              "acceso_sesion": 1
+            },
+            "convivencia_conflictos": {
+              "convivencia_conflictos": 1
+            },
+            "gestion_notificaciones": {
               "gestion_notificaciones": 1
+            },
+            "mantenimiento_infraestructura": {
+              "mantenimiento_infraestructura": 2
+            },
+            "mascotas": {
+              "mascotas": 2
+            },
+            "parqueaderos_vehiculos": {
+              "parqueaderos_vehiculos": 1
+            },
+            "reportar_incidente": {
+              "reportar_incidente": 1
+            },
+            "seguimiento_incidente": {
+              "gestion_notificaciones": 1,
+              "seguimiento_incidente": 1
+            },
+            "seguridad_control": {
+              "seguridad_control": 1
             },
             "sin_intencion_confiable": {
-              "sin_intencion_confiable": 3
+              "sin_intencion_confiable": 6
             },
             "tramites_administrativos": {
-              "convivencia_conflictos": 1,
-              "gestion_notificaciones": 1
+              "tramites_administrativos": 4
             },
             "visitantes_ingresos": {
-              "visitantes_ingresos": 1
+              "visitantes_ingresos": 2
             }
           },
           "errores": [
@@ -8849,26 +9720,6 @@
               "segunda": "",
               "confianza_segunda": 0.0,
               "metodo": "palabras_clave"
-            },
-            {
-              "texto": "cuanto vale exactamente la multa por ruido",
-              "esperada": "tramites_administrativos",
-              "predicha": "convivencia_conflictos",
-              "accion": "clarify",
-              "confianza": 0.285,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "aclaracion_por_confianza_media"
-            },
-            {
-              "texto": "cual es el celular directo del administrador",
-              "esperada": "tramites_administrativos",
-              "predicha": "gestion_notificaciones",
-              "accion": "fallback_allowed",
-              "confianza": 0.1874,
-              "segunda": "",
-              "confianza_segunda": 0.0,
-              "metodo": "semantica_tfidf"
             }
           ]
         }
@@ -8880,6 +9731,6 @@
     "El split challenge muestra que preguntas muy ambiguas o fuera de dominio deben resolverse con aclaracion o respuesta segura, no con respuesta directa.",
     "No se uso un modelo neuronal externo para clasificacion local porque el tamano del dataset no justifica una dependencia pesada en produccion.",
     "En test quedaron 12 errores operacionales revisables; los primeros casos quedan en el JSON de evidencia.",
-    "En challenge quedaron 3 errores o rechazos seguros esperados por ambiguedad o falta de informacion verificable."
+    "En challenge quedaron 1 errores o rechazos seguros esperados por ambiguedad o falta de informacion verificable."
   ]
 }

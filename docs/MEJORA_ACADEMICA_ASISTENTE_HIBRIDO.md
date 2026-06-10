@@ -50,8 +50,8 @@ La base de conocimiento contiene respuestas preparadas para consultas frecuentes
 | Preguntas frecuentes o subintenciones | 108 |
 | Intenciones principales | 20 |
 | Categorías operativas | 12 |
-| Entradas verificadas en el catálogo evaluado | 100 |
-| Entradas pendientes de validación administrativa | 8 |
+| Entradas verificadas en el catálogo evaluado | 73 |
+| Entradas pendientes de validación administrativa | 35 |
 
 Las categorías cubren, entre otros temas, incidentes, administración, convivencia, seguridad, visitantes, parqueaderos, mascotas, mantenimiento, notificaciones y uso de la aplicación.
 
@@ -94,15 +94,15 @@ Cada una de las 20 intenciones tiene 36 ejemplos. El conjunto incluye preguntas 
 
 Se compararon palabras clave, TF-IDF por palabras, TF-IDF por caracteres, distintos ensambles y el motor híbrido de producción. El enfoque híbrido fue seleccionado porque obtuvo el mejor equilibrio entre generalización, trazabilidad y control de respuestas:
 
-| Estrategia | F1 validación | F1 prueba | F1 desafío |
+| Estrategia | F1 validación | F1 prueba | Challenge de desarrollo |
 |---|---:|---:|---:|
-| Palabras clave | 0.6000 | 0.6500 | 0.5714 |
-| TF-IDF por palabras | 0.6583 | 0.6667 | 0.5714 |
-| TF-IDF por caracteres | 0.6583 | 0.7000 | 0.5714 |
-| Mejor ensamble TF-IDF evaluado | 0.6500 | 0.7083 | 0.5714 |
-| Híbrido local de producción | 0.8583 | 0.9000 | 0.5714 |
+| Palabras clave | 0.6083 | 0.6583 | 0.4167 |
+| TF-IDF por palabras | 0.6667 | 0.6750 | 0.4167 |
+| TF-IDF por caracteres | 0.6667 | 0.7083 | 0.3750 |
+| Mejor ensamble TF-IDF evaluado | 0.6583 | 0.7167 | 0.3750 |
+| Híbrido local de producción | 0.8583 | 0.9000 | 0.9583 |
 
-El resultado de desafío se conserva por separado porque incluye consultas deliberadamente ambiguas, externas o que requieren validación. En estos casos, el objetivo correcto no siempre es clasificar y responder, sino reconocer la incertidumbre.
+El challenge se utilizó durante la auditoría para detectar errores y ajustar vocabulario y reglas, por lo que no se presenta como evidencia independiente. Para evitar sobreajuste metodológico se agregó un holdout final de 20 consultas manuales que no fue usado para entrenamiento, calibración, selección ni correcciones posteriores.
 
 ## 6. Función de Python y Flask
 
@@ -189,8 +189,8 @@ Resultados automatizados consolidados:
 
 | Suite o escenario | Resultado |
 |---|---:|
-| Pruebas del módulo asistente | 79 pruebas y 14 subpruebas aprobadas |
-| Regresión completa del backend | 208 pruebas y 20 subpruebas aprobadas |
+| Pruebas del módulo asistente | 80 pruebas y 16 subpruebas aprobadas |
+| Regresión completa del backend | 209 pruebas y 22 subpruebas aprobadas |
 | Solicitudes concurrentes del motor local | 600 de 600 exitosas |
 | Errores en prueba concurrente | 0 |
 | Contaminaciones de caché | 0 |
@@ -219,7 +219,7 @@ La cobertura local directa de 61.67 % no debe confundirse con el 95 % de depende
 
 El ahorro estimado fue de 348 612 tokens externos para el conjunto evaluado, con un promedio estimado de 3 058 tokens por consulta que evitó el proveedor. Esta cifra proviene del estimador interno y sirve para comparar estrategias; no corresponde a una factura real de Google.
 
-En una observación complementaria de producción de 24 horas se registraron tres consultas, todas resueltas sin Gemini, y un ahorro estimado de 9 281 tokens. La muestra es demasiado pequeña para generalizar el comportamiento futuro y se presenta únicamente como evidencia de que la política local-first está activa en producción.
+El snapshot operativo histórico disponible fue descartado como evidencia cuantitativa porque se capturó antes de separar consultas autenticadas y ejecuciones técnicas. Las métricas operativas actuales filtran por usuario autenticado; se requiere capturar una nueva ventana productiva antes de citar porcentajes reales.
 
 ## 12. Interpretación de los resultados
 
@@ -236,12 +236,13 @@ El resultado no significa que el asistente comprenda cualquier pregunta ni que G
 La evaluación tiene limitaciones que deben declararse ante el jurado:
 
 - El dataset fue construido a partir del dominio y de las preguntas frecuentes de CommuSafe. Puede representar mejor las consultas previstas que expresiones completamente nuevas de usuarios reales.
-- El conjunto de desafío contiene siete casos; debe ampliarse con consultas reales anonimizadas.
+- El challenge de 24 casos fue usado para mejorar el motor y no es evidencia independiente.
+- El holdout final de 20 consultas obtuvo 55.00 % de precisión micro y debe ampliarse con consultas reales anonimizadas.
 - La ausencia de respuestas directas incorrectas se observó en el conjunto evaluado y no garantiza error cero en operación futura.
 - Las métricas de latencia local se obtuvieron con el motor cargado en el equipo de prueba. No equivalen al tiempo total del endpoint ni incluyen red o arranque en frío.
 - La prueba concurrente valida aislamiento del motor local, pero no reemplaza pruebas distribuidas prolongadas.
 - El ahorro de tokens es una estimación interna.
-- La muestra operativa de producción de tres consultas es insuficiente para estimar porcentajes generales.
+- No existe todavía un snapshot productivo nuevo con alcance autenticado suficiente para estimar porcentajes generales.
 - El servicio Flask está implementado como opción arquitectónica, pero no está configurado actualmente en producción.
 - La base de conocimiento requiere revisión continua cuando cambien normas, horarios, contactos o procedimientos.
 

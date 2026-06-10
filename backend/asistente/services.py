@@ -351,98 +351,6 @@ def construir_system_prompt(usuario=None):
     return f"{SYSTEM_PROMPT}\n\nContexto operativo disponible para esta conversación:\n{contexto}"
 
 
-def _respuesta_fallback(mensaje):
-    texto = mensaje.lower()
-
-    if any(palabra in texto for palabra in ["horario", "horarios", "salon", "salón", "zona comun", "zona común", "zonas comunes"]):
-        return (
-            "Según la información registrada en CommuSafe, las áreas comunes de Remansos del Norte funcionan de 6:00 a. m. a 10:00 p. m. "
-            "La administración atiende de lunes a viernes de 8:00 a. m. a 5:00 p. m. y sábados de 8:00 a. m. a 12:00 m."
-        )
-    if any(palabra in texto for palabra in ["emergencia", "gas", "incendio", "ambulancia", "urgencia"]):
-        return (
-            "Si se trata de una emergencia, contacta de inmediato a portería y, si hay riesgo para la vida o la seguridad, "
-            "llama también a la línea 123. Si puedes hacerlo sin exponerte, registra el incidente en CommuSafe para dejar trazabilidad."
-        )
-    if any(palabra in texto for palabra in ["cuota", "administracion", "administración", "cartera", "pago"]):
-        return (
-            "De acuerdo con la información disponible en el sistema, las cuotas, recibos, paz y salvos y estados de cartera se validan con administración. "
-            "No encuentro un valor exacto registrado en CommuSafe para esa consulta; verifica directamente con administración para recibir la información actualizada."
-        )
-    if any(palabra in texto for palabra in ["visitante", "visitantes", "domiciliario", "domiciliarios", "proveedor", "proveedores", "ingreso"]):
-        return (
-            "Para gestionar visitantes, domiciliarios o proveedores, informa a portería los datos básicos: nombre, unidad a la que se dirige, motivo de visita, hora aproximada y placa si ingresa con vehículo. "
-            "Vigilancia puede solicitar confirmación cuando el visitante no esté anunciado o haya una novedad de seguridad."
-        )
-    if any(palabra in texto for palabra in ["parqueadero", "parqueaderos", "vehiculo", "vehículo", "placa", "carro", "moto"]):
-        return (
-            "Si hay una novedad en parqueaderos, registra un incidente con ubicación exacta, descripción, placa visible si aplica y evidencia fotográfica si es seguro tomarla. "
-            "Si un vehículo bloquea el paso, avisa también a portería para gestionar apoyo inmediato."
-        )
-    if any(palabra in texto for palabra in ["mascota", "mascotas", "perro", "gato", "excremento"]):
-        return (
-            "Según la información registrada en CommuSafe, las mascotas deben transitar con control o correa en zonas comunes y sus propietarios deben recoger los residuos. "
-            "Si hay ruido, agresividad, suciedad o una mascota extraviada, crea un reporte de convivencia respetuoso indicando lugar, hora, frecuencia y evidencia si la tienes."
-        )
-    if any(palabra in texto for palabra in ["norma", "convivencia", "ruido", "mascota", "reglamento"]):
-        return (
-            "Las normas básicas de convivencia incluyen respetar el horario de descanso entre 10:00 p. m. y 6:00 a. m., "
-            "mantener comunicación respetuosa, usar adecuadamente las zonas comunes, controlar el ruido y reportar conflictos recurrentes desde CommuSafe."
-        )
-    if any(palabra in texto for palabra in ["daño", "dano", "mantenimiento", "luz", "iluminacion", "iluminación", "cerradura", "citofono", "citófono", "puerta", "pasillo", "limpieza"]):
-        return (
-            "Para reportar mantenimiento o daños comunes, usa Incidentes > Nuevo y selecciona Infraestructura. "
-            "Incluye qué elemento falla, ubicación exacta, desde cuándo ocurre, si afecta seguridad o movilidad y hasta 3 fotos si las tienes."
-        )
-    if any(
-        frase in texto
-        for frase in [
-            "como reporto",
-            "cómo reporto",
-            "como puedo reportar",
-            "cómo puedo reportar",
-            "reportar un incidente",
-            "crear incidente",
-            "nuevo incidente",
-            "hacer un reporte",
-        ]
-    ):
-        return (
-            "Para reportar un incidente en CommuSafe:\n"
-            "1. Entra a la pestaña Incidentes.\n"
-            "2. Toca el botón Nuevo.\n"
-            "3. Escribe un título corto y selecciona la categoría: Seguridad, Convivencia, Infraestructura o Emergencia.\n"
-            "4. Describe qué pasó, dónde ocurrió y agrega la ubicación de referencia.\n"
-            "5. Si tienes evidencia, adjunta hasta 3 fotos desde cámara o galería.\n"
-            "6. Toca Reportar incidente. Después puedes abrir el detalle para ver el estado, historial y respuestas de vigilancia."
-        )
-    if any(palabra in texto for palabra in ["estado", "seguimiento", "historial", "avance"]):
-        return (
-            "Para revisar el avance de un incidente, entra a Incidentes y toca el reporte que quieres consultar. "
-            "En el detalle verás el estado actual, la descripción, evidencias y el historial de cambios con comentarios."
-        )
-    if any(palabra in texto for palabra in ["aviso", "alerta", "notificacion", "notificación"]):
-        return (
-            "Los avisos y alertas aparecen en la sección Alertas de CommuSafe. Allí puedes revisar comunicados de administración, "
-            "cambios de estado de incidentes y emergencias enviadas al conjunto. Algunos avisos pueden ser informativos y otros pueden requerir una acción concreta."
-        )
-    if any(palabra in texto for palabra in ["contraseña", "contrasena", "clave", "no puedo ingresar", "login", "sesion", "sesión"]):
-        return (
-            "Para ingresar a CommuSafe usa el correo registrado y la contraseña asignada. "
-            "Si no puedes acceder o necesitas restablecer la contraseña, solicita apoyo a administración para validar tu cuenta y actualizar el acceso."
-        )
-    if any(palabra in texto for palabra in ["app", "commusafe", "incidente", "reporte"]):
-        return (
-            "En CommuSafe puedes reportar incidentes, consultar el estado de tus casos, revisar notificaciones, recibir avisos y usar este asistente. "
-            "Si quieres reportar, usa Incidentes > Nuevo y completa el formulario con categoría, descripción, ubicación y evidencias."
-        )
-
-    return (
-        "Solo puedo apoyar consultas relacionadas con Remansos del Norte y el sistema CommuSafe. "
-        "No encuentro un dato exacto registrado en CommuSafe para esa consulta; te recomiendo verificarlo directamente con administración."
-    )
-
-
 def _extraer_texto_anthropic(respuesta):
     bloques = getattr(respuesta, "content", []) or []
     textos = [getattr(bloque, "text", "").strip() for bloque in bloques if getattr(bloque, "text", "").strip()]
@@ -629,12 +537,15 @@ def _agregar_metricas_ahorro(resultado, *, mensaje, usuario=None, historial=None
     return resultado
 
 
-def metricas_uso_asistente(horas=24):
-    """Mide uso local, aclaraciones, IA y ahorro estimado con base en logs."""
+def metricas_uso_asistente(horas=24, *, incluir_sistema=False):
+    """Mide uso real autenticado; opcionalmente incluye ejecuciones tecnicas."""
 
     since = timezone.now() - timedelta(hours=int(horas or 24))
+    queryset = AsistenteRespuestaLog.objects.filter(fecha_creacion__gte=since)
+    if not incluir_sistema:
+        queryset = queryset.filter(usuario__isnull=False)
     logs = list(
-        AsistenteRespuestaLog.objects.filter(fecha_creacion__gte=since).values(
+        queryset.values(
             "modo",
             "proveedor",
             "tokens_entrada",
@@ -667,6 +578,7 @@ def metricas_uso_asistente(horas=24):
 
     return {
         "ventana_horas": int(horas or 24),
+        "alcance": "usuarios_autenticados_y_sistema" if incluir_sistema else "usuarios_autenticados",
         "consultas_totales": total,
         "resueltas_sin_gemini": sin_gemini,
         "requieren_aclaracion": aclaraciones,
@@ -852,7 +764,7 @@ def _registrar_respuesta_log(*, mensaje, resultado, usuario=None, conversacion=N
             metadata=resultado.get("metadata", {}),
         )
     except Exception:
-        pass
+        LOGGER.exception("No fue posible registrar la trazabilidad de la respuesta del asistente.")
 
 
 def _payload_desde_local(local_result):

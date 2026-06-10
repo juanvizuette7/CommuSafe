@@ -40,16 +40,60 @@ def build_dataset(seed: int = 42) -> dict[str, list[EvaluationExample]]:
 
 
 def build_challenge_dataset() -> list[EvaluationExample]:
-    """Casos dificiles fuera del entrenamiento para medir rechazo y ambiguedad."""
+    """Casos manuales usados para analizar errores y calibrar la politica local."""
 
     return [
         EvaluationExample("quien gano el partido de futbol ayer", "sin_intencion_confiable", "fuera_contexto"),
         EvaluationExample("precio del dolar hoy en colombia", "sin_intencion_confiable", "fuera_contexto"),
         EvaluationExample("hazme una receta de pasta", "sin_intencion_confiable", "fuera_contexto"),
+        EvaluationExample("escribeme un poema romantico", "sin_intencion_confiable", "fuera_contexto"),
+        EvaluationExample("explica la segunda ley de newton", "sin_intencion_confiable", "fuera_contexto"),
+        EvaluationExample("recomiendame una pelicula para esta noche", "sin_intencion_confiable", "fuera_contexto"),
         EvaluationExample("quiero saber algo del parqueadero y visitantes", "visitantes_ingresos", "ambigua"),
         EvaluationExample("tengo una duda con un reporte y una alerta", "seguimiento_incidente", "ambigua"),
+        EvaluationExample("paso algo con una mascota pero no se como avisar", "mascotas", "ambigua"),
+        EvaluationExample("hay un problema con una puerta y no se a quien decirle", "mantenimiento_infraestructura", "ambigua"),
+        EvaluationExample("mande un caso hace dias y sigo sin saber que paso", "seguimiento_incidente", "parafrasis_manual"),
+        EvaluationExample("se metio alguien que nadie reconoce por la entrada", "seguridad_control", "parafrasis_manual"),
+        EvaluationExample("la luz del corredor lleva varias noches sin prender", "mantenimiento_infraestructura", "parafrasis_manual"),
+        EvaluationExample("el perro de un vecino anda suelto y asusta a los ninos", "mascotas", "parafrasis_manual"),
+        EvaluationExample("quiero avisar que volvieron a dejar un carro tapando la salida", "parqueaderos_vehiculos", "parafrasis_manual"),
+        EvaluationExample("me aparecio una campana con un numero y no se que significa", "gestion_notificaciones", "parafrasis_manual"),
+        EvaluationExample("necesito contar que hubo una pelea entre vecinos", "convivencia_conflictos", "parafrasis_manual"),
+        EvaluationExample("como le hago para que autoricen a la persona que viene a arreglar algo", "visitantes_ingresos", "parafrasis_manual"),
+        EvaluationExample("no recuerdo con cual usuario debo entrar", "acceso_sesion", "parafrasis_manual"),
+        EvaluationExample("quiero dejar constancia de algo urgente que acaba de pasar", "reportar_incidente", "parafrasis_manual"),
         EvaluationExample("cuanto vale exactamente la multa por ruido", "tramites_administrativos", "requiere_validacion"),
         EvaluationExample("cual es el celular directo del administrador", "tramites_administrativos", "requiere_validacion"),
+        EvaluationExample("a que hora exacta abre manana la oficina", "tramites_administrativos", "requiere_validacion"),
+        EvaluationExample("dime cuanto debo pagar este mes", "tramites_administrativos", "requiere_validacion"),
+    ]
+
+
+def build_audit_holdout_dataset() -> list[EvaluationExample]:
+    """Casos finales no usados para entrenamiento, calibracion ni correcciones."""
+
+    return [
+        EvaluationExample("quiero dejar registrada una novedad que acaba de ocurrir", "reportar_incidente", "holdout"),
+        EvaluationExample("el caso que puse sigue igual y quiero revisar que hicieron", "seguimiento_incidente", "holdout"),
+        EvaluationExample("por que el sistema marco mi reporte como prioridad alta", "clasificacion_incidente", "holdout"),
+        EvaluationExample("no me aparece el aviso que enviaron al conjunto", "gestion_notificaciones", "holdout"),
+        EvaluationExample("necesito publicar un recordatorio para varios residentes", "gestion_avisos", "holdout", "ADMINISTRADOR"),
+        EvaluationExample("hay una persona intentando abrir una entrada comun", "seguridad_control", "holdout"),
+        EvaluationExample("se escuchan gritos y discusiones fuertes entre vecinos", "convivencia_conflictos", "holdout"),
+        EvaluationExample("dejaron residuos y objetos estorbando en el pasillo", "convivencia_entorno", "holdout"),
+        EvaluationExample("mañana viene alguien a reparar el internet del apartamento", "visitantes_ingresos", "holdout"),
+        EvaluationExample("una moto ajena ocupa el espacio que tengo asignado", "parqueaderos_vehiculos", "holdout"),
+        EvaluationExample("mi gato se perdio dentro del conjunto y necesito avisar", "mascotas", "holdout"),
+        EvaluationExample("esta cayendo agua del techo del corredor comun", "mantenimiento_infraestructura", "holdout"),
+        EvaluationExample("para que sirve este bot y sobre que cosas responde", "funcionamiento_asistente", "holdout"),
+        EvaluationExample("puede otro vecino abrir y leer mis conversaciones", "privacidad_conversaciones", "holdout"),
+        EvaluationExample("la clave que me asignaron no me deja entrar", "acceso_sesion", "holdout"),
+        EvaluationExample("cual es la capital de japon", "sin_intencion_confiable", "holdout_fuera_dominio"),
+        EvaluationExample("ayudame a resolver una ecuacion de algebra", "sin_intencion_confiable", "holdout_fuera_dominio"),
+        EvaluationExample("que serie me recomiendas ver", "sin_intencion_confiable", "holdout_fuera_dominio"),
+        EvaluationExample("resume las noticias internacionales", "sin_intencion_confiable", "holdout_fuera_dominio"),
+        EvaluationExample("escribe una carta de amor", "sin_intencion_confiable", "holdout_fuera_dominio"),
     ]
 
 

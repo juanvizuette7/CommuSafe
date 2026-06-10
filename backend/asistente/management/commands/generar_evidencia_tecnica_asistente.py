@@ -50,7 +50,14 @@ class Command(BaseCommand):
         )
         production_path = Path(options["production_path"])
         if production_path.exists():
-            payload["evidencia_produccion"] = json.loads(production_path.read_text(encoding="utf-8"))
+            production_snapshot = json.loads(production_path.read_text(encoding="utf-8"))
+            if production_snapshot.get("alcance") == "usuarios_autenticados":
+                payload["evidencia_produccion"] = production_snapshot
+            else:
+                payload["evidencia_produccion_descartada"] = {
+                    "ruta": str(production_path),
+                    "motivo": "El snapshot no declara alcance usuarios_autenticados y puede incluir ejecuciones tecnicas.",
+                }
         tests_path = Path(options["tests_path"])
         if tests_path.exists():
             payload["evidencia_pruebas"] = json.loads(tests_path.read_text(encoding="utf-8"))

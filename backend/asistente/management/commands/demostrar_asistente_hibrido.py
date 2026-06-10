@@ -183,6 +183,7 @@ class Command(BaseCommand):
 
         concurrencia = _run_concurrency(solicitudes, workers)
         metricas_despues = metricas_uso_asistente(24)
+        resumen_ejecucion = self._resumir_ejecucion(resultados)
         proveedor_listo = proveedor.configured and _llm_backup_enabled()
         gemini_verificado = any(
             item["codigo"] == "gemini_respaldo"
@@ -209,14 +210,18 @@ class Command(BaseCommand):
                 "respaldo_habilitado": _llm_backup_enabled(),
             },
             "casos": resultados,
-            "metricas_24h_antes": metricas_antes,
-            "metricas_24h_despues": metricas_despues,
+            "metricas_operativas_24h_antes": metricas_antes,
+            "metricas_operativas_24h_despues": metricas_despues,
+            "resumen_ejecucion_demo": resumen_ejecucion,
             "concurrencia": concurrencia,
             "criterios": criterios,
         }
 
-        self.stdout.write(self.style.MIGRATE_HEADING("METRICAS DE USO DE LAS ULTIMAS 24 HORAS"))
+        self.stdout.write(self.style.MIGRATE_HEADING("METRICAS OPERATIVAS AUTENTICADAS DE LAS ULTIMAS 24 HORAS"))
         self.stdout.write(json.dumps(metricas_despues, ensure_ascii=False, indent=2))
+        self.stdout.write("")
+        self.stdout.write(self.style.MIGRATE_HEADING("RESUMEN AISLADO DE ESTA DEMOSTRACION"))
+        self.stdout.write(json.dumps(resumen_ejecucion, ensure_ascii=False, indent=2))
         self.stdout.write("")
         self.stdout.write(self.style.MIGRATE_HEADING("SIMULACION CON VARIOS ROLES"))
         self.stdout.write(
@@ -252,3 +257,19 @@ class Command(BaseCommand):
             raise CommandError("La simulacion concurrente no aprobo el aislamiento esperado.")
 
         self.stdout.write(self.style.SUCCESS("ASISTENTE LISTO PARA LA DEMOSTRACION ACADEMICA."))
+
+    @staticmethod
+    def _resumir_ejecucion(resultados):
+        modos = {}
+        proveedores = {}
+        for item in resultados:
+            modo = item["resultado_final"]["modo"]
+            proveedor = item["resultado_final"]["proveedor"]
+            modos[modo] = modos.get(modo, 0) + 1
+            proveedores[proveedor] = proveedores.get(proveedor, 0) + 1
+        return {
+            "casos": len(resultados),
+            "modos": modos,
+            "proveedores": proveedores,
+            "nota": "Este resumen pertenece solo al comando de demostracion y no altera las metricas operativas autenticadas.",
+        }

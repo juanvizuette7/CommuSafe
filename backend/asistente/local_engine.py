@@ -28,6 +28,7 @@ AMBIGUITY_MARGIN = 0.04
 MAX_OPTIONS = 3
 TOKEN_RE = re.compile(r"[a-z0-9]+")
 COMMON_TOKEN_CORRECTIONS = {
+    "autoricen": "autorizar",
     "adminstracion": "administracion",
     "contrsea": "contrasena",
     "contrsena": "contrasena",
@@ -97,6 +98,9 @@ DOMAIN_TERMS = {
     "basura",
     "badge",
     "camara",
+    "campana",
+    "carro",
+    "caso",
     "cartera",
     "cel",
     "celular",
@@ -111,6 +115,7 @@ DOMAIN_TERMS = {
     "conjunto",
     "convivencia",
     "correo",
+    "corredor",
     "cuenta",
     "cuota",
     "dashboard",
@@ -119,6 +124,7 @@ DOMAIN_TERMS = {
     "dialogo",
     "domiciliario",
     "emergencia",
+    "entrada",
     "evidencia",
     "foto",
     "gas",
@@ -130,6 +136,7 @@ DOMAIN_TERMS = {
     "incendio",
     "ingreso",
     "limpieza",
+    "luz",
     "logout",
     "luminaria",
     "mantenimiento",
@@ -139,9 +146,13 @@ DOMAIN_TERMS = {
     "notificacion",
     "oficina",
     "parqueadero",
+    "pagar",
+    "pelea",
+    "perro",
     "paz",
     "perfil",
     "porteria",
+    "puerta",
     "poste",
     "proveedor",
     "push",
@@ -157,6 +168,7 @@ DOMAIN_TERMS = {
     "sabados",
     "salvo",
     "seguridad",
+    "salida",
     "sesion",
     "sistema",
     "telefono",
@@ -167,6 +179,7 @@ DOMAIN_TERMS = {
     "vigilancia",
     "vigilante",
     "visitante",
+    "urgente",
     "zona",
 }
 
@@ -412,8 +425,23 @@ class LocalAssistantEngine:
         tokens = set(tokenize(normalized))
         rules = [
             ({"entrar", "cuenta"}, "uso_001"),
+            ({"usuario", "entrar"}, "uso_001"),
+            ({"caso", "saber"}, "uso_004"),
+            ({"dejar", "constancia"}, "uso_003"),
             ({"aviso", "administrativo"}, "not_003"),
             ({"comunicado", "administracion"}, "not_003"),
+            ({"campana", "numero"}, "not_007"),
+            ({"entrada", "alguien"}, "seg_004"),
+            ({"carro", "salida"}, "parq_001"),
+            ({"autorizar", "persona"}, "vis_001"),
+            ({"luz", "corredor"}, "mant_001"),
+            ({"puerta"}, "mant_003"),
+            ({"pelea", "vecino"}, "conv_003"),
+            ({"perro", "suelto"}, "mas_001"),
+            ({"multa"}, "adm_002"),
+            ({"cuanto", "pagar"}, "adm_002"),
+            ({"celular", "administrador"}, "adm_012"),
+            ({"hora", "oficina"}, "adm_001"),
         ]
         for required_tokens, entry_id in rules:
             entry = self._entry_by_id.get(entry_id)

@@ -8,7 +8,9 @@ Este documento registra las medidas aplicadas al backend del asistente virtual C
 
 | Riesgo | Medida aplicada | Resultado |
 |---|---|---|
-| Exposicion de metricas internas | `/api/asistente/health/` entrega informacion detallada solo a administradores, vigilantes o staff. Residentes reciben un estado operativo simple. | Evita exponer cache, modelo, cuotas y metricas tecnicas a usuarios finales. |
+| Exposicion de metricas internas | `/api/asistente/health/` entrega informacion detallada solo a administradores o staff. Residentes y vigilantes reciben un estado operativo simple. | Aplica minimo privilegio sobre cache, modelo, cuotas y metricas tecnicas. |
+| Diagnostico Flask | El health remoto sin clave devuelve solo estado basico; cache, motor y seguridad requieren localhost o clave de servicio. | Evita revelar detalles operativos del servicio auxiliar. |
+| Privacidad administrativa | Conversaciones, mensajes, logs y conocimiento quedan visibles en Django Admin solo para administradores. | Evita acceso accidental por cuentas staff no administrativas. |
 | Manipulacion del contexto | El endpoint legado marca el historial enviado por cliente como no confiable. Solo conserva mensajes de usuario, descarta instrucciones sospechosas y limita volumen. | Un cliente no puede inyectar mensajes falsos del asistente para alterar la IA. |
 | Prompt injection | Se detectan frases como ignorar instrucciones, revelar prompt, mostrar claves, token JWT, API key o modo desarrollador. | El asistente responde de forma segura sin llamar a Gemini/Anthropic. |
 | Secretos en logs tecnicos | `AsistenteRespuestaLog.mensaje` redacted emails, telefonos colombianos, API keys, tokens y claves antes de persistir. | La trazabilidad no conserva secretos pegados accidentalmente por usuarios. |
@@ -40,7 +42,7 @@ python -m pytest asistente/tests.py -q
 Resultado:
 
 ```text
-79 passed, 14 subtests passed
+80 passed, 16 subtests passed
 ```
 
 Prueba de resiliencia:
@@ -58,6 +60,7 @@ Resultado real:
 Casos cubiertos:
 
 - Residentes no reciben metricas internas del health.
+- Vigilantes no reciben metricas internas del health.
 - Administradores reciben health detallado.
 - Prompt injection no llega a IA externa.
 - Secretos pegados por usuario se redactan en logs.

@@ -56,7 +56,7 @@ class VersionEntradaConocimientoInline(admin.TabularInline):
 
 
 @admin.register(ConversacionAsistente)
-class ConversacionAsistenteAdmin(admin.ModelAdmin):
+class ConversacionAsistenteAdmin(SoloAdministradorMixin, admin.ModelAdmin):
     list_display = ("titulo", "usuario", "fecha_creacion", "fecha_actualizacion")
     list_filter = ("fecha_creacion", "fecha_actualizacion")
     search_fields = ("titulo", "usuario__email", "usuario__nombre", "usuario__apellido")
@@ -66,7 +66,7 @@ class ConversacionAsistenteAdmin(admin.ModelAdmin):
 
 
 @admin.register(MensajeAsistente)
-class MensajeAsistenteAdmin(admin.ModelAdmin):
+class MensajeAsistenteAdmin(SoloAdministradorMixin, admin.ModelAdmin):
     list_display = ("conversacion", "rol", "fecha_creacion")
     list_filter = ("rol", "fecha_creacion")
     search_fields = ("contenido", "conversacion__titulo", "conversacion__usuario__email")

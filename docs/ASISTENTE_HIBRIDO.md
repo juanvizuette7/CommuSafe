@@ -41,7 +41,7 @@ La arquitectura queda separada por responsabilidades:
 
 ## Base de conocimiento local
 
-La base local contiene mas de 100 entradas iniciales organizadas por categorias:
+La base local contiene 108 entradas iniciales organizadas por categorias. En la auditoria final quedaron 73 verificadas y 35 orientaciones comunitarias pendientes de aprobacion administrativa:
 
 - Uso del sistema.
 - Incidentes.
@@ -86,8 +86,8 @@ Estado actual verificado:
 | Intenciones principales | 20 |
 | Subintenciones FAQ | 108 |
 | Categorias | 12 |
-| Entradas verificadas | 100 |
-| Pendientes de validacion administrativa | 8 |
+| Entradas verificadas | 73 |
+| Pendientes de validacion administrativa | 35 |
 | Entradas vigentes | 108 |
 | Entradas vencidas | 0 |
 
@@ -255,7 +255,7 @@ Antes de aceptar una respuesta generativa, el backend valida que:
 
 Si falla Gemini, se excede la cuota, vence el timeout o la respuesta parece inventada, el sistema devuelve una respuesta segura y registra el motivo en `AsistenteRespuestaLog.metadata`.
 
-El endpoint `GET /api/asistente/health/` expone metricas de las ultimas 24 horas:
+El endpoint `GET /api/asistente/health/` expone a administradores metricas de consultas autenticadas de las ultimas 24 horas:
 
 - Consultas totales.
 - Consultas resueltas sin Gemini.
@@ -378,20 +378,21 @@ Resultado local verificado en desarrollo despues de la auditoria de modelo:
 train:      F1 0.8771
 validation: F1 0.8583
 test:       F1 0.9000
-challenge:  F1 0.5714
+challenge de desarrollo: F1 0.9583
+holdout final: precision micro 0.5500
 ```
 
-Los splits `validation` y `test` contienen todos los estilos de pregunta: formal, informal, corta, larga, error ortografico y no tecnico. Esto permite medir capacidad real de generalizacion sin inflar resultados por fuga de datos.
+Los splits `validation` y `test` contienen todos los estilos de pregunta: formal, informal, corta, larga, error ortografico y no tecnico. No comparten frases, pero nacen de las mismas FAQ; por ello miden comportamiento controlado y pueden sobreestimar la generalizacion real.
 
 Comparacion reproducible de estrategias locales entrenadas y evaluadas:
 
-| Estrategia | Validation F1 | Test F1 | Challenge F1 | Decision |
+| Estrategia | Validation F1 | Test F1 | Challenge desarrollo | Decision |
 |---|---:|---:|---:|---|
-| Baseline por palabras clave | 0.6000 | 0.6500 | 0.5714 | Insuficiente como solucion unica |
-| TF-IDF centroides por palabra | 0.6583 | 0.6667 | 0.5714 | Mejora el baseline, pero pierde precision en frases cortas |
-| TF-IDF centroides por caracteres | 0.6583 | 0.7000 | 0.5714 | Aporta robustez ante errores ortograficos |
-| Ensamble palabra/caracter 0.35/0.65 | 0.6500 | 0.7083 | 0.5714 | Mejor entre modelos entrenados puros, pero no supera la base de conocimiento |
-| Hibrido local de produccion | 0.8583 | 0.9000 | 0.5714 | Seleccionado por mejor generalizacion, trazabilidad y control de seguridad |
+| Baseline por palabras clave | 0.6083 | 0.6583 | 0.4167 | Insuficiente como solucion unica |
+| TF-IDF centroides por palabra | 0.6667 | 0.6750 | 0.4167 | Mejora el baseline, pero pierde precision en frases cortas |
+| TF-IDF centroides por caracteres | 0.6667 | 0.7083 | 0.3750 | Aporta robustez ante errores ortograficos |
+| Ensamble palabra/caracter 0.35/0.65 | 0.6583 | 0.7167 | 0.3750 | Mejor entre modelos entrenados puros, pero no supera la base de conocimiento |
+| Hibrido local de produccion | 0.8583 | 0.9000 | 0.9583 | Seleccionado por mejor equilibrio interno, trazabilidad y control de seguridad |
 
 Comportamiento consolidado medido el 10 de junio de 2026 sobre `test`:
 
@@ -413,7 +414,7 @@ El reporte completo con matriz de confusion y analisis de errores queda en:
 - `docs/evidencias/asistente_evidencia_tecnica_2026.json`
 - `docs/evidencias/asistente_evidencia_tecnica_2026.md`
 
-Las confusiones principales restantes se concentran entre clasificacion de incidentes y avisos, gestion de avisos y navegacion, y frases muy cortas que el filtro de dominio prefiere rechazar de forma segura.
+El holdout final de 20 preguntas manuales, no usado para ajustes posteriores, obtuvo 55.00% de precision micro, 0 respuestas directas incorrectas, 50% de respuestas seguras, 25% de aclaraciones y 25% de candidatas a respaldo. La principal limitacion restante es comprender lenguaje indirecto sin depender de terminos explicitos del dominio.
 
 La comparacion se calcula con el comando `python manage.py evaluar_modelos_asistente`. El resultado debe interpretarse como evidencia tecnica inicial sobre la base registrada, no como reemplazo de pruebas con usuarios reales.
 

@@ -8,7 +8,7 @@ para que el asistente responda de forma segura sin inventar datos.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import date
 from typing import Iterable
 
@@ -610,9 +610,11 @@ FAQ_ENTRIES: tuple[FAQEntry, ...] = (
         "horario_administracion",
         "administracion",
         "Cual es el horario de administracion?",
-        "Segun la informacion registrada en CommuSafe, administracion atiende de lunes a viernes de 8:00 a. m. a 5:00 p. m. y sabados de 8:00 a. m. a 12:00 m.",
+        "No encuentro un horario oficial vigente registrado en CommuSafe. Confirma los horarios de atencion directamente con administracion.",
         ("horario", "administracion", "atencion", "sabado"),
         ("a que hora atienden", "horario oficina", "administracion abre", "atienden sabados"),
+        ALL_ROLES,
+        False,
     ),
     FAQEntry(
         "adm_002",
@@ -741,9 +743,11 @@ FAQ_ENTRIES: tuple[FAQEntry, ...] = (
         "horario_descanso",
         "convivencia",
         "Cual es el horario de descanso?",
-        "La referencia registrada en CommuSafe es de 10:00 p. m. a 6:00 a. m. Durante ese periodo deben evitarse ruidos o actividades que afecten a otros residentes.",
+        "Respeta los periodos de descanso informados por administracion y evita ruidos que afecten a otros residentes. Confirma el horario vigente en los avisos oficiales o con administracion.",
         ("horario", "descanso", "ruido", "noche"),
         ("hasta que hora musica", "horario silencio", "ruido despues de diez", "descanso vecinos"),
+        ALL_ROLES,
+        False,
     ),
     FAQEntry(
         "conv_003",
@@ -977,7 +981,7 @@ FAQ_ENTRIES: tuple[FAQEntry, ...] = (
         "horario_zonas_comunes",
         "zonas_comunes",
         "Cual es el horario de zonas comunes?",
-        "La referencia registrada es de 6:00 a. m. a 10:00 p. m., salvo aviso administrativo diferente. Para reservas o condiciones exactas valida con administracion.",
+        "Consulta los horarios vigentes de las zonas comunes en los avisos oficiales o directamente con administracion. Para reservas o condiciones exactas valida con administracion.",
         ("zonas", "comunes", "horario", "reserva"),
         (
             "horario salon",
@@ -1129,6 +1133,33 @@ FAQ_ENTRIES: tuple[FAQEntry, ...] = (
         ("aclaracion", "duda", "confianza", "opciones"),
         ("por que pregunta otra vez", "no entendio", "me da opciones", "respuesta ambigua"),
     ),
+)
+
+POLICY_CATEGORIES_PENDING_ADMIN = frozenset(
+    {
+        "convivencia",
+        "visitantes",
+        "parqueaderos",
+        "mascotas",
+        "zonas_comunes",
+    }
+)
+POLICY_VALIDATION_NOTE = (
+    " Confirma la norma vigente con administracion antes de considerarla informacion oficial."
+)
+
+# Las orientaciones comunitarias siguen disponibles, pero no se publican como
+# reglas oficiales hasta que administracion registre y apruebe su fuente.
+FAQ_ENTRIES = tuple(
+    replace(
+        entry,
+        answer=f"{entry.answer.rstrip()}{POLICY_VALIDATION_NOTE}",
+        verified=False,
+        source="Orientacion comunitaria pendiente de validacion por administracion",
+    )
+    if entry.category in POLICY_CATEGORIES_PENDING_ADMIN
+    else entry
+    for entry in FAQ_ENTRIES
 )
 
 

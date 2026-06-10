@@ -1,7 +1,7 @@
 {
-  "generado_en_utc": "2026-06-10T17:21:44.155319+00:00",
+  "generado_en_utc": "2026-06-10T17:40:40.824857+00:00",
   "estado": "listo",
-  "gemini_real_solicitado": true,
+  "gemini_real_solicitado": false,
   "proveedor": {
     "nombre": "gemini",
     "modelo": "gemini-2.5-flash-lite",
@@ -97,10 +97,10 @@
         "metodo": "palabras_clave"
       },
       "resultado_final": {
-        "modo": "ia",
-        "proveedor": "gemini",
-        "modelo": "gemini-2.5-flash-lite",
-        "respuesta": "Según la información registrada en CommuSafe, no encuentro un procedimiento oficial para activar un código QR temporal biométrico en portería.\n\nTe recomiendo validar esta información directamente con el personal de administración o vigilancia del conjunto residencial Remansos del Norte. Ellos podrán brindarte el detalle sobre este procedimiento si existe."
+        "modo": "preclasificacion_local",
+        "proveedor": "local",
+        "modelo": "commusafe-local-hybrid-v3",
+        "respuesta": "La llamada real a Gemini no se ejecuto. Usa --usar-gemini para validarla."
       },
       "cumple": true
     },
@@ -124,53 +124,68 @@
       "cumple": true
     }
   ],
-  "metricas_24h_antes": {
+  "metricas_operativas_24h_antes": {
     "ventana_horas": 24,
-    "consultas_totales": 19,
-    "resueltas_sin_gemini": 17,
-    "requieren_aclaracion": 3,
-    "usan_ia_externa": 2,
-    "usan_gemini": 2,
-    "tokens_ia_estimados": 6279,
-    "tokens_ahorrados_estimados": 52039,
-    "porcentaje_sin_gemini": 89.47
+    "alcance": "usuarios_autenticados",
+    "consultas_totales": 1,
+    "resueltas_sin_gemini": 1,
+    "requieren_aclaracion": 1,
+    "usan_ia_externa": 0,
+    "usan_gemini": 0,
+    "tokens_ia_estimados": 0,
+    "tokens_ahorrados_estimados": 3096,
+    "porcentaje_sin_gemini": 100.0
   },
-  "metricas_24h_despues": {
+  "metricas_operativas_24h_despues": {
     "ventana_horas": 24,
-    "consultas_totales": 25,
-    "resueltas_sin_gemini": 22,
-    "requieren_aclaracion": 4,
-    "usan_ia_externa": 3,
-    "usan_gemini": 3,
-    "tokens_ia_estimados": 9411,
-    "tokens_ahorrados_estimados": 67312,
-    "porcentaje_sin_gemini": 88.0
+    "alcance": "usuarios_autenticados",
+    "consultas_totales": 1,
+    "resueltas_sin_gemini": 1,
+    "requieren_aclaracion": 1,
+    "usan_ia_externa": 0,
+    "usan_gemini": 0,
+    "tokens_ia_estimados": 0,
+    "tokens_ahorrados_estimados": 3096,
+    "porcentaje_sin_gemini": 100.0
+  },
+  "resumen_ejecucion_demo": {
+    "casos": 6,
+    "modos": {
+      "local": 3,
+      "aclaracion": 1,
+      "preclasificacion_local": 1,
+      "segura": 1
+    },
+    "proveedores": {
+      "local": 6
+    },
+    "nota": "Este resumen pertenece solo al comando de demostracion y no altera las metricas operativas autenticadas."
   },
   "concurrencia": {
-    "solicitudes": 60,
+    "solicitudes": 30,
     "workers": 6,
-    "calentamiento_previo_ms": 5.8914,
-    "exitosas": 60,
+    "calentamiento_previo_ms": 8.3894,
+    "exitosas": 30,
     "errores": [],
     "contaminaciones_cache": 0,
     "roles": {
-      "RESIDENTE": 46,
-      "VIGILANTE": 7,
-      "ADMINISTRADOR": 7
+      "VIGILANTE": 4,
+      "RESIDENTE": 22,
+      "ADMINISTRADOR": 4
     },
     "acciones": {
-      "fallback_allowed": 7,
-      "safe": 7,
-      "answer": 8,
-      "clarify": 38
+      "clarify": 20,
+      "answer": 4,
+      "safe": 3,
+      "fallback_allowed": 3
     },
-    "duracion_total_ms": 7.7803,
-    "throughput_aprox_req_s": 7711.78,
+    "duracion_total_ms": 6.3234,
+    "throughput_aprox_req_s": 4744.28,
     "latencia_ms": {
-      "promedio": 0.0297,
-      "p50": 0.0288,
-      "p95": 0.0544,
-      "max": 0.0671
+      "promedio": 0.0392,
+      "p50": 0.0377,
+      "p95": 0.0765,
+      "max": 0.0813
     },
     "aislamiento_aprobado": true,
     "ia_externa_usada": false,
@@ -179,7 +194,7 @@
   "criterios": {
     "casos_funcionales_cumplen": true,
     "proveedor_respaldo_preparado": true,
-    "gemini_real_verificado": true,
+    "gemini_real_verificado": null,
     "concurrencia_sin_errores": true,
     "sin_contaminacion_cache": true,
     "aislamiento_concurrente_aprobado": true

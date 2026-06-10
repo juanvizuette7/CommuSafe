@@ -372,9 +372,9 @@ def train_compare_select_models(seed: int = 42) -> dict[str, Any]:
             "intenciones": len(MAIN_INTENTS),
         },
         "criterio_seleccion": (
-            "El modelo se selecciona por puntaje de generalizacion ponderado "
-            "(validation, test y challenge), penalizando sobreajuste y respuestas "
-            "directas incorrectas. La precision de entrenamiento no decide la seleccion."
+            "El modelo se selecciona por un puntaje interno ponderado de validation, test controlado "
+            "y challenge de desarrollo, penalizando sobreajuste y respuestas directas incorrectas. "
+            "Este puntaje sirve para comparar candidatos, pero no reemplaza el holdout final independiente."
         ),
         "ranking": selection_rows,
         "modelo_seleccionado": selected,
@@ -587,7 +587,7 @@ def export_model_selection_markdown(payload: dict[str, Any], markdown_path: str 
             "",
             "## Ranking",
             "",
-            "| Modelo | Validation F1 | Test F1 | Challenge F1 | Puntaje | Directas incorrectas test |",
+            "| Modelo | Validation F1 | Test F1 | Challenge desarrollo | Puntaje interno | Directas incorrectas test |",
             "|---|---:|---:|---:|---:|---:|",
         ]
     )
@@ -603,7 +603,7 @@ def export_model_selection_markdown(payload: dict[str, Any], markdown_path: str 
             "",
             f"- **Modelo:** {selected['nombre']}",
             f"- **ID:** `{selected['id']}`",
-            f"- **Puntaje de generalizacion:** {selected['puntaje_generalizacion']}",
+            f"- **Puntaje de comparacion interna:** {selected['puntaje_generalizacion']}",
             f"- **Configuracion:** `{selected['configuracion']}`",
             "",
             "## Limitaciones observadas",

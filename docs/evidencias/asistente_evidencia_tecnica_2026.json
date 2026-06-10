@@ -1,5 +1,5 @@
 {
-  "generado_en_utc": "2026-06-10T17:20:42.003079+00:00",
+  "generado_en_utc": "2026-06-10T18:15:03.099321+00:00",
   "entorno": {
     "python": "3.11.9",
     "django": "4.2",
@@ -267,16 +267,16 @@
     "tasa_candidata_gemini": 0.05,
     "dependencia_gemini_evitada": 0.95,
     "llamadas_reales_gemini": 0,
-    "tokens_externos_ahorrados_estimados": 348612,
-    "tokens_ahorrados_promedio_por_consulta_evitada": 3058.0,
+    "tokens_externos_ahorrados_estimados": 345078,
+    "tokens_ahorrados_promedio_por_consulta_evitada": 3027.0,
     "respuestas_directas_incorrectas": 0,
     "consistencia_repeticiones": 1.0,
     "repeticiones_por_pregunta": 3,
     "latencia_ms": {
-      "promedio": 0.3421,
-      "p50": 0.0328,
-      "p95": 1.1777,
-      "max": 25.6665
+      "promedio": 0.2908,
+      "p50": 0.0289,
+      "p95": 0.9742,
+      "max": 22.1286
     },
     "acciones": {
       "answer": 74,
@@ -504,92 +504,194 @@
     ]
   },
   "evaluacion_desafio": {
-    "total": 7,
-    "precision_micro": 0.4286,
-    "recall_micro": 0.4286,
-    "f1_micro": 0.4286,
-    "precision_macro": 0.25,
-    "recall_macro": 0.25,
-    "f1_macro": 0.25,
+    "total": 24,
+    "precision_micro": 0.7917,
+    "recall_micro": 0.7917,
+    "f1_micro": 0.7917,
+    "precision_macro": 0.9028,
+    "recall_macro": 0.8542,
+    "f1_macro": 0.825,
     "por_intencion": {
-      "seguimiento_incidente": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1": 0.0,
+      "acceso_sesion": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
         "soporte": 1,
-        "verdaderos_positivos": 0,
+        "verdaderos_positivos": 1,
+        "falsos_positivos": 0,
+        "falsos_negativos": 0
+      },
+      "convivencia_conflictos": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6667,
+        "soporte": 1,
+        "verdaderos_positivos": 1,
+        "falsos_positivos": 1,
+        "falsos_negativos": 0
+      },
+      "gestion_notificaciones": {
+        "precision": 0.3333,
+        "recall": 1.0,
+        "f1": 0.5,
+        "soporte": 1,
+        "verdaderos_positivos": 1,
+        "falsos_positivos": 2,
+        "falsos_negativos": 0
+      },
+      "mantenimiento_infraestructura": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "soporte": 2,
+        "verdaderos_positivos": 2,
+        "falsos_positivos": 0,
+        "falsos_negativos": 0
+      },
+      "mascotas": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "soporte": 2,
+        "verdaderos_positivos": 2,
+        "falsos_positivos": 0,
+        "falsos_negativos": 0
+      },
+      "parqueaderos_vehiculos": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "soporte": 1,
+        "verdaderos_positivos": 1,
+        "falsos_positivos": 0,
+        "falsos_negativos": 0
+      },
+      "reportar_incidente": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "soporte": 1,
+        "verdaderos_positivos": 1,
+        "falsos_positivos": 0,
+        "falsos_negativos": 0
+      },
+      "seguimiento_incidente": {
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6667,
+        "soporte": 2,
+        "verdaderos_positivos": 1,
         "falsos_positivos": 0,
         "falsos_negativos": 1
+      },
+      "seguridad_control": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "soporte": 1,
+        "verdaderos_positivos": 1,
+        "falsos_positivos": 0,
+        "falsos_negativos": 0
       },
       "sin_intencion_confiable": {
         "precision": 1.0,
         "recall": 1.0,
         "f1": 1.0,
-        "soporte": 3,
-        "verdaderos_positivos": 3,
+        "soporte": 6,
+        "verdaderos_positivos": 6,
         "falsos_positivos": 0,
         "falsos_negativos": 0
       },
       "tramites_administrativos": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1": 0.0,
-        "soporte": 2,
-        "verdaderos_positivos": 0,
+        "precision": 1.0,
+        "recall": 0.25,
+        "f1": 0.4,
+        "soporte": 4,
+        "verdaderos_positivos": 1,
         "falsos_positivos": 0,
-        "falsos_negativos": 2
+        "falsos_negativos": 3
       },
       "visitantes_ingresos": {
-        "precision": 0.0,
-        "recall": 0.0,
-        "f1": 0.0,
-        "soporte": 1,
-        "verdaderos_positivos": 0,
+        "precision": 1.0,
+        "recall": 0.5,
+        "f1": 0.6667,
+        "soporte": 2,
+        "verdaderos_positivos": 1,
         "falsos_positivos": 0,
         "falsos_negativos": 1
       }
     },
-    "cobertura_respuesta_local": 0.0,
-    "tasa_aclaracion": 0.1429,
-    "tasa_respuesta_segura": 0.4286,
-    "tasa_candidata_gemini": 0.4286,
-    "dependencia_gemini_evitada": 0.5714,
+    "cobertura_respuesta_local": 0.5,
+    "tasa_aclaracion": 0.0833,
+    "tasa_respuesta_segura": 0.25,
+    "tasa_candidata_gemini": 0.1667,
+    "dependencia_gemini_evitada": 0.8333,
     "llamadas_reales_gemini": 0,
-    "tokens_externos_ahorrados_estimados": 12224,
-    "tokens_ahorrados_promedio_por_consulta_evitada": 3056.0,
+    "tokens_externos_ahorrados_estimados": 60566,
+    "tokens_ahorrados_promedio_por_consulta_evitada": 3028.3,
     "respuestas_directas_incorrectas": 0,
     "consistencia_repeticiones": 1.0,
     "repeticiones_por_pregunta": 3,
     "latencia_ms": {
-      "promedio": 0.1615,
-      "p50": 0.0145,
-      "p95": 0.7589,
-      "max": 0.7717
+      "promedio": 0.1224,
+      "p50": 0.0245,
+      "p95": 0.7824,
+      "max": 1.6151
     },
     "acciones": {
-      "safe": 3,
-      "fallback_allowed": 3,
-      "clarify": 1
+      "safe": 6,
+      "fallback_allowed": 4,
+      "clarify": 2,
+      "answer": 12
     },
     "metodos": {
-      "fuera_de_dominio": 3,
-      "semantica_tfidf": 2,
+      "fuera_de_dominio": 6,
+      "semantica_tfidf": 3,
       "palabras_clave": 1,
-      "aclaracion_por_confianza_media": 1
+      "aclaracion_por_confianza_media": 2,
+      "regla_negocio": 12
     },
     "matriz_confusion": {
-      "seguimiento_incidente": {
+      "acceso_sesion": {
+        "acceso_sesion": 1
+      },
+      "convivencia_conflictos": {
+        "convivencia_conflictos": 1
+      },
+      "gestion_notificaciones": {
         "gestion_notificaciones": 1
       },
+      "mantenimiento_infraestructura": {
+        "mantenimiento_infraestructura": 2
+      },
+      "mascotas": {
+        "mascotas": 2
+      },
+      "parqueaderos_vehiculos": {
+        "parqueaderos_vehiculos": 1
+      },
+      "reportar_incidente": {
+        "reportar_incidente": 1
+      },
+      "seguimiento_incidente": {
+        "gestion_notificaciones": 1,
+        "seguimiento_incidente": 1
+      },
+      "seguridad_control": {
+        "seguridad_control": 1
+      },
       "sin_intencion_confiable": {
-        "sin_intencion_confiable": 3
+        "sin_intencion_confiable": 6
       },
       "tramites_administrativos": {
         "convivencia_conflictos": 1,
-        "gestion_notificaciones": 1
+        "gestion_notificaciones": 1,
+        "tramites_administrativos": 1,
+        "emergencias": 1
       },
       "visitantes_ingresos": {
-        "convivencia_entorno": 1
+        "convivencia_entorno": 1,
+        "visitantes_ingresos": 1
       }
     },
     "errores": [
@@ -628,11 +730,363 @@
         "accion": "fallback_allowed",
         "metodo": "semantica_tfidf",
         "confianza": 0.1993
+      },
+      {
+        "texto": "dime cuanto debo pagar este mes",
+        "rol": "RESIDENTE",
+        "esperada": "tramites_administrativos",
+        "predicha": "emergencias",
+        "accion": "fallback_allowed",
+        "metodo": "semantica_tfidf",
+        "confianza": 0.1296
+      }
+    ]
+  },
+  "evaluacion_holdout_auditoria": {
+    "total": 20,
+    "precision_micro": 0.55,
+    "recall_micro": 0.55,
+    "f1_micro": 0.55,
+    "precision_macro": 0.3438,
+    "recall_macro": 0.4375,
+    "f1_macro": 0.375,
+    "por_intencion": {
+      "acceso_sesion": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "soporte": 1,
+        "verdaderos_positivos": 0,
+        "falsos_positivos": 0,
+        "falsos_negativos": 1
+      },
+      "clasificacion_incidente": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6667,
+        "soporte": 1,
+        "verdaderos_positivos": 1,
+        "falsos_positivos": 1,
+        "falsos_negativos": 0
+      },
+      "convivencia_conflictos": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "soporte": 1,
+        "verdaderos_positivos": 0,
+        "falsos_positivos": 0,
+        "falsos_negativos": 1
+      },
+      "convivencia_entorno": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "soporte": 1,
+        "verdaderos_positivos": 0,
+        "falsos_positivos": 1,
+        "falsos_negativos": 1
+      },
+      "funcionamiento_asistente": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "soporte": 1,
+        "verdaderos_positivos": 0,
+        "falsos_positivos": 0,
+        "falsos_negativos": 1
+      },
+      "gestion_avisos": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "soporte": 1,
+        "verdaderos_positivos": 0,
+        "falsos_positivos": 1,
+        "falsos_negativos": 1
+      },
+      "gestion_notificaciones": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "soporte": 1,
+        "verdaderos_positivos": 0,
+        "falsos_positivos": 0,
+        "falsos_negativos": 1
+      },
+      "mantenimiento_infraestructura": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6667,
+        "soporte": 1,
+        "verdaderos_positivos": 1,
+        "falsos_positivos": 1,
+        "falsos_negativos": 0
+      },
+      "mascotas": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "soporte": 1,
+        "verdaderos_positivos": 1,
+        "falsos_positivos": 0,
+        "falsos_negativos": 0
+      },
+      "parqueaderos_vehiculos": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "soporte": 1,
+        "verdaderos_positivos": 0,
+        "falsos_positivos": 0,
+        "falsos_negativos": 1
+      },
+      "privacidad_conversaciones": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "soporte": 1,
+        "verdaderos_positivos": 1,
+        "falsos_positivos": 0,
+        "falsos_negativos": 0
+      },
+      "reportar_incidente": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "soporte": 1,
+        "verdaderos_positivos": 0,
+        "falsos_positivos": 0,
+        "falsos_negativos": 1
+      },
+      "seguimiento_incidente": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "soporte": 1,
+        "verdaderos_positivos": 1,
+        "falsos_positivos": 0,
+        "falsos_negativos": 0
+      },
+      "seguridad_control": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "soporte": 1,
+        "verdaderos_positivos": 1,
+        "falsos_positivos": 0,
+        "falsos_negativos": 0
+      },
+      "sin_intencion_confiable": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6667,
+        "soporte": 5,
+        "verdaderos_positivos": 5,
+        "falsos_positivos": 5,
+        "falsos_negativos": 0
+      },
+      "visitantes_ingresos": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "soporte": 1,
+        "verdaderos_positivos": 0,
+        "falsos_positivos": 0,
+        "falsos_negativos": 1
+      }
+    },
+    "cobertura_respuesta_local": 0.0,
+    "tasa_aclaracion": 0.25,
+    "tasa_respuesta_segura": 0.5,
+    "tasa_candidata_gemini": 0.25,
+    "dependencia_gemini_evitada": 0.75,
+    "llamadas_reales_gemini": 0,
+    "tokens_externos_ahorrados_estimados": 45400,
+    "tokens_ahorrados_promedio_por_consulta_evitada": 3026.67,
+    "respuestas_directas_incorrectas": 0,
+    "consistencia_repeticiones": 1.0,
+    "repeticiones_por_pregunta": 3,
+    "latencia_ms": {
+      "promedio": 0.1702,
+      "p50": 0.0294,
+      "p95": 0.8903,
+      "max": 0.9387
+    },
+    "acciones": {
+      "safe": 10,
+      "fallback_allowed": 5,
+      "clarify": 5
+    },
+    "metodos": {
+      "fuera_de_dominio": 10,
+      "semantica_tfidf": 4,
+      "aclaracion_por_confianza_media": 5,
+      "palabras_clave": 1
+    },
+    "matriz_confusion": {
+      "acceso_sesion": {
+        "sin_intencion_confiable": 1
+      },
+      "clasificacion_incidente": {
+        "clasificacion_incidente": 1
+      },
+      "convivencia_conflictos": {
+        "clasificacion_incidente": 1
+      },
+      "convivencia_entorno": {
+        "sin_intencion_confiable": 1
+      },
+      "funcionamiento_asistente": {
+        "sin_intencion_confiable": 1
+      },
+      "gestion_avisos": {
+        "convivencia_entorno": 1
+      },
+      "gestion_notificaciones": {
+        "gestion_avisos": 1
+      },
+      "mantenimiento_infraestructura": {
+        "mantenimiento_infraestructura": 1
+      },
+      "mascotas": {
+        "mascotas": 1
+      },
+      "parqueaderos_vehiculos": {
+        "sin_intencion_confiable": 1
+      },
+      "privacidad_conversaciones": {
+        "privacidad_conversaciones": 1
+      },
+      "reportar_incidente": {
+        "sin_intencion_confiable": 1
+      },
+      "seguimiento_incidente": {
+        "seguimiento_incidente": 1
+      },
+      "seguridad_control": {
+        "seguridad_control": 1
+      },
+      "sin_intencion_confiable": {
+        "sin_intencion_confiable": 5
+      },
+      "visitantes_ingresos": {
+        "mantenimiento_infraestructura": 1
+      }
+    },
+    "errores": [
+      {
+        "texto": "quiero dejar registrada una novedad que acaba de ocurrir",
+        "rol": "RESIDENTE",
+        "esperada": "reportar_incidente",
+        "predicha": "sin_intencion_confiable",
+        "accion": "safe",
+        "metodo": "fuera_de_dominio",
+        "confianza": 0.0
+      },
+      {
+        "texto": "el caso que puse sigue igual y quiero revisar que hicieron",
+        "rol": "RESIDENTE",
+        "esperada": "seguimiento_incidente",
+        "predicha": "seguimiento_incidente",
+        "accion": "fallback_allowed",
+        "metodo": "semantica_tfidf",
+        "confianza": 0.1127
+      },
+      {
+        "texto": "no me aparece el aviso que enviaron al conjunto",
+        "rol": "RESIDENTE",
+        "esperada": "gestion_notificaciones",
+        "predicha": "gestion_avisos",
+        "accion": "fallback_allowed",
+        "metodo": "semantica_tfidf",
+        "confianza": 0.2772
+      },
+      {
+        "texto": "necesito publicar un recordatorio para varios residentes",
+        "rol": "ADMINISTRADOR",
+        "esperada": "gestion_avisos",
+        "predicha": "convivencia_entorno",
+        "accion": "clarify",
+        "metodo": "aclaracion_por_confianza_media",
+        "confianza": 0.36
+      },
+      {
+        "texto": "hay una persona intentando abrir una entrada comun",
+        "rol": "RESIDENTE",
+        "esperada": "seguridad_control",
+        "predicha": "seguridad_control",
+        "accion": "fallback_allowed",
+        "metodo": "semantica_tfidf",
+        "confianza": 0.2584
+      },
+      {
+        "texto": "se escuchan gritos y discusiones fuertes entre vecinos",
+        "rol": "RESIDENTE",
+        "esperada": "convivencia_conflictos",
+        "predicha": "clasificacion_incidente",
+        "accion": "clarify",
+        "metodo": "aclaracion_por_confianza_media",
+        "confianza": 0.36
+      },
+      {
+        "texto": "dejaron residuos y objetos estorbando en el pasillo",
+        "rol": "RESIDENTE",
+        "esperada": "convivencia_entorno",
+        "predicha": "sin_intencion_confiable",
+        "accion": "safe",
+        "metodo": "fuera_de_dominio",
+        "confianza": 0.0
+      },
+      {
+        "texto": "mañana viene alguien a reparar el internet del apartamento",
+        "rol": "RESIDENTE",
+        "esperada": "visitantes_ingresos",
+        "predicha": "mantenimiento_infraestructura",
+        "accion": "fallback_allowed",
+        "metodo": "palabras_clave",
+        "confianza": 0.225
+      },
+      {
+        "texto": "una moto ajena ocupa el espacio que tengo asignado",
+        "rol": "RESIDENTE",
+        "esperada": "parqueaderos_vehiculos",
+        "predicha": "sin_intencion_confiable",
+        "accion": "safe",
+        "metodo": "fuera_de_dominio",
+        "confianza": 0.0
+      },
+      {
+        "texto": "mi gato se perdio dentro del conjunto y necesito avisar",
+        "rol": "RESIDENTE",
+        "esperada": "mascotas",
+        "predicha": "mascotas",
+        "accion": "fallback_allowed",
+        "metodo": "semantica_tfidf",
+        "confianza": 0.0732
+      },
+      {
+        "texto": "para que sirve este bot y sobre que cosas responde",
+        "rol": "RESIDENTE",
+        "esperada": "funcionamiento_asistente",
+        "predicha": "sin_intencion_confiable",
+        "accion": "safe",
+        "metodo": "fuera_de_dominio",
+        "confianza": 0.0
+      },
+      {
+        "texto": "la clave que me asignaron no me deja entrar",
+        "rol": "RESIDENTE",
+        "esperada": "acceso_sesion",
+        "predicha": "sin_intencion_confiable",
+        "accion": "safe",
+        "metodo": "fuera_de_dominio",
+        "confianza": 0.0
       }
     ]
   },
   "comparacion_modelos": {
-    "criterio": "El modelo se selecciona por puntaje de generalizacion ponderado (validation, test y challenge), penalizando sobreajuste y respuestas directas incorrectas. La precision de entrenamiento no decide la seleccion.",
+    "criterio": "El modelo se selecciona por un puntaje interno ponderado de validation, test controlado y challenge de desarrollo, penalizando sobreajuste y respuestas directas incorrectas. Este puntaje sirve para comparar candidatos, pero no reemplaza el holdout final independiente.",
     "modelo_seleccionado": {
       "id": "hibrido_produccion_kb",
       "nombre": "Hibrido local de produccion",
@@ -642,11 +1096,11 @@
         "medium_threshold": 0.28,
         "ambiguity_margin": 0.04
       },
-      "puntaje_generalizacion": 0.8053,
-      "sobreajuste_train_test": -0.0229,
+      "puntaje_generalizacion": 0.9021,
+      "sobreajuste_train_test": -0.0125,
       "validation_f1": 0.8583,
       "test_f1": 0.9,
-      "challenge_f1": 0.5714,
+      "challenge_f1": 0.9583,
       "directas_incorrectas_test": 0
     },
     "ranking": [
@@ -659,11 +1113,11 @@
           "medium_threshold": 0.28,
           "ambiguity_margin": 0.04
         },
-        "puntaje_generalizacion": 0.8053,
-        "sobreajuste_train_test": -0.0229,
+        "puntaje_generalizacion": 0.9021,
+        "sobreajuste_train_test": -0.0125,
         "validation_f1": 0.8583,
         "test_f1": 0.9,
-        "challenge_f1": 0.5714,
+        "challenge_f1": 0.9583,
         "directas_incorrectas_test": 0
       },
       {
@@ -675,11 +1129,11 @@
           "medium_threshold": 0.18,
           "ambiguity_margin": 0.1
         },
-        "puntaje_generalizacion": 0.6566,
-        "sobreajuste_train_test": -0.0354,
-        "validation_f1": 0.65,
-        "test_f1": 0.7083,
-        "challenge_f1": 0.5714,
+        "puntaje_generalizacion": 0.6138,
+        "sobreajuste_train_test": -0.0334,
+        "validation_f1": 0.6583,
+        "test_f1": 0.7167,
+        "challenge_f1": 0.375,
         "directas_incorrectas_test": 0
       },
       {
@@ -691,43 +1145,11 @@
           "medium_threshold": 0.18,
           "ambiguity_margin": 0.1
         },
-        "puntaje_generalizacion": 0.6553,
-        "sobreajuste_train_test": -0.0333,
-        "validation_f1": 0.6583,
-        "test_f1": 0.7,
-        "challenge_f1": 0.5714,
-        "directas_incorrectas_test": 0
-      },
-      {
-        "id": "ensamble_word_char_50",
-        "nombre": "Ensamble TF-IDF palabra/caracter 0.50/0.50",
-        "descripcion": "Combina clasificacion por palabras y n-gramas de caracteres para generalizar mejor ante preguntas nuevas y errores ortograficos.",
-        "configuracion": {
-          "high_threshold": 0.45,
-          "medium_threshold": 0.18,
-          "ambiguity_margin": 0.08
-        },
-        "puntaje_generalizacion": 0.6516,
-        "sobreajuste_train_test": -0.0209,
-        "validation_f1": 0.6583,
-        "test_f1": 0.6917,
-        "challenge_f1": 0.5714,
-        "directas_incorrectas_test": 0
-      },
-      {
-        "id": "tfidf_centroides_palabra",
-        "nombre": "TF-IDF centroides por palabra",
-        "descripcion": "Clasificador supervisado ligero por similitud a centroides de intencion.",
-        "configuracion": {
-          "high_threshold": 0.45,
-          "medium_threshold": 0.18,
-          "ambiguity_margin": 0.08
-        },
-        "puntaje_generalizacion": 0.6394,
-        "sobreajuste_train_test": 0.0062,
-        "validation_f1": 0.6583,
-        "test_f1": 0.6667,
-        "challenge_f1": 0.5714,
+        "puntaje_generalizacion": 0.6125,
+        "sobreajuste_train_test": -0.0312,
+        "validation_f1": 0.6667,
+        "test_f1": 0.7083,
+        "challenge_f1": 0.375,
         "directas_incorrectas_test": 0
       },
       {
@@ -739,11 +1161,43 @@
           "medium_threshold": 0.18,
           "ambiguity_margin": 0.08
         },
-        "puntaje_generalizacion": 0.6196,
-        "sobreajuste_train_test": -0.025,
-        "validation_f1": 0.6583,
+        "puntaje_generalizacion": 0.6125,
+        "sobreajuste_train_test": -0.0229,
+        "validation_f1": 0.6667,
+        "test_f1": 0.7083,
+        "challenge_f1": 0.375,
+        "directas_incorrectas_test": 0
+      },
+      {
+        "id": "ensamble_word_char_50",
+        "nombre": "Ensamble TF-IDF palabra/caracter 0.50/0.50",
+        "descripcion": "Combina clasificacion por palabras y n-gramas de caracteres para generalizar mejor ante preguntas nuevas y errores ortograficos.",
+        "configuracion": {
+          "high_threshold": 0.45,
+          "medium_threshold": 0.18,
+          "ambiguity_margin": 0.08
+        },
+        "puntaje_generalizacion": 0.6088,
+        "sobreajuste_train_test": -0.0187,
+        "validation_f1": 0.6667,
         "test_f1": 0.7,
-        "challenge_f1": 0.4286,
+        "challenge_f1": 0.375,
+        "directas_incorrectas_test": 0
+      },
+      {
+        "id": "tfidf_centroides_palabra",
+        "nombre": "TF-IDF centroides por palabra",
+        "descripcion": "Clasificador supervisado ligero por similitud a centroides de intencion.",
+        "configuracion": {
+          "high_threshold": 0.45,
+          "medium_threshold": 0.18,
+          "ambiguity_margin": 0.08
+        },
+        "puntaje_generalizacion": 0.6067,
+        "sobreajuste_train_test": 0.0083,
+        "validation_f1": 0.6667,
+        "test_f1": 0.675,
+        "challenge_f1": 0.4167,
         "directas_incorrectas_test": 0
       },
       {
@@ -755,11 +1209,11 @@
           "medium_threshold": 0.18,
           "ambiguity_margin": 0.08
         },
-        "puntaje_generalizacion": 0.6154,
-        "sobreajuste_train_test": -0.0083,
-        "validation_f1": 0.6,
-        "test_f1": 0.65,
-        "challenge_f1": 0.5714,
+        "puntaje_generalizacion": 0.5829,
+        "sobreajuste_train_test": -0.0104,
+        "validation_f1": 0.6083,
+        "test_f1": 0.6583,
+        "challenge_f1": 0.4167,
         "directas_incorrectas_test": 0
       }
     ],
@@ -768,34 +1222,34 @@
       "El split challenge muestra que preguntas muy ambiguas o fuera de dominio deben resolverse con aclaracion o respuesta segura, no con respuesta directa.",
       "No se uso un modelo neuronal externo para clasificacion local porque el tamano del dataset no justifica una dependencia pesada en produccion.",
       "En test quedaron 12 errores operacionales revisables; los primeros casos quedan en el JSON de evidencia.",
-      "En challenge quedaron 3 errores o rechazos seguros esperados por ambiguedad o falta de informacion verificable."
+      "En challenge quedaron 1 errores o rechazos seguros esperados por ambiguedad o falta de informacion verificable."
     ]
   },
   "concurrencia": {
-    "solicitudes": 600,
+    "solicitudes": 300,
     "workers": 20,
-    "calentamiento_previo_ms": 4.87,
-    "exitosas": 600,
+    "calentamiento_previo_ms": 5.2122,
+    "exitosas": 300,
     "errores": [],
     "contaminaciones_cache": 0,
     "roles": {
-      "RESIDENTE": 450,
-      "VIGILANTE": 75,
-      "ADMINISTRADOR": 75
+      "RESIDENTE": 226,
+      "ADMINISTRADOR": 37,
+      "VIGILANTE": 37
     },
     "acciones": {
-      "answer": 75,
-      "clarify": 375,
-      "fallback_allowed": 75,
-      "safe": 75
+      "fallback_allowed": 37,
+      "clarify": 188,
+      "answer": 38,
+      "safe": 37
     },
-    "duracion_total_ms": 48.7591,
-    "throughput_aprox_req_s": 12305.4,
+    "duracion_total_ms": 22.9247,
+    "throughput_aprox_req_s": 13086.32,
     "latencia_ms": {
-      "promedio": 0.0269,
-      "p50": 0.0291,
-      "p95": 0.0409,
-      "max": 0.0774
+      "promedio": 0.0262,
+      "p50": 0.0283,
+      "p95": 0.0376,
+      "max": 0.4878
     },
     "aislamiento_aprobado": true,
     "ia_externa_usada": false,
@@ -805,38 +1259,27 @@
     "Precision, recall y F1 se calculan sobre intenciones esperadas y predichas.",
     "Cobertura local cuenta respuestas directas locales; aclaraciones y respuestas seguras tambien evitan IA externa.",
     "La tasa candidata Gemini representa consultas que podrian usar el respaldo externo; durante esta evaluacion no se llamo a Gemini.",
+    "El conjunto challenge se usa para analisis y calibracion; no se presenta como evidencia independiente.",
+    "El holdout de auditoria no se usa para entrenamiento, calibracion, seleccion ni correcciones posteriores.",
     "El ahorro de tokens es una estimacion usando el mismo estimador interno de CommuSafe, no una factura del proveedor.",
     "La concurrencia mide el motor local en este equipo y no reemplaza una prueba distribuida de produccion."
   ],
-  "evidencia_produccion": {
-    "capturado_en": "2026-06-10T15:52:45.2727977Z",
-    "endpoint": "https://commusafe.onrender.com/api/asistente/health/",
-    "ventana_horas": 24,
-    "consultas_totales": 3,
-    "resueltas_sin_gemini": 3,
-    "requieren_aclaracion": 3,
-    "usan_ia_externa": 0,
-    "usan_gemini": 0,
-    "tokens_ia_estimados": 0,
-    "tokens_ahorrados_estimados": 9281,
-    "porcentaje_sin_gemini": 100.0,
-    "proveedor_activo": "gemini",
-    "modelo": "gemini-2.5-flash-lite",
-    "arquitectura": "hibrida_local_primero",
-    "nota": "Muestra operativa real y pequena. Complementa, pero no reemplaza, la evaluacion controlada."
+  "evidencia_produccion_descartada": {
+    "ruta": "..\\docs\\evidencias\\asistente_metricas_produccion_2026-06-10.json",
+    "motivo": "El snapshot no declara alcance usuarios_autenticados y puede incluir ejecuciones tecnicas."
   },
   "evidencia_pruebas": {
     "capturado_en": "2026-06-10",
     "modulo_asistente": {
       "comando": "python -m pytest asistente -q",
-      "pruebas_aprobadas": 79,
-      "subpruebas_aprobadas": 14,
+      "pruebas_aprobadas": 80,
+      "subpruebas_aprobadas": 16,
       "fallidas": 0
     },
     "regresion_backend": {
       "comando": "python -m pytest -q",
-      "pruebas_aprobadas": 208,
-      "subpruebas_aprobadas": 20,
+      "pruebas_aprobadas": 209,
+      "subpruebas_aprobadas": 22,
       "fallidas": 0
     },
     "casos_aislamiento_y_persistencia": [
@@ -849,11 +1292,12 @@
     "demo_academica": {
       "comando": "python manage.py demostrar_asistente_hibrido --usar-gemini --solicitudes 60 --workers 6",
       "casos_funcionales": 6,
-      "gemini_real_verificado": true,
+      "gemini_real_verificado": false,
       "solicitudes_concurrentes": 60,
       "errores_concurrentes": 0,
       "contaminaciones_cache": 0
     },
-    "resultado": "aprobado"
+    "resultado": "aprobado",
+    "nota_gemini": "La auditoria final usa mocks y no consume Gemini real. La conectividad real debe validarse por separado con credenciales privadas y cuota supervisada."
   }
 }

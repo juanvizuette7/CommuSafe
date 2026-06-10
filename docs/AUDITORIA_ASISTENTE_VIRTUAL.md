@@ -23,7 +23,11 @@ Esta auditoria revisa exclusivamente el asistente virtual de CommuSafe a nivel b
 | Integracion auxiliar | Un microservicio podria romper el chat si se cae. | Django solo delega a Flask cuando `COMMUSAFE_NLP_SERVICE_URL` esta configurada; ante timeout o error usa el motor local interno. | `_resolver_con_servicio_nlp()` |
 | Observabilidad | No habia medicion suficiente del comportamiento por respuesta. | Logs tecnicos con modo, proveedor, modelo, intencion, categoria, confianza, latencia, tokens estimados y metadatos. | Modelo `AsistenteRespuestaLog` |
 | Ahorro de Gemini | No era visible cuantas consultas evitaban IA externa. | El health del asistente expone consultas sin Gemini, aclaraciones, uso IA, uso Gemini y tokens estimados ahorrados. | `metricas_uso_asistente()`, `/api/asistente/health/` |
-| Proteccion de metricas | El health detallado podia exponer cache, modelo, cuotas y metricas a cualquier usuario autenticado. | Residentes reciben estado operativo simple; administradores, vigilantes y staff mantienen diagnostico completo. | `ChatHealthView`, `docs/SEGURIDAD_ASISTENTE.md` |
+| Proteccion de metricas | El health detallado podia exponer cache, modelo, cuotas y metricas a usuarios operativos sin necesidad tecnica. | Solo administradores y staff reciben diagnostico completo; residentes y vigilantes reciben estado operativo simple. | `ChatHealthView`, `docs/SEGURIDAD_ASISTENTE.md` |
+| Confiabilidad de metricas | Ejecuciones de consola y demostracion podian mezclarse con consultas reales. | Las metricas operativas filtran por usuario autenticado y el comando demo publica un resumen aislado. | `metricas_uso_asistente()`, `demostrar_asistente_hibrido` |
+| Conocimiento no confirmado | Horarios y normas comunitarias se presentaban como verificadas sin fuente administrativa registrada. | Se retiraron horarios exactos no sustentados y 35 orientaciones quedaron pendientes de validacion; solo 73 entradas conservan estado verificado. | `local_knowledge.py`, `knowledge_base.py` |
+| Prueba contradictoria | Una prueba exigia devolver un horario exacto no verificado. | La prueba ahora exige una respuesta segura, sin hora exacta y con validacion administrativa. | `test_horario_no_verificado_orienta_a_administracion` |
+| Privacidad del admin | Conversaciones y mensajes no aplicaban explicitamente la restriccion administrativa del resto de datos del asistente. | El admin de conversaciones y mensajes usa `SoloAdministradorMixin`. | `backend/asistente/admin.py` |
 | Prompt injection | Un usuario podia intentar revelar instrucciones internas, claves o manipular el contexto antes de escalar a IA. | Se bloquean intentos de manipulacion y se responde localmente sin llamar a Gemini/Anthropic. | `test_bloquea_inyeccion_y_no_usa_ia_externa` |
 | Historial no confiable | El endpoint legado aceptaba historial de cliente y podria recibir mensajes falsos del asistente. | El historial legado se trata como no confiable: solo conserva mensajes del usuario, descarta instrucciones sospechosas y limita volumen. | `test_historial_legado_no_confiable_no_suplanta_asistente` |
 | Secretos en trazabilidad | Un usuario podia pegar API keys, tokens, telefonos o correos y quedar registrados en logs tecnicos. | Los logs redactan secretos, tokens, API keys, correos y telefonos antes de persistir. | `test_log_redacta_secretos_y_datos_de_contacto` |
@@ -81,7 +85,7 @@ Esto reduce costo, latencia y riesgo de enviar contexto innecesario.
 - El cache se indexa por mensaje normalizado y rol, y cada solicitud recibe una copia aislada del resultado.
 - Las respuestas no exponen credenciales ni datos privados.
 - El servicio Flask auxiliar no reemplaza el backend principal y queda protegido para uso local o con clave.
-- El endpoint de health solo entrega metricas internas a administracion, vigilancia o staff.
+- El endpoint de health solo entrega metricas internas a administracion o staff.
 - Los intentos de revelar prompt, claves o modificar reglas del asistente se bloquean antes de llamar a IA externa.
 - Los logs tecnicos redactan secretos pegados accidentalmente por usuarios.
 
@@ -103,9 +107,9 @@ python manage.py probar_resiliencia_asistente --requests 80 --workers 8
 Resultados verificados:
 
 ```text
-suite asistente: 79 passed, 14 subtests passed
+suite asistente: 80 passed, 16 subtests passed
 suite de aceptacion: 13 passed, 3 subtests passed
-suite completa backend: 208 passed, 20 subtests passed
+suite completa backend: 209 passed, 22 subtests passed
 manage.py check: sin problemas
 makemigrations --check --dry-run: sin cambios pendientes
 validar_base_conocimiento: ok
@@ -137,8 +141,8 @@ Estado de base de conocimiento:
 | Intenciones principales | 20 |
 | Subintenciones FAQ | 108 |
 | Categorias | 12 |
-| Entradas verificadas | 100 |
-| Pendientes de validacion administrativa | 8 |
+| Entradas verificadas | 73 |
+| Pendientes de validacion administrativa | 35 |
 | Entradas vigentes | 108 |
 | Entradas vencidas | 0 |
 
@@ -179,17 +183,18 @@ Metricas del motor local:
 | Train | 0.8771 |
 | Validation | 0.8583 |
 | Test | 0.9000 |
-| Challenge | 0.5714 |
+| Challenge de desarrollo, puntaje operacional usado para ajuste | 0.9583 |
+| Holdout final no usado para ajustes | 0.5500 precision micro |
 
 Comparacion de modelos locales:
 
-| Estrategia | Validation F1 | Test F1 | Challenge F1 |
+| Estrategia | Validation F1 | Test F1 | Puntaje challenge de desarrollo |
 |---|---:|---:|---:|
-| Baseline por palabras clave | 0.6000 | 0.6500 | 0.5714 |
-| TF-IDF centroides por palabra | 0.6583 | 0.6667 | 0.5714 |
-| TF-IDF centroides por caracteres | 0.6500 | 0.7000 | 0.5714 |
-| Ensamble palabra/caracter 0.35/0.65 | 0.6500 | 0.7083 | 0.5714 |
-| Hibrido local de produccion | 0.8583 | 0.9000 | 0.5714 |
+| Baseline por palabras clave | 0.6083 | 0.6583 | 0.4167 |
+| TF-IDF centroides por palabra | 0.6667 | 0.6750 | 0.4167 |
+| TF-IDF centroides por caracteres | 0.6667 | 0.7083 | 0.3750 |
+| Ensamble palabra/caracter 0.35/0.65 | 0.6583 | 0.7167 | 0.3750 |
+| Hibrido local de produccion | 0.8583 | 0.9000 | 0.9583 |
 
 Comportamiento en test:
 

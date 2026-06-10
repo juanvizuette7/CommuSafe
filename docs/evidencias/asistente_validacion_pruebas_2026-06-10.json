@@ -2,14 +2,14 @@
   "capturado_en": "2026-06-10",
   "modulo_asistente": {
     "comando": "python -m pytest asistente -q",
-    "pruebas_aprobadas": 79,
-    "subpruebas_aprobadas": 14,
+    "pruebas_aprobadas": 80,
+    "subpruebas_aprobadas": 16,
     "fallidas": 0
   },
   "regresion_backend": {
     "comando": "python -m pytest -q",
-    "pruebas_aprobadas": 208,
-    "subpruebas_aprobadas": 20,
+    "pruebas_aprobadas": 209,
+    "subpruebas_aprobadas": 22,
     "fallidas": 0
   },
   "casos_aislamiento_y_persistencia": [
@@ -22,10 +22,11 @@
   "demo_academica": {
     "comando": "python manage.py demostrar_asistente_hibrido --usar-gemini --solicitudes 60 --workers 6",
     "casos_funcionales": 6,
-    "gemini_real_verificado": true,
+    "gemini_real_verificado": false,
     "solicitudes_concurrentes": 60,
     "errores_concurrentes": 0,
     "contaminaciones_cache": 0
   },
-  "resultado": "aprobado"
+  "resultado": "aprobado",
+  "nota_gemini": "La auditoria final usa mocks y no consume Gemini real. La conectividad real debe validarse por separado con credenciales privadas y cuota supervisada."
 }

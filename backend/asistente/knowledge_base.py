@@ -18,8 +18,8 @@ KNOWLEDGE_BASE_SECTIONS = [
     {
         "titulo": "Horarios y atencion administrativa",
         "items": [
-            "La administracion atiende de lunes a viernes de 8:00 a. m. a 5:00 p. m. y sabados de 8:00 a. m. a 12:00 m.",
-            "Porteria y vigilancia mantienen atencion operativa permanente para novedades de ingreso, seguridad y apoyo inmediato.",
+            "Los horarios oficiales de administracion deben consultarse en los avisos vigentes o confirmarse directamente con administracion.",
+            "La disponibilidad y los canales de porteria o vigilancia deben confirmarse mediante la informacion oficial vigente del conjunto.",
             "Las solicitudes administrativas pueden estar relacionadas con certificados, paz y salvos, cuotas, recibos, novedades de datos, permisos, reservas o aclaraciones de convivencia.",
             "Las solicitudes simples suelen revisarse primero por administracion; los casos que requieren validacion documental o decision administrativa pueden tomar mas tiempo.",
             "Para una solicitud clara se recomienda indicar nombre, unidad residencial, descripcion concreta, fecha aproximada, soporte disponible y medio de contacto actualizado.",
@@ -49,7 +49,7 @@ KNOWLEDGE_BASE_SECTIONS = [
         "titulo": "Convivencia comunitaria",
         "items": [
             "La convivencia se basa en respeto, comunicacion clara, cuidado de zonas comunes y cumplimiento de horarios de descanso.",
-            "El horario de descanso de referencia es de 10:00 p. m. a 6:00 a. m.; durante ese periodo deben evitarse ruidos, musica alta, golpes o actividades que afecten a otros residentes.",
+            "Deben respetarse los periodos de descanso comunicados oficialmente y evitarse ruidos, musica alta, golpes o actividades que afecten a otros residentes.",
             "Para reuniones o actividades sociales se recomienda avisar a los vecinos cercanos, controlar volumen, respetar horarios y dejar limpias las areas utilizadas.",
             "Los conflictos entre vecinos deben registrarse con lenguaje respetuoso, describiendo hechos, fechas, lugares y evidencias disponibles.",
             "Cuando haya una situacion sensible, el asistente debe recomendar evitar confrontaciones directas y usar los canales de administracion o vigilancia.",
@@ -91,7 +91,7 @@ KNOWLEDGE_BASE_SECTIONS = [
         "titulo": "Zonas comunes",
         "items": [
             "Las zonas comunes deben usarse con responsabilidad, limpieza y respeto por otros residentes.",
-            "El horario de referencia para areas comunes es de 6:00 a. m. a 10:00 p. m., salvo indicacion administrativa diferente registrada por aviso.",
+            "Los horarios de areas comunes deben validarse en los avisos vigentes o directamente con administracion.",
             "Si existe reserva de espacios, el residente debe validar disponibilidad y condiciones con administracion.",
             "Los danos en zonas comunes deben reportarse con ubicacion exacta, descripcion y evidencia si esta disponible.",
             "Despues de reuniones o actividades, los usuarios deben cuidar aseo, ruido y estado de los elementos comunes.",

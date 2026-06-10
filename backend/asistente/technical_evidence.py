@@ -14,7 +14,7 @@ from typing import Any
 
 from django import get_version as django_version
 
-from .evaluation import EvaluationExample, build_challenge_dataset, build_dataset
+from .evaluation import EvaluationExample, build_audit_holdout_dataset, build_challenge_dataset, build_dataset
 from .local_engine import resolve_local_answer
 from .model_selection import train_compare_select_models
 from .services import _estimar_tokens_entrada_ia, construir_system_prompt
@@ -265,6 +265,7 @@ def generate_technical_evidence(
     professional = build_professional_dataset(seed=seed)
     splits = build_dataset(seed=seed)
     challenge = build_challenge_dataset()
+    audit_holdout = build_audit_holdout_dataset()
     model_comparison = train_compare_select_models(seed=seed)
 
     return {
@@ -280,6 +281,7 @@ def generate_technical_evidence(
         "errores_validacion_dataset": validate_professional_dataset(professional),
         "evaluacion_test_independiente": _evaluate_examples(splits["test"], repetitions),
         "evaluacion_desafio": _evaluate_examples(challenge, repetitions),
+        "evaluacion_holdout_auditoria": _evaluate_examples(audit_holdout, repetitions),
         "comparacion_modelos": {
             "criterio": model_comparison["criterio_seleccion"],
             "modelo_seleccionado": model_comparison["modelo_seleccionado"],
@@ -291,6 +293,8 @@ def generate_technical_evidence(
             "Precision, recall y F1 se calculan sobre intenciones esperadas y predichas.",
             "Cobertura local cuenta respuestas directas locales; aclaraciones y respuestas seguras tambien evitan IA externa.",
             "La tasa candidata Gemini representa consultas que podrian usar el respaldo externo; durante esta evaluacion no se llamo a Gemini.",
+            "El conjunto challenge se usa para analisis y calibracion; no se presenta como evidencia independiente.",
+            "El holdout de auditoria no se usa para entrenamiento, calibracion, seleccion ni correcciones posteriores.",
             "El ahorro de tokens es una estimacion usando el mismo estimador interno de CommuSafe, no una factura del proveedor.",
             "La concurrencia mide el motor local en este equipo y no reemplaza una prueba distribuida de produccion.",
         ],
@@ -313,6 +317,7 @@ def _percentage(value: float) -> str:
 def _render_markdown(payload: dict[str, Any]) -> str:
     test = payload["evaluacion_test_independiente"]
     challenge = payload["evaluacion_desafio"]
+    audit_holdout = payload["evaluacion_holdout_auditoria"]
     concurrency = payload["concurrencia"]
     selected = payload["comparacion_modelos"]["modelo_seleccionado"]
     weakest = sorted(
@@ -340,6 +345,7 @@ def _render_markdown(payload: dict[str, Any]) -> str:
         f"| Precision micro en split test reservado | {_percentage(test['precision_micro'])} | Proporcion total de clasificaciones correctas |",
         f"| Recall macro en split test reservado | {_percentage(test['recall_macro'])} | Capacidad promedio de reconocer cada intencion |",
         f"| F1 macro en split test reservado | {_percentage(test['f1_macro'])} | Equilibrio promedio entre precision y recall |",
+        f"| Precision micro en holdout final de auditoria | {_percentage(audit_holdout['precision_micro'])} | Casos manuales no usados para ajustar el motor |",
         f"| Cobertura de respuesta local directa | {_percentage(test['cobertura_respuesta_local'])} | Preguntas respondidas directamente sin Gemini |",
         f"| Dependencia de Gemini evitada | {_percentage(test['dependencia_gemini_evitada'])} | Respuestas locales, aclaraciones o rechazo seguro |",
         f"| Tasa candidata a Gemini | {_percentage(test['tasa_candidata_gemini'])} | Casos que podrian requerir respaldo externo |",
@@ -353,23 +359,24 @@ def _render_markdown(payload: dict[str, Any]) -> str:
         "",
         f"- Dataset profesional: **{payload['dataset']['total']}** ejemplos, **{payload['dataset']['intenciones']}** intenciones y **{payload['dataset']['faq_representadas']}** FAQ representadas.",
         f"- Split test reservado: **{test['total']}** preguntas no usadas para entrenar modelos supervisados.",
-        f"- Conjunto desafio: **{challenge['total']}** preguntas ambiguas, externas o que requieren validacion.",
+        f"- Conjunto challenge de desarrollo: **{challenge['total']}** preguntas usadas para analizar errores y calibrar.",
+        f"- Holdout final de auditoria: **{audit_holdout['total']}** preguntas manuales no usadas para ajustar el motor.",
         "- Los splits no comparten frases; la validacion automatica del dataset debe producir una lista vacia.",
         "- La evaluacion no llama a Gemini, por lo que no consume tokens externos ni depende de disponibilidad de red.",
         "",
         "## Calidad de clasificacion",
         "",
-        "| Metrica | Split test reservado | Desafio |",
-        "|---|---:|---:|",
-        f"| Precision micro | {_percentage(test['precision_micro'])} | {_percentage(challenge['precision_micro'])} |",
-        f"| Recall micro | {_percentage(test['recall_micro'])} | {_percentage(challenge['recall_micro'])} |",
-        f"| F1 micro | {_percentage(test['f1_micro'])} | {_percentage(challenge['f1_micro'])} |",
-        f"| Precision macro | {_percentage(test['precision_macro'])} | {_percentage(challenge['precision_macro'])} |",
-        f"| Recall macro | {_percentage(test['recall_macro'])} | {_percentage(challenge['recall_macro'])} |",
-        f"| F1 macro | {_percentage(test['f1_macro'])} | {_percentage(challenge['f1_macro'])} |",
+        "| Metrica | Split test controlado | Challenge de desarrollo | Holdout final |",
+        "|---|---:|---:|---:|",
+        f"| Precision micro | {_percentage(test['precision_micro'])} | {_percentage(challenge['precision_micro'])} | {_percentage(audit_holdout['precision_micro'])} |",
+        f"| Recall micro | {_percentage(test['recall_micro'])} | {_percentage(challenge['recall_micro'])} | {_percentage(audit_holdout['recall_micro'])} |",
+        f"| F1 micro | {_percentage(test['f1_micro'])} | {_percentage(challenge['f1_micro'])} | {_percentage(audit_holdout['f1_micro'])} |",
+        f"| Precision macro | {_percentage(test['precision_macro'])} | {_percentage(challenge['precision_macro'])} | {_percentage(audit_holdout['precision_macro'])} |",
+        f"| Recall macro | {_percentage(test['recall_macro'])} | {_percentage(challenge['recall_macro'])} | {_percentage(audit_holdout['recall_macro'])} |",
+        f"| F1 macro | {_percentage(test['f1_macro'])} | {_percentage(challenge['f1_macro'])} | {_percentage(audit_holdout['f1_macro'])} |",
         "",
-        "El resultado del conjunto desafio debe interpretarse por separado: contiene deliberadamente preguntas que el sistema "
-        "debe aclarar, rechazar de forma segura o remitir a administracion, no responder con seguridad artificial.",
+        "El challenge se usa como conjunto de desarrollo para encontrar debilidades y no debe citarse como prueba independiente. "
+        "El holdout final se conserva sin ajustes posteriores y es la referencia mas honesta de generalizacion manual disponible.",
         "",
         "## Reduccion de dependencia generativa",
         "",
@@ -410,7 +417,7 @@ def _render_markdown(payload: dict[str, Any]) -> str:
             "",
             f"Modelo seleccionado: **{selected['nombre']}** (`{selected['id']}`).",
             "",
-            "| Modelo | Validation F1 | Test F1 | Challenge F1 | Puntaje generalizacion |",
+            "| Modelo | Validation F1 | Test F1 | Challenge de desarrollo | Puntaje interno |",
             "|---|---:|---:|---:|---:|",
         ]
     )
@@ -490,10 +497,11 @@ def _render_markdown(payload: dict[str, Any]) -> str:
             "## Limitaciones declaradas",
             "",
             "- El dataset fue construido a partir del dominio de CommuSafe; puede representar mejor preguntas previstas que lenguaje completamente inesperado de usuarios reales.",
-            "- El conjunto desafio es pequeno y debe ampliarse con consultas reales anonimizadas despues de la puesta en uso.",
+            "- El challenge fue usado durante la auditoria para corregir vocabulario y reglas; su resultado no es evidencia independiente.",
+            "- El holdout final contiene veinte consultas manuales; debe ampliarse con consultas reales anonimizadas despues de la puesta en uso.",
             "- El test usa frases separadas, pero generadas desde el mismo dominio y las mismas FAQ; por ello puede sobreestimar el comportamiento ante lenguaje completamente nuevo.",
             "- El ahorro de tokens es estimado con el estimador interno; no representa una factura exacta de Google.",
-            "- La evidencia operativa de produccion contiene solo tres consultas en su ventana de 24 horas y se presenta como observacion complementaria.",
+            "- Las metricas operativas solo son validas cuando declaran alcance usuarios_autenticados; ejecuciones de consola y demostracion se excluyen.",
             "- La prueba concurrente mide el motor local y el equipo actual; no reemplaza pruebas distribuidas de larga duracion sobre produccion.",
             "- Una tasa baja de Gemini no significa que Gemini sea innecesario: conserva valor como respaldo controlado para consultas no cubiertas.",
             "",

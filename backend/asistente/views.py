@@ -13,12 +13,9 @@ from .serializers import (
     ConversacionCreateSerializer,
     ConversacionTituloSerializer,
     EnviarMensajeSerializer,
-    HistorialMensajeSerializer,
     MensajeAsistenteSerializer,
 )
 from .services import (
-    _api_llm_configurada,
-    _extraer_texto_anthropic,
     _llm_backup_enabled,
     _llm_daily_request_limit,
     _llm_daily_token_limit,
@@ -27,9 +24,7 @@ from .services import (
     _llm_timeout_seconds,
     _modelo_por_proveedor,
     _nlp_service_configurado,
-    _normalizar_historial,
     _resolver_proveedor,
-    _respuesta_fallback,
     generar_respuesta_asistente,
     local_engine_stats,
     metricas_uso_asistente,
@@ -69,7 +64,7 @@ class ChatHealthView(APIView):
 
     def get(self, request):
         proveedor, funcion_llm = _resolver_proveedor()
-        if not (request.user.es_administrador or request.user.es_vigilante or request.user.is_staff):
+        if not (request.user.es_administrador or request.user.is_staff):
             return Response(
                 {
                     "estado": "operativo",

@@ -114,7 +114,8 @@ Evidencia: `docs/evidencias/asistente_evaluacion_aceptacion.json`.
 | Train | 0.8771 |
 | Validation | 0.8583 |
 | Test | 0.9000 |
-| Challenge | 0.5714 |
+| Challenge de desarrollo | 0.9583 |
+| Holdout final no ajustado | 0.5500 precision micro |
 
 La calibración conserva `0` respuestas directas incorrectas. Los casos de reto desconocidos o ambiguos se derivan a aclaración, respaldo controlado o respuesta segura.
 
@@ -135,8 +136,8 @@ Resultados:
 
 ```text
 Suite de aceptación: 13 passed, 3 subtests passed
-Suite del asistente: 79 passed, 14 subtests passed
-Suite completa backend: 208 passed, 20 subtests passed
+Suite del asistente: 80 passed, 16 subtests passed
+Suite completa backend: 209 passed, 22 subtests passed
 Django check: sin problemas
 Migraciones pendientes: ninguna
 ```
@@ -157,6 +158,7 @@ Migraciones pendientes: ninguna
 
 ## Riesgos residuales
 
-- El split `challenge` conserva F1 de `0.5714`; el comportamiento es deliberadamente conservador y prioriza aclarar o rechazar antes que responder incorrectamente.
+- El challenge fue usado para corregir el motor y no se cita como evidencia independiente.
+- El holdout final no ajustado obtuvo precision micro `0.5500`, con cero respuestas directas incorrectas; evidencia una generalizacion conservadora que debe mejorar con consultas reales anonimizadas.
 - El arranque en frío depende de la infraestructura de despliegue. Render gratuito puede superar los tiempos locales cuando reactiva un servicio suspendido.
 - Las pruebas de Gemini usan mocks para evitar costo y exposición de datos. Una verificación real controlada debe ejecutarse únicamente con credenciales privadas y cuota supervisada.

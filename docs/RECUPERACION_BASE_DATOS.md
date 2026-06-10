@@ -31,7 +31,7 @@ Puede ejecutarse varias veces. Usa `get_or_create`, conserva contraseñas y dato
 - Cuatro incidentes coherentes con historial y notificaciones.
 - Un aviso recurrente.
 - Una conversación demostrativa identificada como tal.
-- La base administrable del asistente con al menos 100 entradas verificadas.
+- La base administrable del asistente con 108 entradas y estado de verificacion explicito.
 
 Las contraseñas de demostración se leen de `RECOVERY_ADMIN_PASSWORD` y `RECOVERY_USER_PASSWORD`. Si no están configuradas, se usan las credenciales académicas documentadas para la sustentación. Deben rotarse si el entorno deja de ser exclusivamente demostrativo.
 
@@ -87,9 +87,9 @@ Validaciones ejecutadas:
 - Migraciones pendientes: cero.
 - Creación y eliminación posterior de un registro: correcta.
 - Suite específica de reconstrucción: `2 passed`.
-- Suite completa backend: `202 passed, 14 subtests passed`.
+- Suite completa backend actual: `209 passed, 22 subtests passed`.
 - `flutter analyze`: sin problemas.
-- Base de conocimiento: 108 preguntas, 100 verificadas y 8 pendientes de validación administrativa.
+- Base de conocimiento actual: 108 preguntas, 73 verificadas y 35 orientaciones pendientes de validación administrativa.
 
 El servicio público de Render respondió correctamente en `/health/`, pero las credenciales académicas conocidas no autenticaron antes del despliegue de esta reconstrucción. Esto confirma que no debe afirmarse que la nueva base ya contiene los registros locales hasta completar y verificar el despliegue.
 
