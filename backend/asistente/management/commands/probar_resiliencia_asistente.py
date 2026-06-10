@@ -54,6 +54,10 @@ class Command(BaseCommand):
         total = max(1, int(options["requests"]))
         workers = max(1, int(options["workers"]))
         p95_max_ms = max(0.1, float(options["p95_max_ms"]))
+        inicio_calentamiento = time.perf_counter()
+        for rol, mensaje in PREGUNTAS_REALISTAS:
+            resolve_local_answer(mensaje, rol)
+        calentamiento_ms = (time.perf_counter() - inicio_calentamiento) * 1000
         inicio_global = time.perf_counter()
 
         def ejecutar(indice):
@@ -111,6 +115,7 @@ class Command(BaseCommand):
             "estado": "ok" if cumple else "con_observaciones",
             "solicitudes": total,
             "workers": workers,
+            "calentamiento_previo_ms": round(calentamiento_ms, 3),
             "exitosas": exitosas,
             "errores": errores,
             "contaminaciones_cache": contaminaciones,
@@ -134,7 +139,10 @@ class Command(BaseCommand):
                 "fallidas": matriz_fallida,
             },
             "criterios_aceptacion": criterios,
-            "nota": "La prueba usa el motor local para medir aislamiento, cache y respuesta sin proveedores externos.",
+            "nota": (
+                "La inicializacion en frio se registra como calentamiento previo y no se mezcla con "
+                "la latencia concurrente estable. La prueba no usa proveedores externos."
+            ),
         }
 
         self.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2))

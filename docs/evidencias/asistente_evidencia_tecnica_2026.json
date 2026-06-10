@@ -1,0 +1,851 @@
+{
+  "generado_en_utc": "2026-06-10T16:13:01.203025+00:00",
+  "entorno": {
+    "python": "3.11.9",
+    "django": "4.2",
+    "plataforma": "Windows-10-10.0.26200-SP0",
+    "semilla": 42,
+    "usa_ia_externa_durante_evaluacion": false
+  },
+  "dataset": {
+    "total": 720,
+    "splits": {
+      "train": 480,
+      "validation": 120,
+      "test": 120
+    },
+    "intenciones": 20,
+    "categorias": 12,
+    "estilos": {
+      "corta": 120,
+      "error_ortografico": 120,
+      "formal": 120,
+      "informal": 120,
+      "larga": 120,
+      "no_tecnico": 120
+    },
+    "estilos_por_split": {
+      "train": {
+        "corta": 80,
+        "error_ortografico": 80,
+        "formal": 80,
+        "informal": 80,
+        "larga": 80,
+        "no_tecnico": 80
+      },
+      "validation": {
+        "corta": 20,
+        "error_ortografico": 20,
+        "formal": 20,
+        "informal": 20,
+        "larga": 20,
+        "no_tecnico": 20
+      },
+      "test": {
+        "corta": 20,
+        "error_ortografico": 20,
+        "formal": 20,
+        "informal": 20,
+        "larga": 20,
+        "no_tecnico": 20
+      }
+    },
+    "categorias_detalle": {
+      "administracion": 72,
+      "asistente": 54,
+      "convivencia": 54,
+      "incidentes": 86,
+      "mantenimiento": 36,
+      "mascotas": 36,
+      "notificaciones": 72,
+      "parqueaderos": 36,
+      "seguridad": 72,
+      "uso_sistema": 148,
+      "visitantes": 36,
+      "zonas_comunes": 18
+    },
+    "faq_representadas": 108,
+    "faq_totales": 108,
+    "min_ejemplos_por_intencion": 36,
+    "max_ejemplos_por_intencion": 36,
+    "balanceado_por_intencion": true
+  },
+  "errores_validacion_dataset": [],
+  "evaluacion_test_independiente": {
+    "total": 120,
+    "precision_micro": 0.9,
+    "recall_micro": 0.9,
+    "f1_micro": 0.9,
+    "precision_macro": 0.9533,
+    "recall_macro": 0.9,
+    "f1_macro": 0.9182,
+    "por_intencion": {
+      "acceso_sesion": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "soporte": 6,
+        "verdaderos_positivos": 6,
+        "falsos_positivos": 0,
+        "falsos_negativos": 0
+      },
+      "administracion_panel": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "soporte": 6,
+        "verdaderos_positivos": 6,
+        "falsos_positivos": 0,
+        "falsos_negativos": 0
+      },
+      "clasificacion_incidente": {
+        "precision": 1.0,
+        "recall": 0.6667,
+        "f1": 0.8,
+        "soporte": 6,
+        "verdaderos_positivos": 4,
+        "falsos_positivos": 0,
+        "falsos_negativos": 2
+      },
+      "convivencia_conflictos": {
+        "precision": 0.8571,
+        "recall": 1.0,
+        "f1": 0.9231,
+        "soporte": 6,
+        "verdaderos_positivos": 6,
+        "falsos_positivos": 1,
+        "falsos_negativos": 0
+      },
+      "convivencia_entorno": {
+        "precision": 1.0,
+        "recall": 0.8333,
+        "f1": 0.9091,
+        "soporte": 6,
+        "verdaderos_positivos": 5,
+        "falsos_positivos": 0,
+        "falsos_negativos": 1
+      },
+      "emergencias": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "soporte": 6,
+        "verdaderos_positivos": 6,
+        "falsos_positivos": 0,
+        "falsos_negativos": 0
+      },
+      "funcionamiento_asistente": {
+        "precision": 0.8333,
+        "recall": 0.8333,
+        "f1": 0.8333,
+        "soporte": 6,
+        "verdaderos_positivos": 5,
+        "falsos_positivos": 1,
+        "falsos_negativos": 1
+      },
+      "gestion_avisos": {
+        "precision": 0.625,
+        "recall": 0.8333,
+        "f1": 0.7143,
+        "soporte": 6,
+        "verdaderos_positivos": 5,
+        "falsos_positivos": 3,
+        "falsos_negativos": 1
+      },
+      "gestion_notificaciones": {
+        "precision": 0.75,
+        "recall": 1.0,
+        "f1": 0.8571,
+        "soporte": 6,
+        "verdaderos_positivos": 6,
+        "falsos_positivos": 2,
+        "falsos_negativos": 0
+      },
+      "mantenimiento_infraestructura": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "soporte": 6,
+        "verdaderos_positivos": 6,
+        "falsos_positivos": 0,
+        "falsos_negativos": 0
+      },
+      "mascotas": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "soporte": 6,
+        "verdaderos_positivos": 6,
+        "falsos_positivos": 0,
+        "falsos_negativos": 0
+      },
+      "navegacion_app": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "soporte": 6,
+        "verdaderos_positivos": 6,
+        "falsos_positivos": 0,
+        "falsos_negativos": 0
+      },
+      "parqueaderos_vehiculos": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "soporte": 6,
+        "verdaderos_positivos": 6,
+        "falsos_positivos": 0,
+        "falsos_negativos": 0
+      },
+      "perfil_preferencias": {
+        "precision": 1.0,
+        "recall": 0.8333,
+        "f1": 0.9091,
+        "soporte": 6,
+        "verdaderos_positivos": 5,
+        "falsos_positivos": 0,
+        "falsos_negativos": 1
+      },
+      "privacidad_conversaciones": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "soporte": 6,
+        "verdaderos_positivos": 6,
+        "falsos_positivos": 0,
+        "falsos_negativos": 0
+      },
+      "reportar_incidente": {
+        "precision": 1.0,
+        "recall": 0.6667,
+        "f1": 0.8,
+        "soporte": 6,
+        "verdaderos_positivos": 4,
+        "falsos_positivos": 0,
+        "falsos_negativos": 2
+      },
+      "seguimiento_incidente": {
+        "precision": 1.0,
+        "recall": 0.8333,
+        "f1": 0.9091,
+        "soporte": 6,
+        "verdaderos_positivos": 5,
+        "falsos_positivos": 0,
+        "falsos_negativos": 1
+      },
+      "seguridad_control": {
+        "precision": 1.0,
+        "recall": 0.8333,
+        "f1": 0.9091,
+        "soporte": 6,
+        "verdaderos_positivos": 5,
+        "falsos_positivos": 0,
+        "falsos_negativos": 1
+      },
+      "tramites_administrativos": {
+        "precision": 1.0,
+        "recall": 0.6667,
+        "f1": 0.8,
+        "soporte": 6,
+        "verdaderos_positivos": 4,
+        "falsos_positivos": 0,
+        "falsos_negativos": 2
+      },
+      "visitantes_ingresos": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "soporte": 6,
+        "verdaderos_positivos": 6,
+        "falsos_positivos": 0,
+        "falsos_negativos": 0
+      }
+    },
+    "cobertura_respuesta_local": 0.6167,
+    "tasa_aclaracion": 0.2917,
+    "tasa_respuesta_segura": 0.0417,
+    "tasa_candidata_gemini": 0.05,
+    "dependencia_gemini_evitada": 0.95,
+    "llamadas_reales_gemini": 0,
+    "tokens_externos_ahorrados_estimados": 348612,
+    "tokens_ahorrados_promedio_por_consulta_evitada": 3058.0,
+    "respuestas_directas_incorrectas": 0,
+    "consistencia_repeticiones": 1.0,
+    "repeticiones_por_pregunta": 3,
+    "latencia_ms": {
+      "promedio": 0.3042,
+      "p50": 0.0293,
+      "p95": 0.9915,
+      "max": 24.1543
+    },
+    "acciones": {
+      "answer": 74,
+      "clarify": 35,
+      "fallback_allowed": 6,
+      "safe": 5
+    },
+    "metodos": {
+      "coincidencia_exacta": 26,
+      "semantica_tfidf": 32,
+      "aclaracion_por_confianza_media": 35,
+      "fuera_de_dominio": 5,
+      "palabras_clave": 20,
+      "regla_negocio": 2
+    },
+    "matriz_confusion": {
+      "acceso_sesion": {
+        "acceso_sesion": 6
+      },
+      "administracion_panel": {
+        "administracion_panel": 6
+      },
+      "clasificacion_incidente": {
+        "clasificacion_incidente": 4,
+        "gestion_avisos": 2
+      },
+      "convivencia_conflictos": {
+        "convivencia_conflictos": 6
+      },
+      "convivencia_entorno": {
+        "convivencia_entorno": 5,
+        "sin_intencion_confiable": 1
+      },
+      "emergencias": {
+        "emergencias": 6
+      },
+      "funcionamiento_asistente": {
+        "sin_intencion_confiable": 1,
+        "funcionamiento_asistente": 5
+      },
+      "gestion_avisos": {
+        "gestion_avisos": 5,
+        "gestion_notificaciones": 1
+      },
+      "gestion_notificaciones": {
+        "gestion_notificaciones": 6
+      },
+      "mantenimiento_infraestructura": {
+        "mantenimiento_infraestructura": 6
+      },
+      "mascotas": {
+        "mascotas": 6
+      },
+      "navegacion_app": {
+        "navegacion_app": 6
+      },
+      "parqueaderos_vehiculos": {
+        "parqueaderos_vehiculos": 6
+      },
+      "perfil_preferencias": {
+        "perfil_preferencias": 5,
+        "gestion_notificaciones": 1
+      },
+      "privacidad_conversaciones": {
+        "privacidad_conversaciones": 6
+      },
+      "reportar_incidente": {
+        "reportar_incidente": 4,
+        "gestion_avisos": 1,
+        "convivencia_conflictos": 1
+      },
+      "seguimiento_incidente": {
+        "seguimiento_incidente": 5,
+        "sin_intencion_confiable": 1
+      },
+      "seguridad_control": {
+        "seguridad_control": 5,
+        "sin_intencion_confiable": 1
+      },
+      "tramites_administrativos": {
+        "tramites_administrativos": 4,
+        "funcionamiento_asistente": 1,
+        "sin_intencion_confiable": 1
+      },
+      "visitantes_ingresos": {
+        "visitantes_ingresos": 6
+      }
+    },
+    "errores": [
+      {
+        "texto": "Me ayudas con esto: como solicito un paz y salvo?",
+        "rol": "RESIDENTE",
+        "esperada": "tramites_administrativos",
+        "predicha": "funcionamiento_asistente",
+        "accion": "fallback_allowed",
+        "metodo": "semantica_tfidf",
+        "confianza": 0.1304
+      },
+      {
+        "texto": "tengo deuda",
+        "rol": "RESIDENTE",
+        "esperada": "tramites_administrativos",
+        "predicha": "sin_intencion_confiable",
+        "accion": "safe",
+        "metodo": "fuera_de_dominio",
+        "confianza": 0.0
+      },
+      {
+        "texto": "aclaracion duda confianza",
+        "rol": "RESIDENTE",
+        "esperada": "funcionamiento_asistente",
+        "predicha": "sin_intencion_confiable",
+        "accion": "safe",
+        "metodo": "fuera_de_dominio",
+        "confianza": 0.0
+      },
+      {
+        "texto": "bolsas tiradas",
+        "rol": "RESIDENTE",
+        "esperada": "convivencia_entorno",
+        "predicha": "sin_intencion_confiable",
+        "accion": "safe",
+        "metodo": "fuera_de_dominio",
+        "confianza": 0.0
+      },
+      {
+        "texto": "Que incidentes van como Convivencia? en incidentes",
+        "rol": "RESIDENTE",
+        "esperada": "clasificacion_incidente",
+        "predicha": "gestion_avisos",
+        "accion": "clarify",
+        "metodo": "aclaracion_por_confianza_media",
+        "confianza": 0.36
+      },
+      {
+        "texto": "poste apagado en incidentes",
+        "rol": "RESIDENTE",
+        "esperada": "clasificacion_incidente",
+        "predicha": "gestion_avisos",
+        "accion": "clarify",
+        "metodo": "aclaracion_por_confianza_media",
+        "confianza": 0.36
+      },
+      {
+        "texto": "Como redacto bien un reporte? en incidentes",
+        "rol": "RESIDENTE",
+        "esperada": "reportar_incidente",
+        "predicha": "gestion_avisos",
+        "accion": "clarify",
+        "metodo": "aclaracion_por_confianza_media",
+        "confianza": 0.36
+      },
+      {
+        "texto": "No entiendo lo de registrado y estado, que hago?",
+        "rol": "RESIDENTE",
+        "esperada": "seguimiento_incidente",
+        "predicha": "sin_intencion_confiable",
+        "accion": "safe",
+        "metodo": "fuera_de_dominio",
+        "confianza": 0.0
+      },
+      {
+        "texto": "comunicado arriba en notificaciones",
+        "rol": "RESIDENTE",
+        "esperada": "gestion_avisos",
+        "predicha": "gestion_notificaciones",
+        "accion": "clarify",
+        "metodo": "aclaracion_por_confianza_media",
+        "confianza": 0.54
+      },
+      {
+        "texto": "q hago si veo una persona sospechosa",
+        "rol": "RESIDENTE",
+        "esperada": "seguridad_control",
+        "predicha": "sin_intencion_confiable",
+        "accion": "safe",
+        "metodo": "fuera_de_dominio",
+        "confianza": 0.0
+      },
+      {
+        "texto": "Me ayudas con esto: como inicio sesion en commusafe?",
+        "rol": "RESIDENTE",
+        "esperada": "acceso_sesion",
+        "predicha": "acceso_sesion",
+        "accion": "fallback_allowed",
+        "metodo": "semantica_tfidf",
+        "confianza": 0.2699
+      },
+      {
+        "texto": "perdi el acceso en uso sistema",
+        "rol": "RESIDENTE",
+        "esperada": "acceso_sesion",
+        "predicha": "acceso_sesion",
+        "accion": "fallback_allowed",
+        "metodo": "palabras_clave",
+        "confianza": 0.1826
+      },
+      {
+        "texto": "cambiar celular en uso sistema",
+        "rol": "RESIDENTE",
+        "esperada": "perfil_preferencias",
+        "predicha": "gestion_notificaciones",
+        "accion": "fallback_allowed",
+        "metodo": "palabras_clave",
+        "confianza": 0.18
+      },
+      {
+        "texto": "poner foto en uso sistema",
+        "rol": "RESIDENTE",
+        "esperada": "perfil_preferencias",
+        "predicha": "perfil_preferencias",
+        "accion": "fallback_allowed",
+        "metodo": "semantica_tfidf",
+        "confianza": 0.2734
+      },
+      {
+        "texto": "como hago un reporte en uso sistema",
+        "rol": "RESIDENTE",
+        "esperada": "reportar_incidente",
+        "predicha": "convivencia_conflictos",
+        "accion": "fallback_allowed",
+        "metodo": "palabras_clave",
+        "confianza": 0.18
+      }
+    ]
+  },
+  "evaluacion_desafio": {
+    "total": 7,
+    "precision_micro": 0.4286,
+    "recall_micro": 0.4286,
+    "f1_micro": 0.4286,
+    "precision_macro": 0.25,
+    "recall_macro": 0.25,
+    "f1_macro": 0.25,
+    "por_intencion": {
+      "seguimiento_incidente": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "soporte": 1,
+        "verdaderos_positivos": 0,
+        "falsos_positivos": 0,
+        "falsos_negativos": 1
+      },
+      "sin_intencion_confiable": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "soporte": 3,
+        "verdaderos_positivos": 3,
+        "falsos_positivos": 0,
+        "falsos_negativos": 0
+      },
+      "tramites_administrativos": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "soporte": 2,
+        "verdaderos_positivos": 0,
+        "falsos_positivos": 0,
+        "falsos_negativos": 2
+      },
+      "visitantes_ingresos": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "soporte": 1,
+        "verdaderos_positivos": 0,
+        "falsos_positivos": 0,
+        "falsos_negativos": 1
+      }
+    },
+    "cobertura_respuesta_local": 0.0,
+    "tasa_aclaracion": 0.1429,
+    "tasa_respuesta_segura": 0.4286,
+    "tasa_candidata_gemini": 0.4286,
+    "dependencia_gemini_evitada": 0.5714,
+    "llamadas_reales_gemini": 0,
+    "tokens_externos_ahorrados_estimados": 12224,
+    "tokens_ahorrados_promedio_por_consulta_evitada": 3056.0,
+    "respuestas_directas_incorrectas": 0,
+    "consistencia_repeticiones": 1.0,
+    "repeticiones_por_pregunta": 3,
+    "latencia_ms": {
+      "promedio": 0.1647,
+      "p50": 0.0144,
+      "p95": 0.781,
+      "max": 0.792
+    },
+    "acciones": {
+      "safe": 3,
+      "fallback_allowed": 3,
+      "clarify": 1
+    },
+    "metodos": {
+      "fuera_de_dominio": 3,
+      "semantica_tfidf": 2,
+      "palabras_clave": 1,
+      "aclaracion_por_confianza_media": 1
+    },
+    "matriz_confusion": {
+      "seguimiento_incidente": {
+        "gestion_notificaciones": 1
+      },
+      "sin_intencion_confiable": {
+        "sin_intencion_confiable": 3
+      },
+      "tramites_administrativos": {
+        "convivencia_conflictos": 1,
+        "gestion_notificaciones": 1
+      },
+      "visitantes_ingresos": {
+        "convivencia_entorno": 1
+      }
+    },
+    "errores": [
+      {
+        "texto": "quiero saber algo del parqueadero y visitantes",
+        "rol": "RESIDENTE",
+        "esperada": "visitantes_ingresos",
+        "predicha": "convivencia_entorno",
+        "accion": "fallback_allowed",
+        "metodo": "semantica_tfidf",
+        "confianza": 0.2493
+      },
+      {
+        "texto": "tengo una duda con un reporte y una alerta",
+        "rol": "RESIDENTE",
+        "esperada": "seguimiento_incidente",
+        "predicha": "gestion_notificaciones",
+        "accion": "fallback_allowed",
+        "metodo": "palabras_clave",
+        "confianza": 0.225
+      },
+      {
+        "texto": "cuanto vale exactamente la multa por ruido",
+        "rol": "RESIDENTE",
+        "esperada": "tramites_administrativos",
+        "predicha": "convivencia_conflictos",
+        "accion": "clarify",
+        "metodo": "aclaracion_por_confianza_media",
+        "confianza": 0.4119
+      },
+      {
+        "texto": "cual es el celular directo del administrador",
+        "rol": "RESIDENTE",
+        "esperada": "tramites_administrativos",
+        "predicha": "gestion_notificaciones",
+        "accion": "fallback_allowed",
+        "metodo": "semantica_tfidf",
+        "confianza": 0.1993
+      }
+    ]
+  },
+  "comparacion_modelos": {
+    "criterio": "El modelo se selecciona por puntaje de generalizacion ponderado (validation, test y challenge), penalizando sobreajuste y respuestas directas incorrectas. La precision de entrenamiento no decide la seleccion.",
+    "modelo_seleccionado": {
+      "id": "hibrido_produccion_kb",
+      "nombre": "Hibrido local de produccion",
+      "descripcion": "Motor activo de CommuSafe: coincidencia exacta, recuperacion por FAQ, palabras clave, TF-IDF, filtro de dominio, aclaraciones y fallback seguro.",
+      "configuracion": {
+        "high_threshold": 0.52,
+        "medium_threshold": 0.28,
+        "ambiguity_margin": 0.04
+      },
+      "puntaje_generalizacion": 0.8053,
+      "sobreajuste_train_test": -0.0229,
+      "validation_f1": 0.8583,
+      "test_f1": 0.9,
+      "challenge_f1": 0.5714,
+      "directas_incorrectas_test": 0
+    },
+    "ranking": [
+      {
+        "id": "hibrido_produccion_kb",
+        "nombre": "Hibrido local de produccion",
+        "descripcion": "Motor activo de CommuSafe: coincidencia exacta, recuperacion por FAQ, palabras clave, TF-IDF, filtro de dominio, aclaraciones y fallback seguro.",
+        "configuracion": {
+          "high_threshold": 0.52,
+          "medium_threshold": 0.28,
+          "ambiguity_margin": 0.04
+        },
+        "puntaje_generalizacion": 0.8053,
+        "sobreajuste_train_test": -0.0229,
+        "validation_f1": 0.8583,
+        "test_f1": 0.9,
+        "challenge_f1": 0.5714,
+        "directas_incorrectas_test": 0
+      },
+      {
+        "id": "ensamble_word_char_35",
+        "nombre": "Ensamble TF-IDF palabra/caracter 0.35/0.65",
+        "descripcion": "Combina clasificacion por palabras y n-gramas de caracteres para generalizar mejor ante preguntas nuevas y errores ortograficos.",
+        "configuracion": {
+          "high_threshold": 0.45,
+          "medium_threshold": 0.18,
+          "ambiguity_margin": 0.1
+        },
+        "puntaje_generalizacion": 0.6566,
+        "sobreajuste_train_test": -0.0354,
+        "validation_f1": 0.65,
+        "test_f1": 0.7083,
+        "challenge_f1": 0.5714,
+        "directas_incorrectas_test": 0
+      },
+      {
+        "id": "tfidf_centroides_caracter",
+        "nombre": "TF-IDF centroides por caracteres",
+        "descripcion": "Clasificador robusto ante errores ortograficos con n-gramas de caracteres.",
+        "configuracion": {
+          "high_threshold": 0.45,
+          "medium_threshold": 0.18,
+          "ambiguity_margin": 0.1
+        },
+        "puntaje_generalizacion": 0.6553,
+        "sobreajuste_train_test": -0.0333,
+        "validation_f1": 0.6583,
+        "test_f1": 0.7,
+        "challenge_f1": 0.5714,
+        "directas_incorrectas_test": 0
+      },
+      {
+        "id": "ensamble_word_char_50",
+        "nombre": "Ensamble TF-IDF palabra/caracter 0.50/0.50",
+        "descripcion": "Combina clasificacion por palabras y n-gramas de caracteres para generalizar mejor ante preguntas nuevas y errores ortograficos.",
+        "configuracion": {
+          "high_threshold": 0.45,
+          "medium_threshold": 0.18,
+          "ambiguity_margin": 0.08
+        },
+        "puntaje_generalizacion": 0.6516,
+        "sobreajuste_train_test": -0.0209,
+        "validation_f1": 0.6583,
+        "test_f1": 0.6917,
+        "challenge_f1": 0.5714,
+        "directas_incorrectas_test": 0
+      },
+      {
+        "id": "tfidf_centroides_palabra",
+        "nombre": "TF-IDF centroides por palabra",
+        "descripcion": "Clasificador supervisado ligero por similitud a centroides de intencion.",
+        "configuracion": {
+          "high_threshold": 0.45,
+          "medium_threshold": 0.18,
+          "ambiguity_margin": 0.08
+        },
+        "puntaje_generalizacion": 0.6394,
+        "sobreajuste_train_test": 0.0062,
+        "validation_f1": 0.6583,
+        "test_f1": 0.6667,
+        "challenge_f1": 0.5714,
+        "directas_incorrectas_test": 0
+      },
+      {
+        "id": "ensamble_word_char_65",
+        "nombre": "Ensamble TF-IDF palabra/caracter 0.65/0.35",
+        "descripcion": "Combina clasificacion por palabras y n-gramas de caracteres para generalizar mejor ante preguntas nuevas y errores ortograficos.",
+        "configuracion": {
+          "high_threshold": 0.45,
+          "medium_threshold": 0.18,
+          "ambiguity_margin": 0.08
+        },
+        "puntaje_generalizacion": 0.6196,
+        "sobreajuste_train_test": -0.025,
+        "validation_f1": 0.6583,
+        "test_f1": 0.7,
+        "challenge_f1": 0.4286,
+        "directas_incorrectas_test": 0
+      },
+      {
+        "id": "keyword_baseline_entrenado",
+        "nombre": "Baseline por palabras clave",
+        "descripcion": "Clasificador simple por solapamiento de tokens aprendidos del train.",
+        "configuracion": {
+          "high_threshold": 0.45,
+          "medium_threshold": 0.18,
+          "ambiguity_margin": 0.08
+        },
+        "puntaje_generalizacion": 0.6154,
+        "sobreajuste_train_test": -0.0083,
+        "validation_f1": 0.6,
+        "test_f1": 0.65,
+        "challenge_f1": 0.5714,
+        "directas_incorrectas_test": 0
+      }
+    ],
+    "limitaciones": [
+      "El dataset es controlado y debe complementarse con preguntas reales de usuarios despues de la sustentacion.",
+      "El split challenge muestra que preguntas muy ambiguas o fuera de dominio deben resolverse con aclaracion o respuesta segura, no con respuesta directa.",
+      "No se uso un modelo neuronal externo para clasificacion local porque el tamano del dataset no justifica una dependencia pesada en produccion.",
+      "En test quedaron 12 errores operacionales revisables; los primeros casos quedan en el JSON de evidencia.",
+      "En challenge quedaron 3 errores o rechazos seguros esperados por ambiguedad o falta de informacion verificable."
+    ]
+  },
+  "concurrencia": {
+    "solicitudes": 600,
+    "workers": 20,
+    "calentamiento_previo_ms": 4.6492,
+    "exitosas": 600,
+    "errores": [],
+    "contaminaciones_cache": 0,
+    "roles": {
+      "ADMINISTRADOR": 75,
+      "RESIDENTE": 450,
+      "VIGILANTE": 75
+    },
+    "acciones": {
+      "clarify": 375,
+      "answer": 75,
+      "safe": 75,
+      "fallback_allowed": 75
+    },
+    "duracion_total_ms": 44.4501,
+    "throughput_aprox_req_s": 13498.28,
+    "latencia_ms": {
+      "promedio": 0.026,
+      "p50": 0.0285,
+      "p95": 0.0436,
+      "max": 0.1663
+    },
+    "aislamiento_aprobado": true,
+    "ia_externa_usada": false,
+    "nota_latencia": "Latencia estable medida despues de registrar por separado la inicializacion en frio."
+  },
+  "notas_metodologicas": [
+    "Precision, recall y F1 se calculan sobre intenciones esperadas y predichas.",
+    "Cobertura local cuenta respuestas directas locales; aclaraciones y respuestas seguras tambien evitan IA externa.",
+    "La tasa candidata Gemini representa consultas que podrian usar el respaldo externo; durante esta evaluacion no se llamo a Gemini.",
+    "El ahorro de tokens es una estimacion usando el mismo estimador interno de CommuSafe, no una factura del proveedor.",
+    "La concurrencia mide el motor local en este equipo y no reemplaza una prueba distribuida de produccion."
+  ],
+  "evidencia_produccion": {
+    "capturado_en": "2026-06-10T15:52:45.2727977Z",
+    "endpoint": "https://commusafe.onrender.com/api/asistente/health/",
+    "ventana_horas": 24,
+    "consultas_totales": 3,
+    "resueltas_sin_gemini": 3,
+    "requieren_aclaracion": 3,
+    "usan_ia_externa": 0,
+    "usan_gemini": 0,
+    "tokens_ia_estimados": 0,
+    "tokens_ahorrados_estimados": 9281,
+    "porcentaje_sin_gemini": 100.0,
+    "proveedor_activo": "gemini",
+    "modelo": "gemini-2.5-flash-lite",
+    "arquitectura": "hibrida_local_primero",
+    "nota": "Muestra operativa real y pequena. Complementa, pero no reemplaza, la evaluacion controlada."
+  },
+  "evidencia_pruebas": {
+    "capturado_en": "2026-06-10",
+    "modulo_asistente": {
+      "comando": "python -m pytest asistente -q",
+      "pruebas_aprobadas": 77,
+      "subpruebas_aprobadas": 8,
+      "fallidas": 0
+    },
+    "regresion_backend": {
+      "comando": "python -m pytest -q",
+      "pruebas_aprobadas": 206,
+      "subpruebas_aprobadas": 14,
+      "fallidas": 0
+    },
+    "casos_aislamiento_y_persistencia": [
+      "test_conversacion_persiste_y_se_recupera_completa",
+      "test_dos_usuarios_no_mezclan_conversaciones_mensajes_ni_logs",
+      "test_lista_solo_conversaciones_del_usuario_autenticado",
+      "test_no_permite_acceder_conversaciones_de_otro_usuario",
+      "test_cache_local_es_aislado_en_solicitudes_concurrentes"
+    ],
+    "resultado": "aprobado"
+  }
+}

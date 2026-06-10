@@ -1,0 +1,23 @@
+{
+  "capturado_en": "2026-06-10",
+  "modulo_asistente": {
+    "comando": "python -m pytest asistente -q",
+    "pruebas_aprobadas": 77,
+    "subpruebas_aprobadas": 8,
+    "fallidas": 0
+  },
+  "regresion_backend": {
+    "comando": "python -m pytest -q",
+    "pruebas_aprobadas": 206,
+    "subpruebas_aprobadas": 14,
+    "fallidas": 0
+  },
+  "casos_aislamiento_y_persistencia": [
+    "test_conversacion_persiste_y_se_recupera_completa",
+    "test_dos_usuarios_no_mezclan_conversaciones_mensajes_ni_logs",
+    "test_lista_solo_conversaciones_del_usuario_autenticado",
+    "test_no_permite_acceder_conversaciones_de_otro_usuario",
+    "test_cache_local_es_aislado_en_solicitudes_concurrentes"
+  ],
+  "resultado": "aprobado"
+}

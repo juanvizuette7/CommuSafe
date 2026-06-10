@@ -344,6 +344,18 @@ Para revisar concurrencia, aislamiento de cache y comportamiento sin IA externa:
 python manage.py probar_resiliencia_asistente --requests 80 --workers 8
 ```
 
+Para generar la evidencia técnica consolidada para sustentación:
+
+```powershell
+python manage.py generar_evidencia_tecnica_asistente
+```
+
+Este comando genera:
+
+- `docs/evidencias/asistente_evidencia_tecnica_2026.md`: resumen explicativo para jurado.
+- `docs/evidencias/asistente_evidencia_tecnica_2026.json`: matriz de confusión completa, métricas por intención y errores.
+- Evidencia de precisión, recall, F1, cobertura local, aclaraciones, candidatos a Gemini, consistencia, tokens estimados y concurrencia.
+
 Resultado verificado el 2026-06-09: 240 solicitudes, 12 workers, 240 exitosas, 0 errores, 0 contaminaciones de cache, p95 de 1.788 ms, matriz funcional 11/11 y sin uso de IA externa. La evidencia completa esta en `docs/evidencias/asistente_resiliencia_aceptacion.json` y `docs/PRUEBAS_ASISTENTE_HIBRIDO.md`.
 
 Metricas reportadas:
@@ -379,19 +391,25 @@ Comparacion reproducible de estrategias locales entrenadas y evaluadas:
 | Ensamble palabra/caracter 0.35/0.65 | 0.6500 | 0.7083 | 0.5714 | Mejor entre modelos entrenados puros, pero no supera la base de conocimiento |
 | Hibrido local de produccion | 0.8583 | 0.9000 | 0.5714 | Seleccionado por mejor generalizacion, trazabilidad y control de seguridad |
 
-Comportamiento medido en `test`:
+Comportamiento consolidado medido el 10 de junio de 2026 sobre `test`:
 
 | Resultado | Porcentaje |
 |---|---:|
-| Respuesta local directa | 66.67% |
-| Solicitud de aclaracion | 26.67% |
-| Candidato a IA generativa | 4.17% |
-| Respuesta segura | 2.50% |
+| Precisión micro | 90.00% |
+| F1 macro | 91.82% |
+| Respuesta local directa | 61.67% |
+| Solicitud de aclaración | 29.17% |
+| Candidato a IA generativa | 5.00% |
+| Respuesta segura | 4.17% |
+| Dependencia de Gemini evitada | 95.00% |
+| Consistencia en tres repeticiones | 100.00% |
 
 El reporte completo con matriz de confusion y analisis de errores queda en:
 
 - `docs/evidencias/asistente_modelos.json`
 - `docs/evidencias/asistente_modelos.md`
+- `docs/evidencias/asistente_evidencia_tecnica_2026.json`
+- `docs/evidencias/asistente_evidencia_tecnica_2026.md`
 
 Las confusiones principales restantes se concentran entre clasificacion de incidentes y avisos, gestion de avisos y navegacion, y frases muy cortas que el filtro de dominio prefiere rechazar de forma segura.
 
