@@ -40,7 +40,7 @@ python -m pytest asistente/tests.py -q
 Resultado:
 
 ```text
-77 passed, 8 subtests passed
+79 passed, 14 subtests passed
 ```
 
 Prueba de resiliencia:

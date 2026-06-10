@@ -189,8 +189,8 @@ Resultados automatizados consolidados:
 
 | Suite o escenario | Resultado |
 |---|---:|
-| Pruebas del módulo asistente | 77 pruebas y 8 subpruebas aprobadas |
-| Regresión completa del backend | 206 pruebas y 14 subpruebas aprobadas |
+| Pruebas del módulo asistente | 79 pruebas y 14 subpruebas aprobadas |
+| Regresión completa del backend | 208 pruebas y 20 subpruebas aprobadas |
 | Solicitudes concurrentes del motor local | 600 de 600 exitosas |
 | Errores en prueba concurrente | 0 |
 | Contaminaciones de caché | 0 |

@@ -2,14 +2,14 @@
   "capturado_en": "2026-06-10",
   "modulo_asistente": {
     "comando": "python -m pytest asistente -q",
-    "pruebas_aprobadas": 77,
-    "subpruebas_aprobadas": 8,
+    "pruebas_aprobadas": 79,
+    "subpruebas_aprobadas": 14,
     "fallidas": 0
   },
   "regresion_backend": {
     "comando": "python -m pytest -q",
-    "pruebas_aprobadas": 206,
-    "subpruebas_aprobadas": 14,
+    "pruebas_aprobadas": 208,
+    "subpruebas_aprobadas": 20,
     "fallidas": 0
   },
   "casos_aislamiento_y_persistencia": [
@@ -19,5 +19,13 @@
     "test_no_permite_acceder_conversaciones_de_otro_usuario",
     "test_cache_local_es_aislado_en_solicitudes_concurrentes"
   ],
+  "demo_academica": {
+    "comando": "python manage.py demostrar_asistente_hibrido --usar-gemini --solicitudes 60 --workers 6",
+    "casos_funcionales": 6,
+    "gemini_real_verificado": true,
+    "solicitudes_concurrentes": 60,
+    "errores_concurrentes": 0,
+    "contaminaciones_cache": 0
+  },
   "resultado": "aprobado"
 }

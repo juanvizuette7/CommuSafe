@@ -135,8 +135,8 @@ Resultados:
 
 ```text
 Suite de aceptación: 13 passed, 3 subtests passed
-Suite del asistente: 77 passed, 8 subtests passed
-Suite completa backend: 206 passed, 14 subtests passed
+Suite del asistente: 79 passed, 14 subtests passed
+Suite completa backend: 208 passed, 20 subtests passed
 Django check: sin problemas
 Migraciones pendientes: ninguna
 ```

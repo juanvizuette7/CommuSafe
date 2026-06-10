@@ -2,6 +2,8 @@
 
 Este guion organiza la presentación del sistema CommuSafe ante el jurado evaluador. El objetivo es evidenciar el cumplimiento funcional, la arquitectura incremental y la integración entre backend, panel web y aplicación móvil.
 
+La demostración técnica detallada de CommuBot se encuentra en `docs/GUIA_DEMO_ASISTENTE_HIBRIDO.md`.
+
 ## 1. Inicio del Sistema
 
 ### Backend

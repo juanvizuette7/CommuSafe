@@ -1,7 +1,7 @@
 # Evidencia tecnica del asistente hibrido CommuSafe
 
-Generada: `2026-06-10T16:13:01.203025+00:00`  
-Semilla reproducible: `42`  
+Generada: `2026-06-10T17:20:42.003079+00:00`
+Semilla reproducible: `42`
 IA externa utilizada durante la evaluacion: **No**
 
 ## Resumen para jurado
@@ -18,7 +18,7 @@ La evaluacion demuestra que CommuBot resuelve la mayoria de consultas mediante c
 | Tasa candidata a Gemini | 5.00% | Casos que podrian requerir respaldo externo |
 | Consistencia en 3 repeticiones | 100.00% | Misma pregunta produce la misma decision y respuesta |
 | Respuestas directas incorrectas | 0 | Riesgo de afirmar algo equivocado directamente |
-| Latencia local promedio | 0.3042 ms | Tiempo medio del motor local en este equipo, con motor cargado |
+| Latencia local promedio | 0.3421 ms | Tiempo medio del motor local en este equipo, con motor cargado |
 | Tokens externos ahorrados estimados | 348612 | Estimacion frente a enviar todas las consultas a Gemini |
 | Ahorro estimado promedio por consulta evitada | 3058.00 tokens | Promedio estimado, no facturacion real |
 
@@ -88,17 +88,17 @@ Modelo seleccionado: **Hibrido local de produccion** (`hibrido_produccion_kb`).
 - Solicitudes exitosas: **600**.
 - Errores: **0**.
 - Contaminaciones de cache entre solicitudes: **0**.
-- Throughput aproximado: **13498.28 solicitudes/s**.
-- Latencia p95: **0.0436 ms**.
-- Calentamiento previo separado: **4.6492 ms**.
-- Roles simulados: `{'ADMINISTRADOR': 75, 'RESIDENTE': 450, 'VIGILANTE': 75}`.
+- Throughput aproximado: **12305.4 solicitudes/s**.
+- Latencia p95: **0.0409 ms**.
+- Calentamiento previo separado: **4.87 ms**.
+- Roles simulados: `{'RESIDENTE': 450, 'VIGILANTE': 75, 'ADMINISTRADOR': 75}`.
 
 La prueba verifica que solicitudes simultaneas de residentes, vigilancia y administracion no comparten resultados mutables. La persistencia y propiedad de conversaciones se valida adicionalmente mediante pruebas automatizadas del backend.
 
 ## Pruebas automatizadas de aislamiento y persistencia
 
-- Modulo asistente: **77 pruebas + 8 subpruebas**, 0 fallos.
-- Regresion backend completa: **206 pruebas + 14 subpruebas**, 0 fallos.
+- Modulo asistente: **79 pruebas + 14 subpruebas**, 0 fallos.
+- Regresion backend completa: **208 pruebas + 20 subpruebas**, 0 fallos.
 - Casos especificos aprobados:
   - `test_conversacion_persiste_y_se_recupera_completa`
   - `test_dos_usuarios_no_mezclan_conversaciones_mensajes_ni_logs`

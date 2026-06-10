@@ -103,9 +103,9 @@ python manage.py probar_resiliencia_asistente --requests 80 --workers 8
 Resultados verificados:
 
 ```text
-suite asistente: 77 passed, 8 subtests passed
+suite asistente: 79 passed, 14 subtests passed
 suite de aceptacion: 13 passed, 3 subtests passed
-suite completa backend: 206 passed, 14 subtests passed
+suite completa backend: 208 passed, 20 subtests passed
 manage.py check: sin problemas
 makemigrations --check --dry-run: sin cambios pendientes
 validar_base_conocimiento: ok

@@ -1,5 +1,5 @@
 {
-  "generado_en_utc": "2026-06-10T16:13:01.203025+00:00",
+  "generado_en_utc": "2026-06-10T17:20:42.003079+00:00",
   "entorno": {
     "python": "3.11.9",
     "django": "4.2",
@@ -273,10 +273,10 @@
     "consistencia_repeticiones": 1.0,
     "repeticiones_por_pregunta": 3,
     "latencia_ms": {
-      "promedio": 0.3042,
-      "p50": 0.0293,
-      "p95": 0.9915,
-      "max": 24.1543
+      "promedio": 0.3421,
+      "p50": 0.0328,
+      "p95": 1.1777,
+      "max": 25.6665
     },
     "acciones": {
       "answer": 74,
@@ -561,10 +561,10 @@
     "consistencia_repeticiones": 1.0,
     "repeticiones_por_pregunta": 3,
     "latencia_ms": {
-      "promedio": 0.1647,
-      "p50": 0.0144,
-      "p95": 0.781,
-      "max": 0.792
+      "promedio": 0.1615,
+      "p50": 0.0145,
+      "p95": 0.7589,
+      "max": 0.7717
     },
     "acciones": {
       "safe": 3,
@@ -774,28 +774,28 @@
   "concurrencia": {
     "solicitudes": 600,
     "workers": 20,
-    "calentamiento_previo_ms": 4.6492,
+    "calentamiento_previo_ms": 4.87,
     "exitosas": 600,
     "errores": [],
     "contaminaciones_cache": 0,
     "roles": {
-      "ADMINISTRADOR": 75,
       "RESIDENTE": 450,
-      "VIGILANTE": 75
+      "VIGILANTE": 75,
+      "ADMINISTRADOR": 75
     },
     "acciones": {
-      "clarify": 375,
       "answer": 75,
-      "safe": 75,
-      "fallback_allowed": 75
+      "clarify": 375,
+      "fallback_allowed": 75,
+      "safe": 75
     },
-    "duracion_total_ms": 44.4501,
-    "throughput_aprox_req_s": 13498.28,
+    "duracion_total_ms": 48.7591,
+    "throughput_aprox_req_s": 12305.4,
     "latencia_ms": {
-      "promedio": 0.026,
-      "p50": 0.0285,
-      "p95": 0.0436,
-      "max": 0.1663
+      "promedio": 0.0269,
+      "p50": 0.0291,
+      "p95": 0.0409,
+      "max": 0.0774
     },
     "aislamiento_aprobado": true,
     "ia_externa_usada": false,
@@ -829,14 +829,14 @@
     "capturado_en": "2026-06-10",
     "modulo_asistente": {
       "comando": "python -m pytest asistente -q",
-      "pruebas_aprobadas": 77,
-      "subpruebas_aprobadas": 8,
+      "pruebas_aprobadas": 79,
+      "subpruebas_aprobadas": 14,
       "fallidas": 0
     },
     "regresion_backend": {
       "comando": "python -m pytest -q",
-      "pruebas_aprobadas": 206,
-      "subpruebas_aprobadas": 14,
+      "pruebas_aprobadas": 208,
+      "subpruebas_aprobadas": 20,
       "fallidas": 0
     },
     "casos_aislamiento_y_persistencia": [
@@ -846,6 +846,14 @@
       "test_no_permite_acceder_conversaciones_de_otro_usuario",
       "test_cache_local_es_aislado_en_solicitudes_concurrentes"
     ],
+    "demo_academica": {
+      "comando": "python manage.py demostrar_asistente_hibrido --usar-gemini --solicitudes 60 --workers 6",
+      "casos_funcionales": 6,
+      "gemini_real_verificado": true,
+      "solicitudes_concurrentes": 60,
+      "errores_concurrentes": 0,
+      "contaminaciones_cache": 0
+    },
     "resultado": "aprobado"
   }
 }

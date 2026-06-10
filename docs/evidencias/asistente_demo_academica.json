@@ -1,0 +1,187 @@
+{
+  "generado_en_utc": "2026-06-10T17:21:44.155319+00:00",
+  "estado": "listo",
+  "gemini_real_solicitado": true,
+  "proveedor": {
+    "nombre": "gemini",
+    "modelo": "gemini-2.5-flash-lite",
+    "configurado": true,
+    "respaldo_habilitado": true
+  },
+  "casos": [
+    {
+      "codigo": "local_conocida",
+      "titulo": "Pregunta conocida respondida localmente",
+      "mensaje": "¿Cómo reporto un incidente?",
+      "explicacion": "La coincidencia local entrega una respuesta verificada sin consumir Gemini.",
+      "decision_local": {
+        "accion": "answer",
+        "intencion": "reportar_incidente",
+        "confianza": 1.0,
+        "metodo": "coincidencia_exacta"
+      },
+      "resultado_final": {
+        "modo": "local",
+        "proveedor": "local",
+        "modelo": "commusafe-local-hybrid-v3",
+        "respuesta": "Desde la app entra a Incidentes, toca Nuevo, escribe un titulo claro, selecciona categoria, describe lo ocurrido, agrega ubicacion de referencia y adjunta hasta 3 fotos si las tienes. Luego toca Reportar incidente."
+      },
+      "cumple": true
+    },
+    {
+      "codigo": "variacion_natural",
+      "titulo": "Variación informal de redacción",
+      "mensaje": "Parce, no puedo entrar a la cuenta, ¿qué hago?",
+      "explicacion": "Las reglas y la normalización reconocen una forma informal no idéntica a la FAQ.",
+      "decision_local": {
+        "accion": "answer",
+        "intencion": "acceso_sesion",
+        "confianza": 0.96,
+        "metodo": "regla_negocio"
+      },
+      "resultado_final": {
+        "modo": "local",
+        "proveedor": "local",
+        "modelo": "commusafe-local-hybrid-v3",
+        "respuesta": "Ingresa con el correo asignado y la contrasena entregada por administracion. Si el acceso falla, verifica que el correo este bien escrito y solicita apoyo a administracion para validar tu cuenta."
+      },
+      "cumple": true
+    },
+    {
+      "codigo": "error_ortografico",
+      "titulo": "Pregunta con error ortográfico",
+      "mensaje": "Komo reporto un insidente",
+      "explicacion": "La normalización permite comprender errores frecuentes sin usar IA externa.",
+      "decision_local": {
+        "accion": "answer",
+        "intencion": "reportar_incidente",
+        "confianza": 1.0,
+        "metodo": "coincidencia_exacta"
+      },
+      "resultado_final": {
+        "modo": "local",
+        "proveedor": "local",
+        "modelo": "commusafe-local-hybrid-v3",
+        "respuesta": "Desde la app entra a Incidentes, toca Nuevo, escribe un titulo claro, selecciona categoria, describe lo ocurrido, agrega ubicacion de referencia y adjunta hasta 3 fotos si las tienes. Luego toca Reportar incidente."
+      },
+      "cumple": true
+    },
+    {
+      "codigo": "ambigua",
+      "titulo": "Pregunta ambigua que solicita aclaración",
+      "mensaje": "Música alta",
+      "explicacion": "El asistente reconoce que existen varias interpretaciones y evita asumir.",
+      "decision_local": {
+        "accion": "clarify",
+        "intencion": "convivencia_conflictos",
+        "confianza": 1.0,
+        "metodo": "aclaracion_por_coincidencia_exacta_ambigua"
+      },
+      "resultado_final": {
+        "modo": "aclaracion",
+        "proveedor": "local",
+        "modelo": "commusafe-local-hybrid-v3",
+        "respuesta": "Puedo ayudarte, pero necesito precisar mejor la consulta. Elige una opcion o escribeme mas detalles:\n1. Que hago si hay ruido excesivo?\n2. Que incidentes van como Convivencia?\nResponde con el numero de la opcion o cuentame un poco mas para orientarte mejor."
+      },
+      "cumple": true
+    },
+    {
+      "codigo": "gemini_respaldo",
+      "titulo": "Consulta del dominio candidata a Gemini",
+      "mensaje": "¿Cuál es el procedimiento oficial para activar un código QR temporal biométrico en portería?",
+      "explicacion": "El motor local no encuentra conocimiento suficiente y habilita el respaldo controlado.",
+      "decision_local": {
+        "accion": "fallback_allowed",
+        "intencion": "mantenimiento_infraestructura",
+        "confianza": 0.225,
+        "metodo": "palabras_clave"
+      },
+      "resultado_final": {
+        "modo": "ia",
+        "proveedor": "gemini",
+        "modelo": "gemini-2.5-flash-lite",
+        "respuesta": "Según la información registrada en CommuSafe, no encuentro un procedimiento oficial para activar un código QR temporal biométrico en portería.\n\nTe recomiendo validar esta información directamente con el personal de administración o vigilancia del conjunto residencial Remansos del Norte. Ellos podrán brindarte el detalle sobre este procedimiento si existe."
+      },
+      "cumple": true
+    },
+    {
+      "codigo": "desconocida_segura",
+      "titulo": "Consulta desconocida fuera del dominio",
+      "mensaje": "¿Quién ganó el partido de fútbol ayer?",
+      "explicacion": "El asistente limita su alcance y responde de forma segura sin Gemini.",
+      "decision_local": {
+        "accion": "safe",
+        "intencion": "sin_intencion_confiable",
+        "confianza": 0.0,
+        "metodo": "fuera_de_dominio"
+      },
+      "resultado_final": {
+        "modo": "segura",
+        "proveedor": "local",
+        "modelo": "commusafe-local-hybrid-v3",
+        "respuesta": "Solo puedo apoyar consultas relacionadas con Remansos del Norte y CommuSafe. No encuentro informacion verificada suficiente para responder esa consulta. Te recomiendo validarlo con administracion."
+      },
+      "cumple": true
+    }
+  ],
+  "metricas_24h_antes": {
+    "ventana_horas": 24,
+    "consultas_totales": 19,
+    "resueltas_sin_gemini": 17,
+    "requieren_aclaracion": 3,
+    "usan_ia_externa": 2,
+    "usan_gemini": 2,
+    "tokens_ia_estimados": 6279,
+    "tokens_ahorrados_estimados": 52039,
+    "porcentaje_sin_gemini": 89.47
+  },
+  "metricas_24h_despues": {
+    "ventana_horas": 24,
+    "consultas_totales": 25,
+    "resueltas_sin_gemini": 22,
+    "requieren_aclaracion": 4,
+    "usan_ia_externa": 3,
+    "usan_gemini": 3,
+    "tokens_ia_estimados": 9411,
+    "tokens_ahorrados_estimados": 67312,
+    "porcentaje_sin_gemini": 88.0
+  },
+  "concurrencia": {
+    "solicitudes": 60,
+    "workers": 6,
+    "calentamiento_previo_ms": 5.8914,
+    "exitosas": 60,
+    "errores": [],
+    "contaminaciones_cache": 0,
+    "roles": {
+      "RESIDENTE": 46,
+      "VIGILANTE": 7,
+      "ADMINISTRADOR": 7
+    },
+    "acciones": {
+      "fallback_allowed": 7,
+      "safe": 7,
+      "answer": 8,
+      "clarify": 38
+    },
+    "duracion_total_ms": 7.7803,
+    "throughput_aprox_req_s": 7711.78,
+    "latencia_ms": {
+      "promedio": 0.0297,
+      "p50": 0.0288,
+      "p95": 0.0544,
+      "max": 0.0671
+    },
+    "aislamiento_aprobado": true,
+    "ia_externa_usada": false,
+    "nota_latencia": "Latencia estable medida despues de registrar por separado la inicializacion en frio."
+  },
+  "criterios": {
+    "casos_funcionales_cumplen": true,
+    "proveedor_respaldo_preparado": true,
+    "gemini_real_verificado": true,
+    "concurrencia_sin_errores": true,
+    "sin_contaminacion_cache": true,
+    "aislamiento_concurrente_aprobado": true
+  }
+}

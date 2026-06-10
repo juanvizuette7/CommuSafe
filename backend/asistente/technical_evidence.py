@@ -325,8 +325,8 @@ def _render_markdown(payload: dict[str, Any]) -> str:
     lines = [
         "# Evidencia tecnica del asistente hibrido CommuSafe",
         "",
-        f"Generada: `{payload['generado_en_utc']}`  ",
-        "Semilla reproducible: `42`  ",
+        f"Generada: `{payload['generado_en_utc']}`",
+        "Semilla reproducible: `42`",
         "IA externa utilizada durante la evaluacion: **No**",
         "",
         "## Resumen para jurado",
