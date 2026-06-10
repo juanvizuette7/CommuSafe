@@ -103,8 +103,8 @@ Entregables:
 - Modelo y endpoints de `Notificacion`.
 - Registro de tokens FCM.
 - Servicio de envío push.
-- Integración con Anthropic Claude Haiku.
-- Endpoint del asistente virtual.
+- Integración inicial del asistente virtual y proveedor generativo.
+- Endpoint del asistente, posteriormente refinado con conocimiento local, comprensión de intenciones y Gemini como respaldo controlado.
 
 Dependencias:
 

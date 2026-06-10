@@ -40,7 +40,7 @@ python -m pytest asistente/tests.py -q
 Resultado:
 
 ```text
-75 passed, 8 subtests passed
+77 passed, 8 subtests passed
 ```
 
 Prueba de resiliencia:
@@ -52,7 +52,7 @@ python manage.py probar_resiliencia_asistente --requests 80 --workers 8
 Resultado real:
 
 ```text
-240 solicitudes, 12 workers, 240 exitosas, 0 errores, 0 contaminaciones de cache, p95 1.788 ms, sin uso de IA externa.
+600 solicitudes, 20 workers, 600 exitosas, 0 errores, 0 contaminaciones de cache y sin uso de IA externa. La medición corresponde al motor local y no sustituye una prueba distribuida de producción.
 ```
 
 Casos cubiertos:

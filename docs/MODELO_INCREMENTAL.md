@@ -13,7 +13,7 @@ La planeación técnica se organizó en sprints numerados del Sprint 0 al Sprint
 | Incremento 1: Núcleo del sistema y autenticación | Sprint 0, Sprint 1, Sprint 5, Sprint 6 | Arquitectura documentada, backend Django configurado, usuario personalizado, autenticación JWT, app Flutter base, login móvil y perfil. |
 | Incremento 2: Gestión de incidentes | Sprint 2, Sprint 7 | Modelo de incidentes, evidencias, historial de estados, API REST, listado móvil, creación de incidentes, detalle e historial. |
 | Incremento 3: Panel web y notificaciones | Sprint 3, Sprint 4, parte del Sprint 8 | Notificaciones internas y push, avisos administrativos, panel web con dashboard, filtros, usuarios, detalle de incidentes y gestión por rol. |
-| Incremento 4: Asistente virtual con IA y emergencias | Sprint 3, Sprint 8 | Backend del asistente, integración con Gemini o fallback local, chat móvil, contactos de emergencia y acceso rápido a llamadas. |
+| Incremento 4: Asistente virtual híbrido y emergencias | Sprint 3, Sprint 8 y refinamientos de calidad | Backend del asistente, conocimiento local, comprensión de intenciones, Gemini como respaldo controlado, chat móvil persistente, contactos de emergencia y acceso rápido a llamadas. |
 | Incremento 5: Pruebas, despliegue y documentación final | Sprint 9, Sprint 10 y refinamientos posteriores | Suite de pruebas backend, pruebas Flutter, APK, PostgreSQL en producción, Render con HTTPS, README, checklist, guion de demo y documentación técnica. |
 
 ## 3. Justificación del modelo para CommuSafe
@@ -32,7 +32,7 @@ El modelo incremental se ajusta al proyecto por cuatro razones principales:
 | 1. Núcleo y autenticación | El sistema permite iniciar sesión por rol y proteger rutas mediante JWT. | `backend/usuarios/`, `mobile/commusafe_app/lib/features/auth/`, pruebas de autenticación en `backend/tests/test_sistema_completo.py`. |
 | 2. Incidentes | El ciclo registrar, consultar, cambiar estado y cerrar incidente funciona con historial. | `backend/incidentes/`, `mobile/commusafe_app/lib/features/incidentes/`, serializers, viewsets y pruebas de lógica de negocio. |
 | 3. Panel y notificaciones | Administrador y vigilante gestionan incidentes y reciben notificaciones o avisos. | `backend/panel_web/`, `frontend/templates/panel/`, `backend/notificaciones/`. |
-| 4. IA y emergencias | El residente puede consultar el asistente y acceder a contactos de emergencia. | `backend/asistente/`, `mobile/commusafe_app/lib/features/asistente/`, `mobile/commusafe_app/lib/features/emergencias/`. |
+| 4. Asistente híbrido y emergencias | El usuario puede consultar un asistente local-first con conversaciones persistentes y acceder a contactos de emergencia. | `backend/asistente/`, `mobile/commusafe_app/lib/features/asistente/`, `mobile/commusafe_app/lib/features/emergencias/`, `docs/MEJORA_ACADEMICA_ASISTENTE_HIBRIDO.md`. |
 | 5. Calidad y despliegue | El sistema está probado, documentado y publicado con base de datos de producción. | `render.yaml`, `backend/commusafe_backend/settings_prod.py`, `docs/`, `README.md`, `backend/tests/`. |
 
 ## 5. Evidencia del crecimiento incremental
@@ -42,12 +42,12 @@ La evolución incremental puede demostrarse con el historial de Git y con la est
 - Sprint 0 dejó arquitectura, modelo de datos, diseño visual y plan de desarrollo.
 - Sprint 1 habilitó Django, usuarios, permisos y autenticación JWT.
 - Sprint 2 agregó la regla de negocio central: incidentes, prioridad automática, evidencias e historial.
-- Sprint 3 incorporó notificaciones y asistente virtual.
+- Sprint 3 incorporó notificaciones y la primera versión del asistente virtual.
 - Sprint 4 construyó el panel web administrativo.
 - Sprint 5 preparó la arquitectura móvil.
 - Sprint 6 integró autenticación y perfil en Flutter.
 - Sprint 7 agregó gestión móvil de incidentes.
-- Sprint 8 completó notificaciones, chat IA y emergencias.
+- Sprint 8 completó notificaciones, chat y emergencias; los refinamientos posteriores transformaron el asistente en una solución híbrida local-first evaluada con evidencia reproducible.
 - Sprint 9 consolidó pruebas, datos de verificación y refinamiento.
 - Sprint 10 preparó despliegue, documentación final y checklist.
 

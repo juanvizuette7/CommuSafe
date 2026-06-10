@@ -106,7 +106,7 @@ python manage.py probar_asistente "¿Cuáles son los horarios de las áreas comu
 8. Adjuntar una evidencia fotográfica desde cámara o galería.
 9. Enviar el reporte y mostrar que aparece en el listado.
 10. Abrir el chat CommuBot y preguntar: `¿Cómo reporto un incidente?`.
-11. Mostrar la respuesta del asistente virtual con fallback local o IA configurada.
+11. Mostrar que una consulta frecuente se responde con conocimiento local y explicar que Gemini solo actúa como respaldo controlado.
 12. Abrir la pantalla de contactos de emergencia y explicar el acceso rápido a llamadas.
 
 ## 4. Flujo del Vigilante en la App

@@ -14,7 +14,7 @@ Este documento resume el cumplimiento funcional y no funcional del sistema Commu
 | RF-06 | Notificaciones segmentadas por rol | Cumplido | Servicio `notificaciones/services.py`, bandeja de notificaciones y avisos por audiencia. |
 | RF-07 | Gestión de usuarios por administrador | Cumplido | Panel web con crear, editar, cambiar rol, activar/desactivar y eliminar. |
 | RF-08 | Historial de incidentes con filtros | Cumplido | Listado web con filtros, búsqueda, ordenamiento y exportación Excel/PDF. |
-| RF-09 | Asistente virtual con IA para consultas frecuentes | Cumplido | Endpoint `/api/asistente/chat/`, proveedor Gemini o fallback local controlado. |
+| RF-09 | Asistente virtual con IA para consultas frecuentes | Cumplido | Asistente híbrido local-first, conocimiento administrable, conversaciones persistentes y Gemini como respaldo controlado. |
 | RF-10 | Acceso directo a contactos de emergencia | Cumplido | Pantalla Flutter `Emergencias` con llamadas `tel:`. |
 | RF-11 | Adjuntar evidencia fotográfica hasta 3 imágenes | Cumplido | Validación en serializer y selector de cámara/galería en Flutter. |
 | RF-12 | Avisos administrativos a residentes, vigilantes o usuarios específicos | Cumplido | Módulo de avisos con selección de audiencia y banner móvil de avisos vigentes. |

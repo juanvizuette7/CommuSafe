@@ -1,5 +1,7 @@
 # Asistente virtual hibrido de CommuSafe
 
+La explicación académica consolidada de la mejora, sus resultados y sus limitaciones se encuentra en `docs/MEJORA_ACADEMICA_ASISTENTE_HIBRIDO.md`. Este documento conserva el detalle técnico y operativo necesario para implementar, mantener y reproducir el módulo.
+
 ## Objetivo
 
 El asistente virtual de CommuSafe funciona como un orientador conversacional especializado en Remansos del Norte y en el uso del sistema. Su responsabilidad es responder consultas sobre incidentes, avisos, convivencia, administracion, vigilancia, visitantes, parqueaderos, mascotas, zonas comunes, mantenimiento, notificaciones y uso de la aplicacion.
@@ -356,7 +358,7 @@ Este comando genera:
 - `docs/evidencias/asistente_evidencia_tecnica_2026.json`: matriz de confusión completa, métricas por intención y errores.
 - Evidencia de precisión, recall, F1, cobertura local, aclaraciones, candidatos a Gemini, consistencia, tokens estimados y concurrencia.
 
-Resultado verificado el 2026-06-09: 240 solicitudes, 12 workers, 240 exitosas, 0 errores, 0 contaminaciones de cache, p95 de 1.788 ms, matriz funcional 11/11 y sin uso de IA externa. La evidencia completa esta en `docs/evidencias/asistente_resiliencia_aceptacion.json` y `docs/PRUEBAS_ASISTENTE_HIBRIDO.md`.
+Resultado consolidado verificado el 2026-06-10: 600 solicitudes, 20 workers, 600 exitosas, 0 errores, 0 contaminaciones de cache y sin uso de IA externa. La evidencia actual se encuentra en `docs/evidencias/asistente_evidencia_tecnica_2026.md`; la prueba de aceptación anterior se conserva en `docs/evidencias/asistente_resiliencia_aceptacion.json`.
 
 Metricas reportadas:
 

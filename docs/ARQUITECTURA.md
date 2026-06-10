@@ -35,7 +35,7 @@ Responsabilidades:
 - Aplicar reglas de negocio de incidentes, prioridades y estados.
 - Registrar historial inmutable de cambios.
 - Generar notificaciones internas y coordinar envíos push por FCM.
-- Integrarse con Anthropic Claude Haiku para el asistente virtual.
+- Resolver consultas del asistente mediante conocimiento local verificable y usar Gemini como respaldo generativo controlado.
 
 ### 3.2 Aplicación móvil Flutter
 
@@ -64,9 +64,9 @@ Responsabilidades:
 
 ### 3.4 Servicios externos
 
-- Anthropic Claude API:
-  - Responde preguntas frecuentes de residentes.
-  - Opera sobre una base controlada de contexto definida por el proyecto.
+- Gemini API:
+  - Opera únicamente como respaldo cuando el motor local no alcanza confianza suficiente.
+  - Recibe contexto verificado y limitado por el backend.
   - Nunca modifica incidentes ni ejecuta acciones críticas; solo informa y orienta.
 
 - Firebase Cloud Messaging:
@@ -82,7 +82,7 @@ Residente/Vigilante -> App Flutter -> API REST Django -> Base de Datos
                                             |
                                             -> FCM -> Push móvil
                                             |
-                                            -> Anthropic Claude -> Respuesta asistente
+                                            -> Motor local -> Gemini opcional -> Respuesta asistente
 
 Administrador -> Panel Web Django -> Servicios de dominio Django -> Base de Datos
 ```
@@ -137,9 +137,9 @@ Responsabilidad:
 Responsabilidad:
 
 - Endpoint del asistente virtual.
-- Orquestación de consultas a Anthropic Claude Haiku.
-- Construcción del contexto permitido para respuestas.
-- Registro de consultas realizadas por usuarios para auditoría y mejora futura.
+- Orquestación local-first con base de conocimiento, clasificación de intención y estrategia de confianza.
+- Uso controlado de Gemini como respaldo y construcción del contexto permitido.
+- Persistencia de conversaciones y registro técnico para auditoría y mejora futura.
 
 ### 5.6 `dashboard`
 
@@ -207,7 +207,7 @@ Responsabilidad:
 
 - Interfaz de chat.
 - Consulta al asistente virtual.
-- Historial corto de conversación local.
+- Historial persistente de conversaciones asociado al usuario autenticado.
 
 ### 6.7 `features/profile`
 
@@ -242,10 +242,11 @@ Responsabilidad:
 - Comunicación saliente mediante SDK o llamada HTTP del servicio de Firebase.
 - Se dispara después de persistir el cambio de negocio relevante.
 
-### 7.4 Django -> Anthropic Claude
+### 7.4 Django -> motor local y Gemini
 
-- Endpoint servidor a servidor.
-- El backend controla prompt del sistema, contexto permitido y filtrado de respuestas.
+- Django consulta primero el conocimiento local aprobado y aplica la estrategia de confianza.
+- Si se requiere respaldo, la comunicación con Gemini ocurre servidor a servidor.
+- El backend controla prompt, contexto permitido, cuotas y filtrado de respuestas.
 - La app móvil nunca llama directamente al proveedor de IA.
 
 ## 8. Diseño de capas en backend

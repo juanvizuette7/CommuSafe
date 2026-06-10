@@ -1,6 +1,6 @@
 # Estrategia y evidencia de pruebas del asistente híbrido
 
-Fecha de ejecución: 9 de junio de 2026.
+Fecha de ejecución consolidada: 10 de junio de 2026.
 
 ## Objetivo
 
@@ -135,7 +135,8 @@ Resultados:
 
 ```text
 Suite de aceptación: 13 passed, 3 subtests passed
-Suite completa backend: 200 passed, 14 subtests passed
+Suite del asistente: 77 passed, 8 subtests passed
+Suite completa backend: 206 passed, 14 subtests passed
 Django check: sin problemas
 Migraciones pendientes: ninguna
 ```

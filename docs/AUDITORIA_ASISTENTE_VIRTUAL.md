@@ -103,32 +103,31 @@ python manage.py probar_resiliencia_asistente --requests 80 --workers 8
 Resultados verificados:
 
 ```text
-suite asistente: 75 passed, 8 subtests passed
+suite asistente: 77 passed, 8 subtests passed
 suite de aceptacion: 13 passed, 3 subtests passed
-suite completa backend: 200 passed, 14 subtests passed
+suite completa backend: 206 passed, 14 subtests passed
 manage.py check: sin problemas
 makemigrations --check --dry-run: sin cambios pendientes
 validar_base_conocimiento: ok
 generar_dataset_asistente: ok, 720 ejemplos, 0 errores
-probar_resiliencia_asistente: 240 solicitudes, 12 workers, 240 exitosas, 0 errores, 0 contaminaciones de cache
+evidencia consolidada: 600 solicitudes, 20 workers, 600 exitosas, 0 errores, 0 contaminaciones de cache
 ```
 
 Prueba de resiliencia concurrente:
 
 | Indicador | Resultado |
 |---|---:|
-| Solicitudes concurrentes simuladas | 240 |
-| Workers | 12 |
-| Solicitudes exitosas | 240 |
+| Solicitudes concurrentes simuladas | 600 |
+| Workers | 20 |
+| Solicitudes exitosas | 600 |
 | Errores | 0 |
 | Contaminaciones de cache detectadas | 0 |
-| Latencia p50 | 0.690 ms |
-| Latencia p95 | 1.788 ms |
-| Latencia maxima | 38.551 ms |
-| Throughput aproximado | 3327.59 req/s |
+| Latencia p95 del motor cargado | 0.0436 ms |
+| Calentamiento previo separado | 4.6492 ms |
+| Throughput aproximado | 13498.28 req/s |
 | IA externa usada | No |
 
-Evidencia: `docs/evidencias/asistente_resiliencia_aceptacion.json` y `docs/PRUEBAS_ASISTENTE_HIBRIDO.md`
+Evidencia consolidada: `docs/evidencias/asistente_evidencia_tecnica_2026.md` y `docs/evidencias/asistente_evidencia_tecnica_2026.json`. Estas latencias corresponden al motor local cargado, no al tiempo total del endpoint en producción.
 
 Estado de base de conocimiento:
 
