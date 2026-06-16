@@ -465,7 +465,7 @@ Reglas generales:
 - Desarrollo:
   - SQLite para rapidez de arranque.
 - Producción:
-  - PostgreSQL administrado por Render mediante `DATABASE_URL`.
+  - PostgreSQL administrado por Neon mediante `DATABASE_URL` privado configurado en Render.
   - Configuración Django en `backend/commusafe_backend/settings_prod.py`.
 - Archivos de evidencia:
   - Durante desarrollo pueden almacenarse localmente.

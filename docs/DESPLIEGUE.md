@@ -1,6 +1,6 @@
 # Despliegue del backend en Render
 
-Este documento describe el despliegue real del backend de CommuSafe en Render.com con HTTPS automatico, Gunicorn y PostgreSQL administrado.
+Este documento describe el despliegue real del backend de CommuSafe en Render.com con HTTPS automatico, Gunicorn y PostgreSQL administrado en Neon.
 
 ## 1. Crear cuenta y conectar repositorio
 

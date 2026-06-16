@@ -43,7 +43,7 @@ Este documento resume el cumplimiento funcional y no funcional del sistema Commu
 - App Flutter organizada por features y providers.
 - Pruebas automatizadas backend en `backend/tests/test_sistema_completo.py`.
 - Pruebas Flutter en `mobile/commusafe_app/test/` e integración móvil en `mobile/commusafe_app/integration_test/`.
-- Despliegue en Render con PostgreSQL y HTTPS.
+- Despliegue del backend y panel web en Render con HTTPS, usando PostgreSQL administrado en Neon.
 - Documentación técnica completa en `docs/`.
 
 ## Comandos de verificación

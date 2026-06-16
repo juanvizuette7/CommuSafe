@@ -24,15 +24,7 @@ Resultado esperado:
 
 ## 2. PostgreSQL
 
-La base de datos de producción está declarada en `render.yaml`:
-
-```yaml
-databases:
-  - name: commusafe-db
-    plan: free
-    databaseName: commusafe
-    user: commusafe
-```
+La base de datos de producción no se declara como recurso de Render. Se gestiona en Neon y Render recibe la cadena privada mediante la variable `DATABASE_URL`.
 
 El backend usa `DATABASE_URL` en `backend/commusafe_backend/settings_prod.py`:
 
@@ -46,7 +38,7 @@ DATABASES = {
 }
 ```
 
-Esto confirma que SQLite queda solo para desarrollo local y PostgreSQL se usa en producción.
+Esto confirma que SQLite queda solo para desarrollo local y PostgreSQL en Neon se usa en producción.
 
 ## 3. Variables Sensibles
 
