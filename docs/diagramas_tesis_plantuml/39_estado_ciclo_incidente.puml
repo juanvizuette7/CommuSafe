@@ -1,0 +1,70 @@
+@startuml 39_estado_ciclo_incidente
+title Diagrama de Estados - Ciclo de Vida del Incidente (CommuSafe)
+
+hide empty description
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam nodesep 45
+skinparam ranksep 45
+
+skinparam state {
+    BackgroundColor #FFFFFF
+    BorderColor #374151
+    FontColor #111827
+    FontSize 11
+    BorderThickness 1.2
+    ArrowColor #374151
+    ArrowThickness 1.2
+    StartColor #1F2937
+    EndColor #1F2937
+}
+
+skinparam note {
+    BackgroundColor #F8FAFC
+    BorderColor #475569
+    FontColor #0F172A
+    FontSize 10
+}
+
+state "REGISTRADO" as REG {
+    REG : entry / Calcular prioridad según categoría
+    REG : entry / Guardar hasta 3 fotos en MEDIA_ROOT
+    REG : do / Crear notificación en BD e intentar Push FCM
+}
+
+state "EN_PROCESO" as PROC {
+    PROC : entry / Asignar atendido_por (Vigilante / Admin)
+    PROC : entry / Insertar HistorialEstado y notificar reportante
+}
+
+state "RESUELTO" as RES {
+    RES : entry / Insertar HistorialEstado
+    RES : entry / Crear notificación de resolución e intentar Push
+}
+
+state "CERRADO" as CER {
+    CER : entry / Establecer fecha_cierre = timezone.now()
+    CER : entry / Insertar HistorialEstado final y notificar
+}
+
+[*] -down-> REG : Creación del incidente\n(Residente o Vigilante)
+
+REG -down-> PROC : Asumir atención\n[Rol: Vigilante o Admin]\n[comentario >= 5 caracteres]
+
+PROC -down-> RES : Marcar novedad resuelta\n[Rol: Vigilante o Admin]\n[comentario >= 5 caracteres]
+
+RES -down-> CER : Validar y cerrar caso\n[Rol exclusivo: Administrador]\n[comentario >= 5 caracteres]
+
+CER -down-> [*]
+
+note right of PROC
+  **Operación transversal de Auditoría (Fuera de Incidente.estado):**
+  Un **Administrador** puede eliminar físicamente un incidente
+  proporcionando un **motivo obligatorio (>= 10 caracteres)**.
+  El sistema conserva el UUID, título y motivo en la tabla
+  independiente **incidentes_incidenteeliminado** antes del DELETE.
+end note
+
+@enduml

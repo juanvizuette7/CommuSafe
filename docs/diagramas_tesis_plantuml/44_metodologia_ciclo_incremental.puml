@@ -1,0 +1,53 @@
+@startuml 44_metodologia_ciclo_incremental
+title 44 Metodología - Ciclo de desarrollo incremental del sistema CommuSafe
+left to right direction
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam rectangle {
+  BackgroundColor #EEF4FF
+  BorderColor #3B5B92
+  FontColor #172126
+  RoundCorner 12
+}
+skinparam package {
+  BackgroundColor #F8FAFC
+  BorderColor #64748B
+  FontColor #172126
+}
+skinparam note {
+  BackgroundColor #FFF7E6
+  BorderColor #B7791F
+  FontColor #172126
+}
+
+package "Fases iterativas por cada incremento (Pressman, 2010)" {
+  rectangle "1. Análisis de\nrequerimientos" as F1
+  rectangle "2. Diseño\ndel módulo" as F2
+  rectangle "3. Implementación\ndel código" as F3
+  rectangle "4. Pruebas\nfuncionales" as F4
+  rectangle "5. Entrega e integración\ndel incremento" as F5
+
+  F1 --> F2
+  F2 --> F3
+  F3 --> F4
+  F4 --> F5
+  F5 --> F1 : Siguiente incremento
+}
+
+package "Entregas acumulativas del sistema CommuSafe" {
+  rectangle "Incremento 1\nAutenticación, roles\ny perfil de usuario" as I1 #ECFBF7
+  rectangle "Incremento 2\nReporte de incidentes,\nprioridad y evidencias" as I2 #ECFBF7
+  rectangle "Incremento 3\nPanel web, cambio de estado,\navisos y notificaciones" as I3 #ECFBF7
+  rectangle "Incremento 4\nAsistente CommuBot, base de\nconocimiento y emergencias" as I4 #ECFBF7
+  rectangle "Incremento 5\nAuditoría, reportes PDF/XLSX,\npruebas y despliegue en Render" as I5 #ECFBF7
+
+  I1 --> I2
+  I2 --> I3
+  I3 --> I4
+  I4 --> I5
+}
+
+F5 ==> I1 : construye e integra
+@enduml

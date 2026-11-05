@@ -1,0 +1,56 @@
+@startuml 43_arquitectura_vista_4mas1
+title 43 Arquitectura - Modelo de vistas 4+1 de Kruchten en CommuSafe
+left to right direction
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam packageStyle rectangle
+skinparam package {
+  BackgroundColor #F8FAFC
+  BorderColor #3B5B92
+  FontColor #172126
+}
+skinparam rectangle {
+  BackgroundColor #EEF4FF
+  BorderColor #3B5B92
+  FontColor #172126
+}
+
+rectangle "CommuSafe\nPlataforma tecnológica de gestión\nde seguridad comunitaria" as CORE #ECFBF7
+
+package "Vista Lógica" as V_LOGICA {
+  rectangle "Modelo de clases del dominio\n(Usuarios, Incidentes, Notificaciones, CommuBot)" as CL
+  rectangle "Modelo Entidad-Relación (MER)\ny ciclo de estados del incidente" as MER
+}
+
+package "Vista de Procesos" as V_PROCESOS {
+  rectangle "Secuencias y actividades de negocio\n(Autenticación, Reporte, Seguimiento, Avisos)" as PROC
+  rectangle "Concurrencia y atomicidad\n(Gunicorn 1 worker/4 threads, transaction.atomic)" as CONC
+}
+
+package "Vista de Desarrollo" as V_DESARROLLO {
+  rectangle "Organización de paquetes y componentes\n(App Flutter, API DRF, Panel Web, Django Admin)" as DEV
+}
+
+package "Vista Física (Despliegue)" as V_FISICA {
+  rectangle "Contenedor Linux en Render + PostgreSQL\n+ integraciones (FCM, SMTP, Gemini/NLP opcional)" as DEP
+}
+
+package "Vista +1: Escenarios (Casos de Uso)" as V_ESCENARIOS {
+  rectangle "Casos de uso por rol (UC1 a UC10)\nResidente, Vigilante y Administrador" as UC
+}
+
+CORE --> V_LOGICA
+CORE --> V_PROCESOS
+CORE --> V_DESARROLLO
+CORE --> V_FISICA
+CORE --> V_ESCENARIOS
+
+UC ..> CL : valida entidades
+UC ..> PROC : define flujos
+CL ..> DEV : estructura módulos
+PROC ..> CONC : sincroniza ejecución
+DEV ..> DEP : empaqueta y despliega
+MER ..> DEP : persiste en PostgreSQL
+@enduml

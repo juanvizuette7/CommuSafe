@@ -1,0 +1,110 @@
+@startuml 07_secuencia_general
+title Diagrama de Secuencia - Ciclo Operativo Real de Incidentes (CommuSafe)
+
+autonumber
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 10
+
+skinparam participant {
+    BackgroundColor #FFFFFF
+    BorderColor #374151
+    FontColor #111827
+    BorderThickness 1.2
+}
+
+skinparam actor {
+    BackgroundColor #F9FAFB
+    BorderColor #1F2937
+    FontColor #111827
+}
+
+skinparam sequence {
+    ArrowColor #1F2937
+    LifeLineBorderColor #4B5563
+    LifeLineBackgroundColor #F3F4F6
+    DividerBackgroundColor #F9FAFB
+    DividerBorderColor #374151
+}
+
+actor "Reportante\n(Residente/Vigilante)" as rep
+participant "Cliente\n(App / Web)" as ui
+participant "Backend Incidentes\n(Views & Serializers)" as inc
+participant "FileSystemStorage\n(MEDIA_ROOT)" as media
+participant "PostgreSQL\n(Django ORM)" as db
+participant "Notificaciones\n(services.py & FCM)" as noti
+actor "Vigilante" as vig
+actor "Administrador" as adm
+
+== Fase 1: Creación Multipart, Prioridad por Categoría y Notificación Tolerante a Fallos ==
+rep -> ui : Completa datos y adjunta hasta 3 imágenes
+activate ui
+ui -> inc : POST /incidentes/ (multipart/form-data)
+activate inc
+
+inc -> inc : Calcular prioridad según categoría
+inc -> media : Guardar imágenes en MEDIA_ROOT (ImageField)
+activate media
+media --> inc : rutas relativas de archivos
+deactivate media
+
+inc -> db : INSERT incidente (estado="REGISTRADO", prioridad) y evidencias
+activate db
+db --> inc : instancia Incidente
+deactivate db
+
+inc -> noti : notificarNuevoIncidente(incidente)
+activate noti
+noti -> db : Seleccionar Vigilantes/Admins activos (+Residentes si ALTA, excl. autor)
+noti -> db : INSERT notificaciones persistentes (enviada_push=False)
+noti -> noti : Intentar envío Push FCM (fallo no bloqueante)
+noti --> vig : Push / Alerta en bandeja
+noti --> adm : Push / Alerta en bandeja
+noti --> inc : despacho procesado
+deactivate noti
+
+inc --> ui : HTTP 201 Created (estado="REGISTRADO")
+deactivate inc
+ui --> rep : Confirmación de registro
+deactivate ui
+
+== Fase 2: Atención y Resolución (Vigilante o Administrador) ==
+vig -> ui : Cambia estado a "EN_PROCESO" (comentario >= 5 car.)
+activate ui
+ui -> inc : PATCH /cambiar-estado/ (EN_PROCESO, comentario)
+activate inc
+inc -> db : UPDATE incidente (estado="EN_PROCESO", atendido_por=vigilante)
+inc -> db : INSERT historial_estado (REGISTRADO -> EN_PROCESO)
+inc -> noti : Crear notificación persistente e intentar Push al reportante
+noti --> rep : Notificación: Incidente EN_PROCESO
+inc --> ui : HTTP 200 OK
+deactivate inc
+deactivate ui
+
+vig -> ui : Controla novedad y cambia a "RESUELTO" (comentario >= 5 car.)
+activate ui
+ui -> inc : PATCH /cambiar-estado/ (RESUELTO, comentario)
+activate inc
+inc -> db : UPDATE incidente (estado="RESUELTO")
+inc -> db : INSERT historial_estado (EN_PROCESO -> RESUELTO)
+inc -> noti : Crear notificación persistente e intentar Push al reportante
+noti --> rep : Notificación: Incidente RESUELTO
+inc --> ui : HTTP 200 OK
+deactivate inc
+deactivate ui
+
+== Fase 3: Cierre Definitivo Exclusivo por Administrador ==
+adm -> ui : Valida resolución y cambia a "CERRADO" (comentario >= 5 car.)
+activate ui
+ui -> inc : PATCH /cambiar-estado/ (CERRADO, comentario)
+activate inc
+inc -> db : UPDATE incidente (estado="CERRADO", fecha_cierre=NOW())
+inc -> db : INSERT historial_estado (RESUELTO -> CERRADO)
+inc -> noti : Crear notificación persistente e intentar Push al reportante
+noti --> rep : Notificación: Incidente CERRADO
+inc --> ui : HTTP 200 OK
+deactivate inc
+deactivate ui
+
+@enduml

@@ -1,0 +1,108 @@
+@startuml 21_actividad_general
+title Diagrama de Flujo y Actividad General - CommuSafe
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+
+skinparam activity {
+    BackgroundColor #FFFFFF
+    BorderColor #374151
+    FontColor #111827
+    FontSize 11
+    BorderThickness 1.2
+    ArrowColor #374151
+    ArrowThickness 1.1
+    DiamondBackgroundColor #F9FAFB
+    DiamondBorderColor #374151
+    DiamondFontColor #111827
+}
+
+start
+:Usuario abre aplicación CommuSafe;
+
+if (¿Tiene sesión activa?) then (Sí)
+    :Cargar perfil, rol y token del usuario;
+else (No)
+    :Mostrar pantalla de autenticación;
+    if (¿Tipo de acceso?) then (Registro)
+        :Mostrar términos y política de privacidad;
+        if (¿Acepta política?) then (Sí)
+            :Registrar datos personales y unidad residencial;
+            :Crear credenciales de usuario;
+            :Guardar aceptación de política con timestamp;
+        else (No)
+            :Bloquear registro y retornar;
+            stop
+        endif
+    else (Iniciar sesión)
+        :Ingresar correo y contraseña;
+        :Validar credenciales con AuthService;
+    endif
+endif
+
+:Verificar permisos de notificaciones push y cámara;
+if (¿Permisos concedidos?) then (Sí)
+    :Actualizar token FCM en backend;
+else (No)
+    :Mostrar advertencia y continuar con funciones básicas;
+endif
+
+:Cargar pantalla principal según rol del usuario;
+
+if (¿Acción principal a realizar?) then (Reportar Incidente)
+    :Abrir formulario de nuevo incidente;
+    :Ingresar título, categoría y ubicación;
+    if (¿Adjuntar evidencias fotográficas?) then (Sí)
+        :Capturar o seleccionar fotos (hasta 3);
+        :Subir imágenes a Supabase Storage;
+    else (No)
+    endif
+    :Calcular prioridad automática según categoría;
+    :Guardar incidente en PostgreSQL con estado "PENDIENTE";
+    :Disparar evento en NotificacionService;
+    :Enviar notificación push a vigilantes en turno;
+    :Vigilante abre incidente y asume atención;
+    :Actualizar estado a "EN_ATENCION";
+    :Registrar notas de seguimiento en historial;
+    :Controlar novedad en sitio y marcar "RESUELTO";
+    :Enviar notificación push de confirmación al residente;
+
+else if (Consultar CommuBot) then
+    :Abrir chat de asistencia virtual;
+    :Usuario ingresa pregunta ciudadana;
+    :Clasificar intención con CommuBotService;
+    if (¿Existe coincidencia en Base de Conocimiento local?) then (Sí)
+        :Extraer respuesta verificada y vigente;
+    else (No)
+        :Consultar proveedor generativo de respaldo (IA);
+        :Registrar consulta sin respuesta para auditoría;
+    endif
+    :Guardar mensaje en historial de conversación;
+    :Mostrar respuesta al usuario en pantalla;
+
+else (Avisos y Reportes)
+    if (¿Rol usuario?) then (Administrador / Vigilante)
+        if (¿Tipo de gestión?) then (Emitir Aviso)
+            :Redactar aviso comunitario;
+            if (¿Es aviso recurrente?) then (Sí)
+                :Configurar días de la semana y vigencia;
+                :Guardar en AvisoProgramado;
+            else (No)
+                :Enviar push inmediato a residentes;
+            endif
+        else (Exportar Reportes)
+            :Seleccionar rango de fechas y filtros;
+            :Generar consolidado de incidentes en PDF / Excel;
+        endif
+    else (Residente)
+        :Consultar cartelera de avisos comunitarios;
+        :Consultar historial de notificaciones personales;
+    endif
+endif
+
+:Finalizar operación y retornar a pantalla principal;
+stop
+
+@enduml

@@ -1,0 +1,139 @@
+@startuml 37_mer_modelo_entidad_relacion
+title Modelo Entidad-Relación (MER) - Dominio Nuclear CommuSafe
+
+top to bottom direction
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam linetype ortho
+skinparam nodesep 55
+skinparam ranksep 45
+
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor #374151
+    HeaderBackgroundColor #F3F4F6
+    FontColor #111827
+    ArrowColor #374151
+    BorderThickness 1.2
+}
+
+hide circle
+hide empty methods
+
+' ==================== NIVEL 1: ENTIDAD MAESTRA Y CONOCIMIENTO ====================
+entity "notificaciones_avisoprogramado" as AVISO_PROG {
+    * id : UUID <<PK>>
+    --
+    * creado_por_id : UUID <<FK>>
+    * titulo : VARCHAR(150)
+    * audiencia : VARCHAR(20)
+    * dias_semana : VARCHAR(20)
+    * fecha_inicio : DATE
+    * activo : BOOLEAN
+}
+
+entity "usuarios_usuario" as USUARIO {
+    * id : UUID <<PK>>
+    --
+    * email : VARCHAR(254) <<UK>>
+    * nombre : VARCHAR(80)
+    * apellido : VARCHAR(80)
+    * rol : VARCHAR(20)
+    unidad_residencial : VARCHAR(30)
+    fcm_token : TEXT
+    * politica_aceptada : BOOLEAN
+    * activo : BOOLEAN
+}
+
+entity "asistente_entradaconocimiento" as KB {
+    * id : UUID <<PK>>
+    --
+    actualizado_por_id : UUID <<FK, null>>
+    * categoria : VARCHAR(40)
+    * pregunta : VARCHAR(200)
+    * respuesta : TEXT
+    * activo : BOOLEAN
+}
+
+' ==================== NIVEL 2: OPERACIÓN CENTRAL Y ASISTENTE ====================
+entity "incidentes_incidente" as INCIDENTE {
+    * id : UUID <<PK>>
+    --
+    * reportado_por_id : UUID <<FK>>
+    atendido_por_id : UUID <<FK, null>>
+    * titulo : VARCHAR(150)
+    * categoria : VARCHAR(20)
+    * prioridad : VARCHAR(10)
+    * estado : VARCHAR(15)
+    ubicacion : VARCHAR(200)
+    * fecha_reporte : TIMESTAMPTZ
+    fecha_cierre : TIMESTAMPTZ
+}
+
+entity "asistente_conversacion" as CONVERSACION {
+    * id : UUID <<PK>>
+    --
+    * usuario_id : UUID <<FK>>
+    * titulo : VARCHAR(90)
+    * fecha_creacion : TIMESTAMPTZ
+}
+
+' ==================== NIVEL 3: DETALLE, TRAZABILIDAD Y MENSAJES ====================
+entity "incidentes_evidenciaincidente" as EVIDENCIA {
+    * id : UUID <<PK>>
+    --
+    * incidente_id : UUID <<FK>>
+    * url_imagen : VARCHAR(200)
+    * fecha_subida : TIMESTAMPTZ
+}
+
+entity "incidentes_historialestado" as HISTORIAL {
+    * id : UUID <<PK>>
+    --
+    * incidente_id : UUID <<FK>>
+    * cambiado_por_id : UUID <<FK>>
+    * estado_anterior : VARCHAR(15)
+    * estado_nuevo : VARCHAR(15)
+    * comentario : TEXT
+    * fecha_cambio : TIMESTAMPTZ
+}
+
+entity "notificaciones_notificacion" as NOTIFICACION {
+    * id : UUID <<PK>>
+    --
+    * destinatario_id : UUID <<FK>>
+    incidente_id : UUID <<FK, null>>
+    * titulo : VARCHAR(150)
+    * tipo : VARCHAR(20)
+    * leida : BOOLEAN
+    * enviada_push : BOOLEAN
+    * fecha_envio : TIMESTAMPTZ
+}
+
+entity "asistente_mensaje" as MENSAJE {
+    * id : UUID <<PK>>
+    --
+    * conversacion_id : UUID <<FK>>
+    * rol : VARCHAR(12)
+    * contenido : TEXT
+    * fecha_creacion : TIMESTAMPTZ
+}
+
+' ==================== RELACIONES CON NOTACIÓN PATA DE GALLO (CROW'S FOOT) ====================
+' Relaciones desde Usuario (1 a N)
+USUARIO ||-left-o{ AVISO_PROG
+USUARIO ||-right-o{ KB
+USUARIO ||--o{ INCIDENTE
+USUARIO ||--o{ CONVERSACION
+
+' Relaciones desde Incidente (1 a N)
+INCIDENTE ||--o{ EVIDENCIA
+INCIDENTE ||--o{ HISTORIAL
+INCIDENTE |o--o{ NOTIFICACION
+
+' Relación desde Conversación (1 a N)
+CONVERSACION ||--o{ MENSAJE
+
+@enduml

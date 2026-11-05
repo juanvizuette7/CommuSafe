@@ -1,0 +1,70 @@
+@startuml 42_despliegue_vista_fisica
+title 42 Despliegue - Vista física
+left to right direction
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 14
+skinparam componentStyle rectangle
+skinparam node {
+  BackgroundColor #F1EDFA
+  BorderColor #6B5B85
+  FontColor #172126
+}
+skinparam databaseBackgroundColor #F8FAFC
+skinparam databaseBorderColor #64748B
+skinparam note {
+  BackgroundColor #FFF7E6
+  BorderColor #B7791F
+  FontColor #172126
+}
+
+node "Dispositivo móvil\n(Android compatible con Flutter)" <<device>> as AndroidNode {
+  node "Entorno de Ejecución Android" <<executionEnvironment>> {
+    artifact "commusafe_app.apk\n(Flutter Release Build)" as MobileArtifact <<artifact>>
+  }
+}
+
+node "Estación de Trabajo Operador" <<device>> as AdminPCNode {
+  node "Navegador Web\n(Chrome / Edge / Firefox)" <<executionEnvironment>> {
+    artifact "CommuSafe Web Client\n(HTML5 / CSS / JS)" as WebClientArtifact <<artifact>>
+  }
+}
+
+node "Plataforma PaaS Render\n(Linux Container)" <<executionEnvironment>> as RenderServer {
+  node "Servidor Gunicorn WSGI\n(1 worker gthread / 4 threads)" <<executionEnvironment>> as GunicornServer {
+    artifact "commusafe_backend.wsgi\n(Django 4.2 / Python 3.11.9)" as DjangoArtifact <<artifact>>
+    component "WhiteNoise\n(Archivos estáticos en caché)" as StaticComp
+    folder "MEDIA_ROOT\n(almacenamiento local efímero del contenedor)" as MediaFolder
+  }
+}
+
+node "Servicio PostgreSQL externo" <<executionEnvironment>> as DBLicenseNode {
+  database "PostgreSQL\n(DATABASE_URL; versión definida por proveedor)" <<databaseSystem>> as DBInstance
+}
+
+cloud "Firebase Cloud Messaging\n(Google FCM API)" as FCMService
+cloud "Servidor SMTP\n(Servicio de Correo Saliente)" as SMTPService
+cloud "Gemini API\n(gemini-2.5-flash-lite)" as GeminiService
+cloud "Servicio NLP auxiliar\n(endpoint configurado; opcional)" as NLPService
+
+MobileArtifact -- GunicornServer : <<HTTPS / TLS 443>>\n(REST API / JWT)
+WebClientArtifact -- GunicornServer : <<HTTPS / TLS 443>>\n(Sesión Web / Admin)
+
+DjangoArtifact --> StaticComp : servir estáticos
+DjangoArtifact --> MediaFolder : lectura y escritura
+DjangoArtifact -- DBInstance : <<TCP / SSL 5432>>\n(Django ORM / psycopg2)
+DjangoArtifact -- FCMService : <<HTTPS / TLS>>\n(Notificaciones Push)
+DjangoArtifact -- SMTPService : <<SMTP / TLS 587>>\n(Recuperación de contraseña)
+DjangoArtifact -- GeminiService : <<HTTPS / TLS 443>>\n(Respaldo generativo opcional)
+DjangoArtifact ..> NLPService : <<HTTP / HTTPS>>\n(Servicio auxiliar si se configura)
+
+note right of MediaFolder
+  Render ejecuta el servicio web en plan free (arranque bajo demanda).
+  La base de datos relacional se conecta externamente mediante DATABASE_URL.
+  render.yaml no declara un disco persistente; los archivos en MEDIA_ROOT
+  pueden perderse al reiniciar o reemplazar el contenedor.
+  El servicio NLP auxiliar es una integración por URL opcional;
+  render.yaml no aprovisiona ese servicio.
+end note
+@enduml

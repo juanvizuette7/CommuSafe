@@ -1,0 +1,92 @@
+@startuml 41_componentes_canales_servicios
+title Diagrama de Componentes y Canales del Sistema CommuSafe
+
+left to right direction
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam linetype ortho
+skinparam nodesep 35
+skinparam ranksep 45
+
+skinparam package {
+    BackgroundColor #F8FAFC
+    BorderColor #475569
+    FontColor #0F172A
+    FontSize 12
+    FontStyle bold
+}
+
+skinparam component {
+    BackgroundColor #FFFFFF
+    BorderColor #334151
+    FontColor #0F172A
+    FontSize 11
+    BorderThickness 1.2
+}
+
+skinparam database {
+    BackgroundColor #F1F5F9
+    BorderColor #334151
+    FontColor #0F172A
+    FontSize 11
+}
+
+actor "Usuario\n(Residente / Vigilante / Admin)" as user
+
+package "Canales de Presentación" {
+    component "App Móvil Multiplataforma\n(Flutter UI + Providers)" as APP_MOB
+    component "Panel Web Administrativo\n(Django Templates + Vistas)" as WEB_PANEL
+}
+
+package "Backend CommuSafe (Django + DRF)" {
+    component "App usuarios\n(Auth JWT/Sesión, Roles, PasswordReset)" as M_USU
+    component "App incidentes\n(Serializers, Permisos, Exportadores PDF/XLSX)" as M_INC
+    component "App notificaciones\n(Servicios de Alertas y Avisos Programados)" as M_NOTI
+    component "App asistente\n(CommuBot Local, NLP y Fallback IA)" as M_BOT
+    component "App panel_web\n(Controladores Web y Reportes)" as M_WEB
+}
+
+package "Capa de Persistencia Local y Relacional" {
+    database "Base de Datos PostgreSQL\n(Modelos Django ORM)" as DB
+    database "Sistema de Archivos Local\n(Django FileSystemStorage / MEDIA_ROOT)" as FS_MEDIA
+}
+
+package "Servicios Externos" {
+    component "Firebase Cloud Messaging\n(Envío Push FCM)" as EXT_FCM
+    component "Proveedor LLM / Gemini API\n(Respaldo IA Condicionado)" as EXT_AI
+    component "Servidor Correo (SMTP)\n(Recuperación Contraseña)" as EXT_MAIL
+}
+
+' Interacción Usuario -> Clientes
+user --> APP_MOB
+user --> WEB_PANEL
+
+' App Móvil -> Backend (REST + JWT + Multipart)
+APP_MOB --> M_USU : HTTPS / JWT
+APP_MOB --> M_INC : REST / Multipart
+APP_MOB --> M_NOTI : REST API
+APP_MOB --> M_BOT : REST API
+
+' Panel Web -> Backend (Sesión Django + Cookies)
+WEB_PANEL --> M_WEB : Sesión / Cookies
+M_WEB --> M_USU
+M_WEB --> M_INC
+M_WEB --> M_NOTI
+M_WEB --> M_BOT
+
+' Backend -> Persistencia
+M_USU --> DB
+M_INC --> DB
+M_NOTI --> DB
+M_BOT --> DB
+
+M_INC --> FS_MEDIA : Guarda ImageField\n(máx. 3 fotos)
+
+' Backend -> Servicios Externos
+M_NOTI --> EXT_FCM : Push SDK / API
+M_BOT --> EXT_AI : Prompt validado
+M_USU --> EXT_MAIL : Token recuperación
+
+@enduml

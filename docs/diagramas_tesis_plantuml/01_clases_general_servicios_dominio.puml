@@ -1,0 +1,300 @@
+@startuml 01_clases_general_servicios_dominio
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam linetype ortho
+skinparam nodesep 50
+skinparam ranksep 55
+
+skinparam class {
+    BackgroundColor #FFFFFF
+    BorderColor #374151
+    HeaderBackgroundColor #F9FAFB
+    FontColor #111827
+    FontSize 11
+    AttributeFontSize 10
+    AttributeFontColor #1F2937
+    BorderThickness 1.2
+    ArrowColor #374151
+    ArrowThickness 1.1
+}
+
+' ========================================================
+' COLUMNA 1: IDENTIDAD, ACCESO Y COMUNICACIÓN
+' ========================================================
+together {
+    class AuthService {
+        +iniciarSesion(email: String, password: String): Usuario
+        +cerrarSesion(token: String): void
+        +solicitarResetPassword(email: String): void
+        +confirmarResetPassword(token: String, nuevaClave: String): Boolean
+        +actualizarPerfil(usuarioId: String, datos: Object): Usuario
+    }
+
+    class NotificacionService {
+        +notificarNuevoIncidente(incidente: Incidente): void
+        +notificarCambioEstado(incidente: Incidente, nuevoEstado: String): void
+        +marcarComoLeida(notificacionId: String): void
+        +obtenerNotificaciones(usuarioId: String): List<Notificacion>
+    }
+
+    class FCMService {
+        +enviarPush(token: String, titulo: String, mensaje: String): Boolean
+        +enviarMulticast(tokens: List<String>, titulo: String, mensaje: String): void
+    }
+
+    class AvisoProgramadoService {
+        +crearAviso(adminId: String, datos: Object): AvisoProgramado
+        +actualizarAviso(avisoId: String, datos: Object): AvisoProgramado
+        +ejecutarAvisosProgramados(fecha: Date): int
+    }
+
+    class Usuario {
+        +String id
+        +String email
+        +String nombre
+        +String apellido
+        +String unidadResidencial
+        +String rol
+        +String telefono
+        +String fcmToken
+        +Boolean activo
+        +Boolean politicaPrivacidadAceptada
+        +DateTime fechaRegistro
+        +getNombreCompleto(): String
+        +esResidente(): Boolean
+        +esVigilante(): Boolean
+        +esAdministrador(): Boolean
+    }
+
+    class PasswordResetToken {
+        +String id
+        +String token
+        +DateTime creado
+        +DateTime expira
+        +Boolean usado
+        +estaVigente(): Boolean
+    }
+
+    class Notificacion {
+        +String id
+        +String titulo
+        +String cuerpo
+        +String tipo
+        +Boolean leida
+        +Boolean enviadaPush
+        +DateTime fechaEnvio
+    }
+
+    class AvisoProgramado {
+        +String id
+        +String titulo
+        +String cuerpo
+        +String tipo
+        +String audiencia
+        +String diasSemana
+        +Date fechaInicio
+        +Date fechaFin
+        +Date ultimoEnvio
+        +Boolean activo
+        +debeEnviarse(fecha: Date): Boolean
+    }
+}
+
+' ========================================================
+' COLUMNA 2: INCIDENTES, EVIDENCIAS Y OPERACIÓN
+' ========================================================
+together {
+    class IncidenteService {
+        +registrarIncidente(usuarioId: String, datos: Object): Incidente
+        +cambiarEstado(incidenteId: String, estado: String, vigilanteId: String): HistorialEstado
+        +asignarVigilante(incidenteId: String, vigilanteId: String): Incidente
+        +agregarEvidencia(incidenteId: String, archivo: Object): EvidenciaIncidente
+        +eliminarIncidente(incidenteId: String, adminId: String, motivo: String): IncidenteEliminado
+    }
+
+    class StorageService {
+        +subirArchivo(archivo: Object, carpeta: String): String
+        +eliminarArchivo(ruta: String): Boolean
+        +obtenerUrlFirmada(ruta: String): String
+    }
+
+    class ReporteExportService {
+        +generarMetricasIncidentes(fechaInicio: Date, fechaFin: Date): Object
+        +exportarIncidentesPDF(filtros: Object): Object
+        +exportarIncidentesExcel(filtros: Object): Object
+    }
+
+    class Incidente {
+        +String id
+        +String titulo
+        +String descripcion
+        +String categoria
+        +String prioridad
+        +String estado
+        +String ubicacionReferencia
+        +DateTime fechaReporte
+        +DateTime fechaActualizacion
+        +DateTime fechaCierre
+        +String observacionesCierre
+        +calcularPrioridad(): String
+    }
+
+    class EvidenciaIncidente {
+        +String id
+        +String urlImagen
+        +String descripcion
+        +DateTime fechaSubida
+    }
+
+    class HistorialEstado {
+        +String id
+        +String estadoAnterior
+        +String estadoNuevo
+        +DateTime fechaCambio
+        +String comentario
+    }
+
+    class IncidenteEliminado {
+        +String id
+        +String incidenteId
+        +String titulo
+        +DateTime fechaEliminacion
+        +String motivo
+    }
+}
+
+' ========================================================
+' COLUMNA 3: ASISTENTE COMMUBOT Y CONOCIMIENTO
+' ========================================================
+together {
+    class CommuBotService {
+        +procesarMensaje(conversacionId: String, usuarioId: String, texto: String): MensajeAsistente
+        +clasificarIntencion(mensaje: String): String
+        +consultarMotorLocal(pregunta: String, rol: String): String
+        +consultarProveedorGenerativo(prompt: String): String
+    }
+
+    class BaseConocimientoService {
+        +crearEntrada(autorId: String, datos: Object): EntradaConocimiento
+        +aprobarEntrada(entradaId: String, revisorId: String): void
+        +crearVersionSnapshot(entrada: EntradaConocimiento): VersionEntradaConocimiento
+        +buscarEntradas(criterio: String, rol: String): List<EntradaConocimiento>
+        +registrarConsultaSinRespuesta(pregunta: String, rol: String): ConsultaSinRespuesta
+    }
+
+    class ConversacionAsistente {
+        +String id
+        +String titulo
+        +DateTime fechaCreacion
+        +DateTime fechaActualizacion
+    }
+
+    class EntradaConocimiento {
+        +String id
+        +String codigo
+        +String pregunta
+        +String respuesta
+        +String categoria
+        +String intencionPrincipal
+        +String estado
+        +int version
+        +Date vigenteDesde
+        +Date vigenteHasta
+        +estaPublicable(fecha: Date): Boolean
+    }
+
+    class MensajeAsistente {
+        +String id
+        +String rol
+        +String contenido
+        +DateTime fechaCreacion
+    }
+
+    class AsistenteRespuestaLog {
+        +String id
+        +String modo
+        +String proveedor
+        +String intencion
+        +double confianza
+        +int latenciaMs
+        +Boolean requiereValidacion
+        +DateTime fechaCreacion
+    }
+
+    class VersionEntradaConocimiento {
+        +String id
+        +int version
+        +String datosSnapshot
+        +DateTime fechaCambio
+    }
+
+    class ConsultaSinRespuesta {
+        +String id
+        +String huella
+        +String rol
+        +int cantidad
+        +String estado
+    }
+}
+
+' ========================================================
+' VÍNCULOS INTER-COLUMNAS
+' ========================================================
+AuthService -[hidden]right- IncidenteService
+IncidenteService -[hidden]right- CommuBotService
+
+Usuario "1" -right- "0..*" Incidente : reportado_por
+Usuario "0..1" -right- "0..*" Incidente : atendido_por
+Usuario "1" -right- "0..*" ConversacionAsistente : sesion
+Incidente "0..1" -left- "0..*" Notificacion : referencia
+
+' ========================================================
+' RELACIONES COLUMNA 1 (IDENTIDAD & COMUNICACIÓN)
+' ========================================================
+AuthService --> Usuario
+AuthService --> PasswordResetToken
+NotificacionService --> Notificacion
+NotificacionService ..> FCMService
+AvisoProgramadoService ..> NotificacionService
+AvisoProgramadoService --> AvisoProgramado
+
+Usuario "1" -- "0..*" PasswordResetToken
+Usuario "1" -- "0..*" Notificacion : destinatario
+Usuario "1" -- "0..*" AvisoProgramado : emisor
+Usuario "0..*" -- "0..*" AvisoProgramado : audiencia
+
+' ========================================================
+' RELACIONES COLUMNA 2 (INCIDENTES & OPERACIONES)
+' ========================================================
+IncidenteService ..> StorageService
+IncidenteService --> Incidente
+IncidenteService --> EvidenciaIncidente
+IncidenteService --> HistorialEstado
+IncidenteService --> IncidenteEliminado
+ReporteExportService --> Incidente
+
+Incidente "1" -- "0..3" EvidenciaIncidente
+Incidente "1" -- "0..*" HistorialEstado
+Incidente "1" -- "0..1" IncidenteEliminado : auditoria
+
+' ========================================================
+' RELACIONES COLUMNA 3 (COMMUBOT & CONOCIMIENTO)
+' ========================================================
+CommuBotService ..> BaseConocimientoService
+CommuBotService --> ConversacionAsistente
+CommuBotService --> MensajeAsistente
+CommuBotService --> AsistenteRespuestaLog
+
+BaseConocimientoService --> EntradaConocimiento
+BaseConocimientoService --> VersionEntradaConocimiento
+BaseConocimientoService --> ConsultaSinRespuesta
+
+ConversacionAsistente "1" -- "0..*" MensajeAsistente
+ConversacionAsistente "0..1" -- "0..*" AsistenteRespuestaLog
+
+EntradaConocimiento "1" -- "0..*" VersionEntradaConocimiento
+EntradaConocimiento "0..1" -- "0..*" ConsultaSinRespuesta
+
+@enduml

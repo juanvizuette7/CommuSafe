@@ -1,0 +1,79 @@
+@startuml 33_casos_uso_general
+title Diagrama General de Casos de Uso - CommuSafe
+
+left to right direction
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+skinparam actor {
+    BackgroundColor #F9FAFB
+    BorderColor #1F2937
+    FontColor #111827
+}
+
+skinparam usecase {
+    BackgroundColor #FFFFFF
+    BorderColor #374151
+    FontColor #111827
+    BorderThickness 1.2
+    ArrowColor #374151
+    ArrowThickness 1.1
+}
+
+skinparam rectangle {
+    BackgroundColor #FAFAFA
+    BorderColor #4B5563
+    BorderThickness 1.5
+    FontColor #111827
+    FontSize 12
+    FontStyle bold
+}
+
+' ================= ACTORES (USUARIOS) =================
+actor "Residente" as res
+actor "Vigilante" as vig
+actor "Administrador" as admin
+
+' ================= SISTEMA COMMUSAFE (COMPACTO) =================
+rectangle "CommuSafe" {
+    usecase "Registrar Incidente\n(con Fotos y Prioridad)" as UC_RegInc
+    usecase "Consultar Historial y Filtros" as UC_Hist
+    usecase "Consultar Notificaciones\ny Alertas Push" as UC_Notif
+    usecase "Consultar Asistente CommuBot\n(Local y Respaldo IA)" as UC_Bot
+    usecase "Autenticación\n(Login, Registro y Clave)" as UC_Auth
+    usecase "Gestionar Estado de Incidentes" as UC_EstInc
+    usecase "Eliminar con Auditoría" as UC_ElimInc
+    usecase "Emitir y Programar Avisos" as UC_Aviso
+    usecase "Administrar Base de Conocimiento" as UC_AdminKB
+    usecase "Generar Analítica y Reportes" as UC_Rep
+
+    ' Regla UML: La extensión apunta siempre hacia el caso de uso base
+    UC_ElimInc .> UC_EstInc : <<extend>>
+}
+
+' ================= CONEXIONES DE ACTORES =================
+res --> UC_Auth
+res --> UC_RegInc
+res --> UC_Hist
+res --> UC_Notif
+res --> UC_Bot
+
+vig --> UC_Auth
+vig --> UC_Hist
+vig --> UC_Notif
+vig --> UC_Bot
+vig --> UC_EstInc
+vig --> UC_Aviso
+
+admin --> UC_Auth
+admin --> UC_EstInc
+admin --> UC_ElimInc
+admin --> UC_Aviso
+admin --> UC_AdminKB
+admin --> UC_Rep
+
+@enduml
